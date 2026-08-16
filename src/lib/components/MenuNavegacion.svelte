@@ -13,6 +13,7 @@
 
 <nav class="menu-auto">
   <ul>
+    <li><a href="/">Inicio</a></li>
     {#each rutas as ruta}
       <li><a href={ruta.url}>{ruta.nombre}</a></li>
     {/each}

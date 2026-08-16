@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import Menu from '$lib/components/MenuNavegacion.svelte';
 
 	let { children } = $props();
 </script>
@@ -11,5 +12,7 @@
   href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
 >
 </svelte:head>
+
+<Menu />
 
 {@render children()}
