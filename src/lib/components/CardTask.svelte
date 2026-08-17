@@ -8,8 +8,8 @@
 
 
         <li class="box is-rounded mb-2 has-background-dark p-2">
-          <div><strong class="has-text-weight-bold subtitle has-text-centered "><div>{task.title}</div></strong></div>
-          <hr>
+          <div><strong class="has-text-weight-bold has-text-centered py-0"><p class="is-size-6-mobile py-0">{task.title}</p></strong></div>
+          <hr class="py-0 my-0">
           <div class="is-flex pl-4 is-size-7-mobile"><strong>Tematica: </strong> <p class="has-text-white pl-4">{task.tema}</p></div>
           <div class="is-flex pl-4 is-size-7-mobile"><strong>Numero de Niveles: </strong> <p class="has-text-white pl-4">{task.cantidad_de_niveles}</p></div>
           <div class="is-flex pl-4 is-size-7-mobile"><strong>Status:</strong> <p class="has-text-white pl-4">{task.status}</p></div>
