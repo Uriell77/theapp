@@ -12,7 +12,7 @@
   
 </script>
 
-<section class="section">
+<section class="section pt-2 px-2 pb-0 is-flex is-align-items-center is-justify-content-space-between">
 
 <div class="componente-navbar">
   <!-- Aquí va la estructura de tu componente -->
