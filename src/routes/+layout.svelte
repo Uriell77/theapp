@@ -13,7 +13,7 @@
 >
 </svelte:head>
 
-<div class="principal">
+<div class="principal p-0">
 <Navbar />
 {@render children()}
 </div>
@@ -21,8 +21,8 @@
 <style>
   .principal {
 	background: linear-gradient(to bottom, #1e1e1e, #3b8196);
-	min-height: 100vh;
 	color: white;
+	min-height: 100vh;
   }
 
 </style>

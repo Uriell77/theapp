@@ -53,7 +53,7 @@ import CardTask from "$lib/components/CardTask.svelte";
 </main>
 
 <style>
-  main { padding: 2rem;
+  main { padding: 0rem;
     
   }
   .box { background: #f4f4f5; padding: 1rem; border-radius: 8px; color: #333; margin-top: 1rem; }

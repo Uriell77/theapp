@@ -12,3 +12,9 @@
 	{/each}
 </ul>
 
+
+<style>
+  h1 {
+	color: #ff3e00;
+  }
+  </style>
