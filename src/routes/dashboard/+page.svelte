@@ -1,6 +1,6 @@
 <script lang="ts">
+import CardTask from "$lib/components/CardTask.svelte";
   let { data } = $props();
-  console.log(data);
 </script>
 
 <svelte:head>
@@ -8,6 +8,7 @@
 </svelte:head>
 
 <main>
+
 
   {#if data.user}
     <p>Bienvenido, <strong>{data.user.nombre_de_usuario || data.user.email}</strong></p>
@@ -33,22 +34,8 @@
     <hr>
     <p class="is-hidden">Lista de tareas:</p>
     <ul>
-      {#each data.user.tasks as task, index}        
-        <li class="box is-rounded mb-2 has-background-dark p-2">
-          <div><strong class="has-text-weight-bold subtitle has-text-centered "><div>{task.title}</div></strong></div>
-          <hr>
-          <div class="is-flex pl-4"><strong>Tematica: </strong> <p class="has-text-white pl-4">{task.tema}</p></div>
-          <div class="is-flex pl-4"><strong>Numero de Niveles: </strong> <p class="has-text-white pl-4">{task.cantidad_de_niveles}</p></div>
-          <div class="is-flex pl-4"><strong>Status:</strong> <p class="has-text-white pl-4">{task.status}</p></div>
-          <ul>
-            {#each task.levels as level}
-              <div class="is-flex pl-4"><strong>Nivel: </strong> <p class="has-text-white pl-4">{level.content[task.status]}</p></div>
-              <div class="is-flex pl-4 "><strong>Cinematica: </strong> <p class="has-text-white pl-4">{level.cinematica[task.status]}</p></div>
-              <progress class="progress is-primary" value={task.status/100 } max={task.cantidad_de_niveles/100}></progress>
-            {/each}
-    <hr>
-          </ul>
-        </li>
+      {#each data.user.tasks as Task, index}        
+      <CardTask task={Task}/>  
       {/each}
     </ul>
     </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-	import Menu from '$lib/components/MenuNavegacion.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
 
 	let { children } = $props();
 </script>
@@ -13,6 +13,6 @@
 >
 </svelte:head>
 
-<Menu />
+<Navbar />
 
 {@render children()}
