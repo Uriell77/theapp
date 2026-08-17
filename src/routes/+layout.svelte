@@ -13,6 +13,16 @@
 >
 </svelte:head>
 
+<div class="principal">
 <Navbar />
-
 {@render children()}
+</div>
+
+<style>
+  .principal {
+	background: linear-gradient(to bottom, #1e1e1e, #3b8196);
+	min-height: 100vh;
+	color: white;
+  }
+
+</style>

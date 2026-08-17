@@ -49,12 +49,13 @@ import CardTask from "$lib/components/CardTask.svelte";
     <p>No se encontraron datos del usuario.</p>
   </div>
   {/if}
-<hr>
 
 </main>
 
 <style>
-  main { padding: 2rem; }
+  main { padding: 2rem;
+    
+  }
   .box { background: #f4f4f5; padding: 1rem; border-radius: 8px; color: #333; margin-top: 1rem; }
   strong { color: black || white; }
   .is-cristal {

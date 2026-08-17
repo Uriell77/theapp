@@ -34,4 +34,8 @@
   .componente-cardtask {
     display: block;
   }
+
+  img{
+    border-radius: 10px;
+  }
 </style>
