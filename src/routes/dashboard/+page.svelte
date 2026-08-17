@@ -39,8 +39,6 @@ import CardTask from "$lib/components/CardTask.svelte";
       {/each}
     </ul>
     </div>
-
-
       </div>
     </div>
 

@@ -21,7 +21,6 @@
               </div>
               <progress class="progress is-primary" value={task.status/100 } max={task.cantidad_de_niveles/100}></progress>
             {/each}
-    <hr>
           </ul>
         </li>
 
