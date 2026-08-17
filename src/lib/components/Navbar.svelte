@@ -1,8 +1,7 @@
 <script lang="ts">
   // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, data, ...props } = $props();
+  let { children, ...props } = $props();
   let activo= $derived("inicio");
-  console.log(data)
 
 
   function view(e){
