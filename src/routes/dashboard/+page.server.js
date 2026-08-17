@@ -8,10 +8,23 @@ export const load = async ({ cookies }) => {
 		throw redirect(303, '/auth');
 	}
 
-	// Ajusta: tabla y columna si no son exactamente "users" e "id"
-	const { data, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+	// Consulta anidada: trae el usuario, sus tareas, y los niveles de cada tarea
+	const { data, error } = await supabase
+		.from('users')
+		.select(`
+			*,
+			tasks (
+				*,
+				levels (
+					*
+				)
+			)
+		`)
+		.eq('id', userId)
+		.maybeSingle();
 
 	if (error) {
+		console.error('Error fetching data:', error);
 		return { status: 500, error: error.message };
 	}
 
