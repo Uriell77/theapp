@@ -14,7 +14,7 @@ import { onMount } from 'svelte';
   <!-- Aquí va la estructura de tu componente -->
 
 
-        <div class="box is-rounded mb-2 has-background-dark p-4 px-6 ">
+        <div class="box is-rounded mb-2 has-background-dark p-4 px-6 is-clickable">
           <div><strong class="has-text-weight-bold has-text-centered py-0"><p class="is-size-6-mobile py-0">{task.title}</p></strong></div>
           <hr class="py-0 my-0 mb-2">
           <div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
