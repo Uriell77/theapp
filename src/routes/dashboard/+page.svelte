@@ -1,6 +1,8 @@
 <script lang="ts">
 import CardTask from "$lib/components/CardTask.svelte";
+import SlidingPanel from "$lib/components/SlidingPanel.svelte";
   let { data } = $props();
+  let isPanelOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -9,6 +11,12 @@ import CardTask from "$lib/components/CardTask.svelte";
 
 <main class="section pt-1 px-2 pb-0 is-align-items-center is-justify-content-space-between">
 
+  <button class="button is-primary is-rounded floating-button" onclick={() => isPanelOpen = true}>+</button>
+
+  <SlidingPanel bind:isOpen={isPanelOpen}>
+    <h2>Nueva Visualización</h2>
+    <p>Contenido para la nueva visualización.</p>
+  </SlidingPanel>
 
   {#if data.user}
   <div class="nombre is-flex ">
@@ -38,7 +46,7 @@ import CardTask from "$lib/components/CardTask.svelte";
     <hr>
     <p class="is-hidden">Lista de tareas:</p>
     <ul>
-      {#each data.user.tasks as Task, index}        
+      {#each data.user.tasks as Task (Task.id)}        
       <CardTask task={Task}/>  
       {/each}
     </ul>
@@ -74,5 +82,15 @@ import CardTask from "$lib/components/CardTask.svelte";
     position: absolute;
     top: 1rem;
     right: 1rem;
+  }
+
+  .floating-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 100;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
   }
 </style>

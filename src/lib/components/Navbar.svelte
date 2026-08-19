@@ -49,5 +49,4 @@
     color: #fff !important;
   }
   .box { background: #f4f4f5; border-radius: 8px; color: #333; margin-top: 0rem; }
-  strong { color: black || white; }
 </style>
