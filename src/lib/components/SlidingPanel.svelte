@@ -1,24 +1,27 @@
 <script lang="ts">
-  let { children, isOpen = $bindable() } = $props();
+  let { children, isOpen = $bindable(), contenido } = $props();
+
 </script>
 
 <div class="panel-overlay {isOpen ? 'is-active' : ''}">
   <div class="panel-background" onclick={() => isOpen = false} role="button" aria-label="Close" aria-hidden="true"></div>
   <div class="panel-content">
     <button class="delete" onclick={() => isOpen = false} aria-label="Close"></button>
-    
-    <h2>Visualización Detallada</h2>
-    <p>Aquí puedes ver los detalles del elemento seleccionado.</p>
-    
-    <div class="info-box">
-      <p><strong>Estado:</strong> Activo</p>
-      <p><strong>Fecha:</strong> 19 de agosto, 2026</p>
+
+
+    <section class="section">
+      <div class="container">
+
+    <div class="card">
+      <div class="card-header">
+        <p class="card-header-title">header</p>
+      </div>
+        <div class="card-content">{contenido}</div>
     </div>
 
-    <div class="btn-group">
-      <button class="button-action" onclick={() => alert('Acción 1')}>Acción 1</button>
-      <button class="button-action" style="background: #f14668;" onclick={() => alert('Acción 2')}>Acción 2</button>
-    </div>
+      </div>
+    </section>
+    
 
     {@render children?.()}
   </div>

@@ -4,9 +4,11 @@ import SlidingPanel from "$lib/components/SlidingPanel.svelte";
 
   let { data } = $props();
   let isPanelOpen = $state(false);
+  let content2sliding = $state('text')
 
   function pulsado(e){
     console.log(e.target.id)
+    content2sliding = e.target.id
     isPanelOpen = true;
   }
 </script>
@@ -19,14 +21,14 @@ import SlidingPanel from "$lib/components/SlidingPanel.svelte";
 
   <button class="button is-primary is-rounded floating-button" id="botonmas" onclick={pulsado}>+</button>
 
-  <SlidingPanel bind:isOpen={isPanelOpen}>
+  <SlidingPanel bind:isOpen={isPanelOpen} contenido={content2sliding}>
     <h2>Nueva Visualización</h2>
     <p>Contenido para la nueva visualización.</p>
   </SlidingPanel>
 
   {#if data.user}
   <div class="nombre is-flex ">
-    <p class="mt-2 mr-2">Bienvenido, <strong >{data.user.nombre_de_usuario || data.user.email}</strong></p>
+    <p class="mt-2 mr-2">Bienvenido, <strong class="has-text-white has-text-weight-bold">{data.user.nombre_de_usuario || data.user.email}</strong></p>
     <figure class="image is-32x32 ml-4">
       <img class="is-rounded" src="/emptyavatar.avif" alt="Avatar del usuario" />
     </figure>
