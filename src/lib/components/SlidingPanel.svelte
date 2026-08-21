@@ -29,7 +29,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 98%;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -46,7 +46,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 100vw;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;
@@ -61,7 +61,7 @@
     background: rgba(255, 255, 255, 0.1); /* Ajuste del cristal */
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    width: 100%;
+    width: 100vw;
     height: 60vh;
     border-radius: 1rem 1rem 0 0;
     box-shadow: 0 -10px 25px rgba(0,0,0,0.3);

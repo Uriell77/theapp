@@ -13,7 +13,7 @@
 >
 </svelte:head>
 
-<div class="principal p-0">
+<div class="principal p-0 m-0">
 <Navbar />
 {@render children()}
 </div>
