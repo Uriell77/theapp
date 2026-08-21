@@ -46,7 +46,7 @@ import SlidingPanel from "$lib/components/SlidingPanel.svelte";
     </div>
 
     <div class="columns is-centered is-vcentered is-multiline is-mobile pt-0">
-      <div class="column is-half-desktop is-full-mobile pt-0 px-2 mx-1">
+      <div class="column is-half-desktop is-full-mobile pt-0 px-0 mx-1">
     <div class=" is-transparente box is-rounded has-background-dark p-2 is-cristal is-shadowless">
     <p class="subtitle is-weight-bold is-size-6-mobile has-text-white p-0 ">Tienes {data.user.tasks.length} tareas activas</p>
     <hr>
