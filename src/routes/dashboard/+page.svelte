@@ -15,7 +15,7 @@ import SlidingPanel from "$lib/components/SlidingPanel.svelte";
   <title>DASHBOARD</title>
 </svelte:head>
 
-<main class="section pt-1 px-2 pb-0 is-align-items-center is-justify-content-space-between">
+<main class="section pt-1 px-0 pb-0 is-align-items-center is-justify-content-space-between">
 
   <button class="button is-primary is-rounded floating-button" id="botonmas" onclick={pulsado}>+</button>
 
