@@ -1,6 +1,6 @@
 <script lang="ts">
-  let { children, isOpen = $bindable(), contenido } = $props();
-
+  import type { Snippet } from 'svelte';
+  let { isOpen = $bindable(), mode = 'form', taskData, children }: { isOpen: boolean, mode: 'form' | 'details', taskData?: any, children?: Snippet } = $props();
 </script>
 
 <div class="panel-overlay {isOpen ? 'is-active' : ''}">
@@ -8,24 +8,24 @@
   <div class="panel-content">
     <button class="delete" onclick={() => isOpen = false} aria-label="Close"></button>
 
-
     <section class="section">
       <div class="container">
-
-    <div class="card">
-      <div class="card-header">
-        <p class="card-header-title">header</p>
-      </div>
-        <div class="card-content">{contenido}</div>
-    </div>
-
+        {#if mode === 'form'}
+          <h2 class="title has-text-white">Nueva Tarea</h2>
+          {@render children?.()}
+        {:else if mode === 'details' && taskData}
+          <h2 class="title has-text-white">{taskData.title}</h2>
+          <div class="box">
+            <p><strong>Temática:</strong> {taskData.tema}</p>
+            <p><strong>Status:</strong> {taskData.status}</p>
+            <!-- Añadir más detalles aquí -->
+          </div>
+        {/if}
       </div>
     </section>
-    
-
-    {@render children?.()}
   </div>
 </div>
+
 
 <style>
   .panel-overlay {
@@ -92,18 +92,4 @@
     right: 1rem;
   }
 
-  .btn-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-  }
-
-  .button-action {
-    background: #3273dc;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-  }
 </style>

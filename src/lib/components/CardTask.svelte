@@ -1,16 +1,21 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-  // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, task, flag, ...props } = $props();
+  import { onMount, type Snippet } from 'svelte';
 
-  onMount(() => {
-  for(let i = 0; i < task.levels.length; i++){
-    console.log(i)
+  interface Props {
+    children?: Snippet;
+    task: any;
+    flag?: (e: any) => void;
+    [key: string]: any;
   }
-  });
+
+  // Definimos las propiedades del componente con la sintaxis de Svelte 5
+  let { children, task, flag, ...props }: Props = $props();
+
 
 </script>
 
+
+{#if task}
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="componente-cardtask is-clickable " id="{task.title}" onclick="{flag}">
@@ -37,15 +42,31 @@ import { onMount } from 'svelte';
             {/each}
             </div>
               <div class="container progresscontainer mt-2 step-progress-bar" style="--steps: 5; --current-step: 2;">
-              <progress class="progress is-primary is-rounded is-small py-0 my-0" value={task.status/100 } max={task.cantidad_de_niveles/100}></progress>
+              <progress class="is-hidden progress is-primary is-rounded is-small py-0 my-0" value={task.status/100 } max={task.cantidad_de_niveles/100}></progress>
+
+              {#each task.levels as lev}
+              {#each lev.content as le,index}
+              <div class="tag {index <= task.status ? "strong" : ""} px-4 py-0">
+              {index}
+              </div>                
+              {/each} 
+               <div class="tag {task.status == lev.content.length-1 ? "is-primary" :"is-danger"} has-text-weight-bold ml-4 is-pulled-right">{(task.status/(lev.content.length-1)*100)} % </div>
+              {/each}
                
             </div>
             </div>
         </div>
 
-
-  {@render children?.()}
 </div>
+
+{:else}
+
+<progress class="progress is-small is-primary" max="100"></progress>
+
+{/if}
+
+
+
 
 <style>
   /* Estilos locales encapsulados */
@@ -63,6 +84,10 @@ import { onMount } from 'svelte';
   strong{
     color: hsl(155, 81%, 41%);
   }
+  .strong{
+    background-color: hsl(155, 81%, 41%);
+    color: black;
+  }
 
   .clicker{
     background-color: transparent;
@@ -73,6 +98,7 @@ import { onMount } from 'svelte';
     z-index: 100;
     margin-bottom: 10px;
   }
+
 
 
 

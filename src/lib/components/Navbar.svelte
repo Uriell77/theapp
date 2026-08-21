@@ -1,13 +1,14 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, ...props } = $props();
-  let activo= $derived("inicio");
+  let { children, ...props }: { children?: Snippet } = $props();
+  let activo = $state("inicio");
 
 
-  function view(e){
-    console.log(e.target.id)
-    activo = e.target.id
-    console.log(activo)
+  function view(e: Event){
+    const target = e.target as HTMLElement;
+    activo = target.id;
   }
 
   
@@ -21,8 +22,8 @@
 
   <nav class=" is-small py-0" aria-label="breadcrumbs">
     <ul>
-      <li class="{activo=="inicio"? "is-active": ""} button is-small is-rounded" ><a onclick="{view}" id="inicio" href="/" >Inicio</a></li>
-      <li class="{activo=="dashboard"? "is-active": ""} button is-small is-rounded ml-1"><a onclick="{view}" id="dashboard" href="dashboard" >Dashboard</a></li>
+      <li class="{activo=="inicio"? "is-active": ""} button is-small is-rounded " ><a onclick="{view}" id="inicio" href="/" >Inicio</a></li>
+      <li class="{activo=="dashboard"? "is-active": ""} button is-small is-rounded ml-1 "><a onclick="{view}" id="dashboard" href="dashboard" >Dashboard</a></li>
 
     </ul>
   </nav>
