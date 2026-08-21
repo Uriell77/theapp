@@ -18,12 +18,12 @@
 {#if task}
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="componente-cardtask is-clickable " id="{task.title}" onclick="{flag}">
+<div class="componente-cardtask " id="{task.title}" onclick="{flag}">
   <!-- Aquí va la estructura de tu componente -->
 
 
-        <div class="box is-rounded mb-2 has-background-dark p-4 px-6 " >
-            <div class="box clicker m-0 is-shadowless" id="{task.title}"></div>
+        <div class="box is-rounded mb-2 has-background-dark p-4 px-6 " id="card" style="position: relative;">
+            <div class="clicker" id="{task.title}" onclick="{flag}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; cursor: pointer;"></div>
           <div><strong class="has-text-weight-bold has-text-centered py-0"><p class="is-size-6-mobile py-0">{task.title}</p></strong></div>
           <hr class="py-0 my-0 mb-2">
           <div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
@@ -89,15 +89,6 @@
     color: black;
   }
 
-  .clicker{
-    background-color: transparent;
-    position:fixed;
-    width: 93%;
-    height: 33%;
-    left:4%;
-    z-index: 100;
-    margin-bottom: 10px;
-  }
 
 
 
