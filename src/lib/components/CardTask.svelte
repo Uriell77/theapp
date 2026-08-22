@@ -46,11 +46,11 @@
 
               {#each task.levels as lev}
               {#each lev.content as le,index}
-              <div class="tag {index <= task.status ? "strong" : ""} px-4 py-0">
+              <div class="tag {index <= task.status ? "is-primary" : ""} px-4 py-0">
               {index}
               </div>                
               {/each} 
-               <div class="tag {task.status == lev.content.length-1 ? "is-primary" :"is-danger"} has-text-weight-bold ml-4 is-pulled-right">{(task.status/(lev.content.length-1)*100)} % </div>
+               <div class="tag {task.status == lev.content.length-1 ? "is-primary" :"is-danger"} has-text-weight-bold ml-4 is-pulled-right">{(task.status/(lev.content.length-1)*100).toFixed(2)} % </div>
               {/each}
                
             </div>
