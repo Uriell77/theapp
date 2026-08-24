@@ -3,6 +3,7 @@ import { onMount } from 'svelte';
 import CardTask from "$lib/components/CardTask.svelte";
 import SlidingPanel from "$lib/components/SlidingPanel.svelte";
 import { supabase } from "$lib/supabaseClient";
+import Estadistic from '$lib/components/Estadistic.svelte';
 
   let { data } = $props();
   // Hacemos que la lista de tareas sea reactiva y derivada de data
@@ -92,8 +93,19 @@ import { supabase } from "$lib/supabaseClient";
         </div>
         <div class="field">
           <label class="label has-text-white" for="taskTema">Temática</label>
-          <div class="control">
-            <input class="input" type="text" id="taskTema" bind:value={newTaskTema} placeholder="Ej: Programación" required />
+          <div class="control select is-fullwidth">
+          <select name="taskTema" id="tema" bind:value={newTaskTema}>
+            <option value="Guerra Espacial">Guerra Espacial</option>
+            <option value="Cruzada Medieval">Cruzada Medieval</option>
+            <option value="Apocalipsis Zombi">Apocalipsis Zombi</option>
+            <option value="Superheroes">Superheroes</option>
+            <option value="Agente Secreto">Agente Secreto</option>
+            <option value="Magia">Magia</option>
+            <option value="Guerra Mundial">Guerra Mundial</option>
+            <option value="Catastrofe Natural">Catastrofe Natural</option>
+            <option value="Vaqueros">Vaqueros</option>
+            <option value="Lovecraft">Lovecraft</option>
+          </select>
           </div>
         </div>
         <div class="field">
@@ -128,10 +140,12 @@ import { supabase } from "$lib/supabaseClient";
     </div>
     </div>
 
+    <Estadistic datas={data} tasks={tasks}/>
+
     <div class="columns is-centered is-vcentered is-multiline is-mobile pt-0">
-      <div class="column is-half-desktop is-full-mobile pt-0 px-0 mx-1">
-    <div class=" is-transparente box is-rounded has-background-dark p-2 is-cristal is-shadowless">
-    <p class="subtitle is-weight-bold is-size-6-mobile has-text-white p-0 ">Tienes {tasks.length} tareas activas</p>
+      <div class="column is-half-desktop is-full-mobile pt-0 px-0 mx-1 mt-0">
+    <div class=" is-transparente box is-rounded has-background-dark p-2 is-cristal is-shadowless pt-0 mt-0">
+    <p class="is-hidden p-0 m-0 subtitle is-weight-bold is-size-6-mobile has-text-white p-0 ">Tienes {tasks.length} tareas activas</p>
     <hr>
     <p class="is-hidden">Lista de tareas:</p>
     <ul>

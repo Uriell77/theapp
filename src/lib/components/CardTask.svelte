@@ -84,10 +84,6 @@
   strong{
     color: hsl(155, 81%, 41%);
   }
-  .strong{
-    background-color: hsl(155, 81%, 41%);
-    color: black;
-  }
 
 
 
