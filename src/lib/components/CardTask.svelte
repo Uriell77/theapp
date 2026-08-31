@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { onMount, type Snippet } from 'svelte';
+  import { type Snippet } from 'svelte';
+  import { enhance } from '$app/forms';
 
   interface Props {
     children?: Snippet;
@@ -10,15 +11,26 @@
 
   // Definimos las propiedades del componente con la sintaxis de Svelte 5
   let { children, task, flag, ...props }: Props = $props();
+  
+  let hasViewedLevel = $state(false);
 
-
+  // Exponer para que el padre lo llame
+  export function setViewed() {
+    hasViewedLevel = true;
+  }
+  
+  // Resetear cuando cambia la tarea
+  $effect(() => {
+    task.id;
+    hasViewedLevel = false;
+  });
 </script>
 
 
 {#if task}
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="componente-cardtask " id="{task.title}" onclick="{flag}">
+<div class="componente-cardtask " id="{task.title}">
   <!-- Aquí va la estructura de tu componente -->
 
 
@@ -32,13 +44,17 @@
           <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Numero de Niveles: </strong> <p class="has-text-white pl-4">{task.cantidad_de_niveles}</p></div>
           <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Status:</strong> <p class="has-text-white pl-4">{task.status}</p></div>
             {#each task.levels as level}
-              <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Nivel: </strong> <p class="has-text-white pl-4">{level.content[task.status]}</p></div>
+              <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Nivel: </strong> <p class="has-text-white pl-4">{level.content[task.status].split('.')[0]}</p></div>
             {/each}
             </div>
             <div class="column is-half is-flex is-justify-content-center is-align-items-center py-0 my-0">
             {#each task.levels as level} 
               <!-- <div class="is-hidden is-flex is-size-7-mobile is-justify-content-space-between py-0 my-0"><strong class="py-0 my-0">Cinematica: </strong> </div> -->
-              <figure class="image is-9by3 py-0 my-0 is-flex"><img class="py-0 my-0" src="{level.cinematica[task.status]}" alt="cinematica" /></figure>
+              {#if level.cinematica && level.cinematica[parseInt(task.status)]}
+                <figure class="image is-9by3 py-0 my-0 is-flex">
+                  <img class="py-0 my-0" src="{level.cinematica[parseInt(task.status)]}" alt="cinematica" loading="lazy" />
+                </figure>
+              {/if}
             {/each}
             </div>
               <div class="container progresscontainer mt-2 step-progress-bar" style="--steps: 5; --current-step: 2;">
@@ -55,6 +71,18 @@
                
             </div>
             </div>
+            
+            <form method="POST" action="?/advanceLevel" use:enhance>
+                <input type="hidden" name="taskId" value={task.id} />
+                <button 
+                  class="button is-small is-primary mt-2" 
+                  disabled={!hasViewedLevel} 
+                  type="submit"
+                  style="z-index: 101; position: relative;"
+                >
+                  Avanzar Nivel
+                </button>
+            </form>
         </div>
 
 </div>

@@ -1,7 +1,8 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
 
   // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, datas, tasks, ...props } = $props();
+  let { children, datas, tasks, ...props }: { children?: Snippet; datas: any; tasks: any; [key: string]: any } = $props();
 </script>
 
 
@@ -9,7 +10,7 @@
 <div class="column is-half-desktop is-full-mobile">
 
 
-<div class="componente-estadistic section mb-0 pb-0">
+<div class="componente-estadistic section mb-0 pb-0 pt-0">
   <!-- Aquí va la estructura de tu componente -->
    <div class="columns is-centered is-vcentered is-mobile">
     <div class="column half-desktop is-6-mobile">
