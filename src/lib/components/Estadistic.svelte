@@ -22,7 +22,7 @@
 
 <div class="columns is-centered is-mobile mb-4">
 	<div class="column is-half-desktop is-full-mobile">
-		<div class="grid is-col-min-7">
+		<div class="grid has-col-min-12">
 			<div class="cell">
 				<div class="box is-shadowless has-background-dark has-text-white stat-box">
 					<p class="is-size-7 is-uppercase has-text-grey-light">Usuario</p>
