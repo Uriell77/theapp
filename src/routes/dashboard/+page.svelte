@@ -152,6 +152,7 @@
 						/>
 					</div>
 				</div>
+				<input class="is-hidden" type="text" value="{data?.user?.nombre_de_usuario}" name="nombredeusuario"/>
 
 				<button class="button is-primary is-fullwidth mt-4" type="submit" disabled={isSubmitting}>
 					{isSubmitting ? 'Generando historia con IA...' : 'Guardar y Generar'}

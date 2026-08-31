@@ -50,6 +50,7 @@ export const actions: Actions = {
 		const title = (formData.get('title') as string)?.trim();
 		const tema = (formData.get('tema') as string)?.trim();
 		const cantidad_de_niveles = parseInt(formData.get('cantidad_de_niveles') as string, 10);
+		const nombre_de_usuario = (formData.get('nombredeusuario') as string)?.trim();
 
 		if (!title || !tema || isNaN(cantidad_de_niveles) || cantidad_de_niveles < 1) {
 			return fail(400, {
@@ -63,7 +64,7 @@ export const actions: Actions = {
 		// 1. Generar narrativa con Gemini (modelo gemini-3.6-flash)
 		let chapters: string[] = [];
 		try {
-			const prompt = `Eres un escritor experto en historias secuenciales. Genera una historia dividida exactamente en ${cantidad_de_niveles} capítulos para el proyecto "${title}" con temática "${tema}".
+			const prompt = `Eres un escritor experto en historias secuenciales. Genera una historia cuyo protagonista es ${nombre_de_usuario} dividida exactamente en ${cantidad_de_niveles} capítulos para el proyecto "${title}" con temática "${tema}".
 Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Capítulo 2: ..."] }. Solo devuelve el JSON sin formato extra.`;
 
 			let result;

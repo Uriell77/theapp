@@ -27,9 +27,9 @@
 				{:else if mode === 'details' && taskData}
 					<h2 class="title has-text-white">{taskData.title}</h2>
 					<div class="box pb-4 mb-4 is-transparent">
-						<p><strong>Temática:</strong> {taskData.tema}</p>
-						<p><strong>Niveles:</strong> {taskData.cantidad_de_niveles}</p>
-						<p><strong>Status:</strong> {taskData.status}</p>
+						<p class="is-hidden"><strong>Temática:</strong> {taskData.tema}</p>
+						<p class="is-hidden"><strong>Niveles:</strong> {taskData.cantidad_de_niveles}</p>
+						<p class="is-hidden"><strong>Status:</strong> {taskData.status}</p>
 
 						<p class="mt-4"><strong>Narrativa:</strong></p>
 						{#if taskData.levels && taskData.levels.length > 0}
