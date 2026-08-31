@@ -16,7 +16,7 @@
 		aria-label="Close"
 		aria-hidden="true"
 	></div>
-	<div class="panel-content">
+	<div class="panel-content px-2">
 		<button class="delete" onclick={() => (isOpen = false)} aria-label="Close"></button>
 
 		<section class="section p-0">
@@ -25,8 +25,8 @@
 					<h2 class="title has-text-white">Nueva Tarea</h2>
 					{@render children?.()}
 				{:else if mode === 'details' && taskData}
-					<h2 class="title has-text-white">{taskData.title}</h2>
-					<div class="box pb-4 mb-4 is-transparent">
+					<h2 class="title has-text-white is-capitalized">{taskData.title}</h2>
+					<div class="box pb-4 mb-4 pt-0 is-transparent">
 						<p class="is-hidden"><strong>Temática:</strong> {taskData.tema}</p>
 						<p class="is-hidden"><strong>Niveles:</strong> {taskData.cantidad_de_niveles}</p>
 						<p class="is-hidden"><strong>Status:</strong> {taskData.status}</p>
@@ -54,7 +54,7 @@
 											class="notification is-light p-3 mb-3"
 											style="border-left: 4px solid hsl(155, 81%, 41%); background-color: #f0fdf4;"
 										>
-											<p class="is-italic" style="color: #15803d;">
+											<p class="is-italic has-text-weight-bold" style="color: #000000;">
 												"{level.content[taskData.status]}"
 											</p>
 										</div>
