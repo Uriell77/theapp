@@ -54,7 +54,7 @@
 											class="notification is-light p-3 mb-3"
 											style="border-left: 4px solid hsl(155, 81%, 41%); background-color: #f0fdf4;"
 										>
-											<p class="is-italic has-text-weight-bold" style="color: #000000;">
+											<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #000000;">
 												"{level.content[taskData.status]}"
 											</p>
 										</div>
