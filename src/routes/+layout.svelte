@@ -7,22 +7,18 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
 </svelte:head>
 
 <div class="principal p-0 m-0">
-<Navbar />
-{@render children()}
+	<Navbar />
+	{@render children()}
 </div>
 
 <style>
-  .principal {
-	background: linear-gradient(to bottom, #1e1e1e, #3b8196);
-	color: white;
-	min-height: 100vh;
-  }
-
+	.principal {
+		background: linear-gradient(to bottom, #1e1e1e, #3b8196);
+		color: white;
+		min-height: 100vh;
+	}
 </style>

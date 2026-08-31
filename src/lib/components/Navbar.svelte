@@ -1,53 +1,62 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
 
-  // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, ...props }: { children?: Snippet } = $props();
-  let activo = $state("inicio");
+	let { children }: { children?: Snippet } = $props();
 
-
-  function view(e: Event){
-    const target = e.target as HTMLElement;
-    activo = target.id;
-  }
-
-  
+	let pathname = $derived(page.url.pathname);
+	let isDashboard = $derived(pathname.startsWith('/dashboard'));
+	let isAuth = $derived(pathname.startsWith('/auth'));
+	let isHome = $derived(pathname === '/');
 </script>
 
-<section class="section pt-1 px-2 py-0 is-align-items-center is-justify-content-space-between">
+<header class="navbar-wrapper px-4 pt-3 pb-1">
+	<div
+		class="componente-navbar is-cristal box py-2 px-4 is-flex is-justify-content-space-between is-align-items-center"
+	>
+		<nav class="breadcrumb is-small py-0 mb-0" aria-label="breadcrumbs">
+			<ul class="mb-0">
+				<li class={isHome ? 'is-active' : ''}>
+					<a class="button is-small is-rounded {isHome ? 'is-primary' : 'is-dark'}" href="/"
+						>Inicio</a
+					>
+				</li>
+				<li class={isDashboard ? 'is-active ml-2' : 'ml-2'}>
+					<a
+						class="button is-small is-rounded {isDashboard ? 'is-primary' : 'is-dark'}"
+						href="/dashboard">Dashboard</a
+					>
+				</li>
+			</ul>
+		</nav>
 
+		<div class="buttons are-small mb-0">
+			{#if isDashboard}
+				<form method="POST" action="/auth?/logout">
+					<button type="submit" class="button is-small is-danger is-outlined is-rounded">
+						Cerrar Sesión
+					</button>
+				</form>
+			{:else if !isAuth}
+				<a href="/auth" class="button is-small is-primary is-rounded"> Acceder </a>
+			{/if}
+		</div>
 
-<div class="componente-navbar is-cristal py-0 box">
-  <!-- Aquí va la estructura de tu componente -->
-
-  <nav class=" is-small py-0" aria-label="breadcrumbs">
-    <ul>
-      <li class="{activo=="inicio"? "is-active": ""} button is-small is-rounded " ><a onclick="{view}" id="inicio" href="/" >Inicio</a></li>
-      <li class="{activo=="dashboard"? "is-active": ""} button is-small is-rounded ml-1 "><a onclick="{view}" id="dashboard" href="dashboard" >Dashboard</a></li>
-
-    </ul>
-  </nav>
-
-
-  {@render children?.()}
-</div>
-
-</section>
-
-
+		{@render children?.()}
+	</div>
+</header>
 
 <style>
-  /* Estilos locales encapsulados */
-  .componente-navbar {
-    display: block;
-  }
+	.navbar-wrapper {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+	}
 
-  .is-cristal {
-    background: rgba(255, 255, 255, 0) !important;
-    backdrop-filter: blur(10px) !important;
-    border-radius: 8px !important;
-    padding: 1rem !important;
-    color: #fff !important;
-  }
-  .box { background: #f4f4f5; border-radius: 8px; color: #333; margin-top: 0rem; }
+	.is-cristal {
+		background: rgba(30, 30, 30, 0.75) !important;
+		backdrop-filter: blur(12px) !important;
+		border: 1px solid rgba(255, 255, 255, 0.15) !important;
+		border-radius: 12px !important;
+	}
 </style>

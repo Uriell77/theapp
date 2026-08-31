@@ -6,9 +6,7 @@ import { execSync } from 'child_process';
 const nombreRuta = process.argv[2];
 
 if (!nombreRuta) {
-	console.error(
-		'❌ Error: Debes indicar el nombre de la ruta. Ej: node generar-ruta.js facturas'
-	);
+	console.error('❌ Error: Debes indicar el nombre de la ruta. Ej: node generar-ruta.js facturas');
 	process.exit(1);
 }
 

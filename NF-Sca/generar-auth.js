@@ -7,33 +7,40 @@ const archivoSchema = path.join('src', 'lib', 'server', 'db', 'schema.ts');
 
 if (!fs.existsSync(carpetaAuth)) fs.mkdirSync(carpetaAuth, { recursive: true });
 
-// 1. Asegurar tabla en schema.ts
+// 1. Asegurar tabla en schema.ts para PostgreSQL
 function asegurarTablaUsuarios() {
-    let contenido = fs.readFileSync(archivoSchema, 'utf8');
+	if (!fs.existsSync(archivoSchema)) {
+		fs.mkdirSync(path.dirname(archivoSchema), { recursive: true });
+		fs.writeFileSync(
+			archivoSchema,
+			"import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';\n"
+		);
+	}
 
-    // Add Drizzle imports if not present
-    if (!contenido.includes("from 'drizzle-orm/sqlite-core'")) {
-        const imports = "import { sqliteTable, text } from 'drizzle-orm/sqlite-core';\n";
-        contenido = imports + contenido;
-    }
+	let contenido = fs.readFileSync(archivoSchema, 'utf8');
 
-    if (!contenido.includes('export const usuarios =')) {
-        const nuevaTabla = `
+	if (!contenido.includes("from 'drizzle-orm/pg-core'")) {
+		const imports = "import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';\n";
+		contenido = imports + contenido;
+	}
+
+	if (!contenido.includes('export const users =')) {
+		const nuevaTabla = `
 // Tabla de usuarios generada por generador-auth
-export const usuarios = sqliteTable('usuarios', {
+export const users = pgTable('users', {
     id: text('id').primaryKey(),
-    nombre_de_usuario: text('nombre_de_usuario'),
+    nombre_de_usuario: text('nombre_de_usuario').notNull(),
     email: text('email').unique().notNull(),
     password: text('password').notNull(),
-    createdAt: text('created_at').$defaultFn(() => new Date().toISOString())
+    createdAt: timestamp('created_at').defaultNow().notNull()
 });
 `;
-        contenido += nuevaTabla; // Append to content
-        fs.writeFileSync(archivoSchema, contenido); // Write updated content
-        console.log("  [DB] ✅ Tabla 'usuarios' añadida al esquema.");
-    } else {
-        console.log("  [DB] ⚠️  La tabla 'usuarios' ya existía en el esquema. Saltando...");
-    }
+		contenido += nuevaTabla;
+		fs.writeFileSync(archivoSchema, contenido);
+		console.log("  [DB] ✅ Tabla 'users' añadida al esquema.");
+	} else {
+		console.log("  [DB] ℹ️  La tabla 'users' ya existe en el esquema.");
+	}
 }
 
 // 2. Generar archivo de validaciones con Zod
@@ -54,17 +61,25 @@ export const esquemaLogin = z.object({
     email: z.string().email("El email no es válido."),
     password: z.string().min(1, "La contraseña es obligatoria.")
 });
-`;
+`.trim();
 
-// 2. Generar Backend
+// 3. Generar Backend
 const serverCode = `
 import { db } from '$lib/server/db';
-import { usuarios } from '$lib/server/schema';
+import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { fail, redirect } from '@sveltejs/kit';
 import bcrypt from 'bcryptjs';
-import type { Actions } from './$types';
-import { esquemaRegistro, esquemaLogin } from './validaciones'; // Import Zod schemas
+import type { Actions, PageServerLoad } from './$types';
+import { esquemaRegistro } from './validaciones';
+import { setSessionCookie, clearSessionCookie } from '$lib/server/auth';
+
+export const load: PageServerLoad = async ({ locals }) => {
+    if (locals.user) {
+        throw redirect(303, '/dashboard');
+    }
+    return {};
+};
 
 export const actions: Actions = {
     registrar: async ({ request }) => {
@@ -77,7 +92,7 @@ export const actions: Actions = {
             return fail(400, { 
                 error: 'Error de validación', 
                 errors: errors,
-                data: dataRaw // Return data to pre-fill form
+                data: dataRaw
             });
         }
 
@@ -85,7 +100,7 @@ export const actions: Actions = {
         const passwordHash = await bcrypt.hash(password, 10);
         
         try {
-            await db.insert(usuarios).values({ 
+            await db.insert(users).values({ 
                 id: crypto.randomUUID(), 
                 email, 
                 password: passwordHash,
@@ -100,19 +115,23 @@ export const actions: Actions = {
         const formData = await request.formData();
         const email = formData.get('email')?.toString() || '';
         const password = formData.get('password')?.toString() || '';
-        const user = await db.select().from(usuarios).where(eq(usuarios.email, email)).get();
+        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return fail(400, { error: 'Credenciales incorrectas.' });
         }
-        cookies.set('session', user.id, { path: '/', httpOnly: true, secure: true, sameSite: 'lax', maxAge: 60 * 60 * 24 });
+        setSessionCookie(cookies, user.id);
         throw redirect(303, '/dashboard');
+    },
+    logout: async ({ cookies }) => {
+        clearSessionCookie(cookies);
+        throw redirect(303, '/auth');
     }
 };
-`;
+`.trim();
 
-// 3. Generar Frontend
+// 4. Generar Frontend
 const svelteCode = `
-<script>
+<script lang="ts">
     import { page } from '$app/state';
     import { enhance } from '$app/forms';
     import { esquemaRegistro, esquemaLogin } from './validaciones';
@@ -122,20 +141,28 @@ const svelteCode = `
     let esLogin = $state(page.url.searchParams.get('login') === 'true');
 
     let valores = $state({
-        nombre_de_usuario: form?.data?.nombre_de_usuario || '',
-        email: form?.data?.email || '',
-        password: form?.data?.password || '',
-        confirmar_password: form?.data?.confirmar_password || ''
+        nombre_de_usuario: '',
+        email: '',
+        password: '',
+        confirmar_password: ''
     });
 
-    // Reactive validation for registration form
+    $effect(() => {
+        const formData = (form as any)?.data;
+        if (formData) {
+            valores.nombre_de_usuario = formData.nombre_de_usuario || '';
+            valores.email = formData.email || '';
+            valores.password = formData.password || '';
+            valores.confirmar_password = formData.confirmar_password || '';
+        }
+    });
+
     let erroresRegistro = $derived.by(() => {
         const validacion = esquemaRegistro.safeParse(valores);
         if (validacion.success) return {};
         return validacion.error.flatten().fieldErrors;
     });
 
-    // Reactive validation for login form
     let erroresLogin = $derived.by(() => {
         const validacion = esquemaLogin.safeParse({ email: valores.email, password: valores.password });
         if (validacion.success) return {};
@@ -148,16 +175,6 @@ const svelteCode = `
     function resetForm() {
         valores = { nombre_de_usuario: '', email: '', password: '', confirmar_password: '' };
     }
-
-    // Handle form submission success
-    const handleEnhance = () => {
-        return async ({ result, update }) => {
-            if (result.type === 'success') {
-                resetForm();
-            }
-            await update();
-        };
-    };
 </script>
 
 <div class="auth-container">
@@ -168,7 +185,7 @@ const svelteCode = `
     {/if}
 
     {#if esLogin}
-        <form method="POST" action="?/login" use:enhance={handleEnhance}>
+        <form method="POST" action="?/login" use:enhance>
             <div class="field-group">
                 <label for="login-email">Correo</label>
                 <input type="email" id="login-email" name="email" placeholder="correo@ejemplo.com" bind:value={valores.email} />
@@ -186,7 +203,7 @@ const svelteCode = `
             <button type="submit" disabled={bloqueadoLogin}>Entrar</button>
         </form>
     {:else}
-        <form method="POST" action="?/registrar" use:enhance={handleEnhance}>
+        <form method="POST" action="?/registrar" use:enhance>
             <div class="field-group">
                 <label for="registro-nombre_de_usuario">Nombre de usuario</label>
                 <input type="text" id="registro-nombre_de_usuario" name="nombre_de_usuario" placeholder="Tu nombre de usuario" bind:value={valores.nombre_de_usuario} />
@@ -229,89 +246,62 @@ const svelteCode = `
         max-width: 400px;
         margin: 50px auto;
         padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: #1e1e1e;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: white;
         text-align: center;
     }
-    h1 {
-        margin-bottom: 20px;
-        color: #333;
-    }
-    .field-group {
-        margin-bottom: 15px;
-        text-align: left;
-    }
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #555;
-    }
-    input[type="email"],
-    input[type="password"],
-    input[type="text"] {
-        width: calc(100% - 22px); /* Adjust for padding and border */
+    h1 { margin-bottom: 20px; color: white; }
+    .field-group { margin-bottom: 15px; text-align: left; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #ddd; }
+    input[type="email"], input[type="password"], input[type="text"] {
+        width: 100%;
         padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        background: #2a2a2a;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 6px;
         box-sizing: border-box;
     }
-    .err {
-        color: #e74c3c;
-        font-size: 0.85em;
-        margin-top: 5px;
-        display: block;
-    }
-    .error {
-        color: #e74c3c;
-        background-color: #fdd;
-        border: 1px solid #fcc;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-    }
+    .err { color: #e74c3c; font-size: 0.85em; margin-top: 5px; display: block; }
+    .error { color: #e74c3c; background-color: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; padding: 10px; border-radius: 6px; margin-bottom: 15px; }
     button[type="submit"] {
-        background-color: #007bff;
+        background-color: hsl(155, 81%, 41%);
         color: white;
         padding: 10px 15px;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         cursor: pointer;
         font-size: 1em;
+        font-weight: bold;
         width: 100%;
         margin-top: 10px;
     }
-    button[type="submit"]:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-    }
+    button[type="submit"]:disabled { background-color: #555; cursor: not-allowed; }
     .toggle {
         background: none;
         border: none;
-        color: #007bff;
+        color: hsl(155, 81%, 41%);
         cursor: pointer;
         margin-top: 15px;
         font-size: 0.9em;
         text-decoration: underline;
     }
-    .toggle:hover {
-        color: #0056b3;
-    }
 </style>
-`;
+`.trim();
 
 // Ejecución
 try {
-    asegurarTablaUsuarios();
-    fs.writeFileSync(path.join(carpetaAuth, 'validaciones.ts'), validacionesCode); // Create validaciones.ts
-    fs.writeFileSync(path.join(carpetaAuth, '+page.server.ts'), serverCode);
-    fs.writeFileSync(path.join(carpetaAuth, '+page.svelte'), svelteCode);
-    
-    console.log("  [App] 🔨 Sincronizando base de datos...");
-    execSync('npx drizzle-kit push', { stdio: 'inherit' });
-    
-    console.log("\n🎉 Módulo de Auth creado exitosamente en /auth");
+	asegurarTablaUsuarios();
+	fs.writeFileSync(path.join(carpetaAuth, 'validaciones.ts'), validacionesCode);
+	fs.writeFileSync(path.join(carpetaAuth, '+page.server.ts'), serverCode);
+	fs.writeFileSync(path.join(carpetaAuth, '+page.svelte'), svelteCode);
+
+	console.log('  [App] 🔨 Sincronizando base de datos con Drizzle...');
+	execSync('npx drizzle-kit push', { stdio: 'inherit' });
+
+	console.log('\n🎉 Módulo de Auth creado exitosamente en /auth (PostgreSQL)');
 } catch (err) {
-    console.error("❌ Error en la generación:", err.message);
+	console.error('❌ Error en la generación:', err.message);
 }

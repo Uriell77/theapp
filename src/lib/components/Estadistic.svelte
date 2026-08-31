@@ -1,72 +1,73 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 
-  // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, datas, tasks, ...props }: { children?: Snippet; datas: any; tasks: any; [key: string]: any } = $props();
+	interface Props {
+		children?: Snippet;
+		datas: any;
+		tasks: any[];
+		[key: string]: any;
+	}
+
+	let { children, datas, tasks = [] }: Props = $props();
+
+	let completedTasks = $derived(
+		tasks.filter((t) => {
+			const statusNum = parseInt(t.status, 10) || 0;
+			return statusNum >= t.cantidad_de_niveles - 1;
+		}).length
+	);
+
+	let activeTasks = $derived(tasks.length - completedTasks);
 </script>
 
+<div class="columns is-centered is-mobile mb-4">
+	<div class="column is-half-desktop is-full-mobile">
+		<div class="grid is-col-min-12">
+			<div class="cell">
+				<div class="box is-shadowless has-background-dark has-text-white stat-box">
+					<p class="is-size-7 is-uppercase has-text-grey-light">Usuario</p>
+					<p class="is-size-6 has-text-weight-bold has-text-primary">
+						{datas?.user?.nombre_de_usuario || 'Anónimo'}
+					</p>
+					<p class="is-size-7 has-text-grey-lighter is-truncated">{datas?.user?.email || ''}</p>
+				</div>
+			</div>
 
-<div class="columns is-centered is-mobile">
-<div class="column is-half-desktop is-full-mobile">
+			<div class="cell">
+				<div class="box is-shadowless has-background-dark has-text-white stat-box">
+					<p class="is-size-7 is-uppercase has-text-grey-light">Total Proyectos</p>
+					<p class="is-size-4 has-text-weight-bold has-text-info">{tasks.length}</p>
+				</div>
+			</div>
 
+			<div class="cell">
+				<div class="box is-shadowless has-background-dark has-text-white stat-box">
+					<p class="is-size-7 is-uppercase has-text-grey-light">En Progreso</p>
+					<p class="is-size-4 has-text-weight-bold has-text-warning">{activeTasks}</p>
+				</div>
+			</div>
 
-<div class="componente-estadistic section mb-0 pb-0 pt-0">
-  <!-- Aquí va la estructura de tu componente -->
-   <div class="columns is-centered is-vcentered is-mobile">
-    <div class="column half-desktop is-6-mobile">
-      <div class="box is-shadowless has-background-dark ">
-        <div class="content">
-          <p class="is-size-7-mobile">Usuario: <strong>{datas.user.nombre_de_usuario}</strong></p> 
-          <p class="is-size-7-mobile">Email: <strong>{datas.user.email}</strong></p> 
-        </div>
-      </div>
-    </div>
-    <div class="column half">
-      <div class="box is-shadowless has-background-dark"> 
-        <div class="content">
-          {tasks.id}
-        </div>
-      </div>
-    </div>
-    </div>
-    <div class="columns is-centered is-vcentered is-mobile">
-    <div class="column half">
-      <div class="box is-shadowless has-background-dark">
-        <div class="content">
-            <p class="is-size-7-mobile">Tareas activas: <strong>{tasks.length}</strong></p>
-        </div>
-      </div>
-    </div>
-    <div class="column half">
-      <div class="box is-shadowless has-background-dark">
-        <div class="content">
-          <p class="is-size-7-mobile"><strong>""</strong></p>
-        </div>
-      </div>
-
-    </div>
-   </div>
-  {@render children?.()}
+			<div class="cell">
+				<div class="box is-shadowless has-background-dark has-text-white stat-box">
+					<p class="is-size-7 is-uppercase has-text-grey-light">Completadas</p>
+					<p class="is-size-4 has-text-weight-bold has-text-success">{completedTasks}</p>
+				</div>
+			</div>
+		</div>
+		{@render children?.()}
+	</div>
 </div>
-
-</div>
-</div>
-
 
 <style>
-  /* Estilos locales encapsulados */
-  .componente-estadistic {
-    background-color: transparent;
-  }
+	.stat-box {
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		height: 100%;
+	}
 
-  .content{
-    height: 10vh;
-    width: 20vw;
-  }
-
-  .box{
-    margin: -7px;
-
-  }
-
+	.is-truncated {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 </style>

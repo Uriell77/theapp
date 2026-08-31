@@ -8,3 +8,9 @@ bun.lockb
 # Miscellaneous
 /static/
 /drizzle/
+.agents/
+.gemini/
+.svelte-kit/
+.vercel/
+skills-lock.json
+

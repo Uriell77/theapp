@@ -5,8 +5,10 @@ import path from 'path';
 const nombreComponente = process.argv[2];
 
 if (!nombreComponente) {
-    console.error("❌ Error: Debes indicar el nombre del componente. Ej: node generar-componente.js Boton");
-    process.exit(1);
+	console.error(
+		'❌ Error: Debes indicar el nombre del componente. Ej: node generar-componente.js Boton'
+	);
+	process.exit(1);
 }
 
 // Aseguramos que la primera letra sea mayúscula (estándar para componentes Svelte)
@@ -37,19 +39,19 @@ const plantillaComponente = `
 `.trim();
 
 try {
-    // 4. Verificar si la carpeta 'src/lib/components' existe; si no, crearla
-    if (!fs.existsSync(carpetaComponents)) {
-        fs.mkdirSync(carpetaComponents, { recursive: true });
-        console.log(`📂 Carpeta creada: ${carpetaComponents}`);
-    }
+	// 4. Verificar si la carpeta 'src/lib/components' existe; si no, crearla
+	if (!fs.existsSync(carpetaComponents)) {
+		fs.mkdirSync(carpetaComponents, { recursive: true });
+		console.log(`📂 Carpeta creada: ${carpetaComponents}`);
+	}
 
-    // 5. Verificar si el archivo ya existe antes de escribir
-    if (!fs.existsSync(archivoCompleto)) {
-        fs.writeFileSync(archivoCompleto, plantillaComponente);
-        console.log(`✅ ¡Éxito! Componente creado en: ${archivoCompleto}`);
-    } else {
-        console.warn(`\n⚠️  El componente "${nombreFormateado}.svelte" ya existe en esta ubicación.`);
-    }
+	// 5. Verificar si el archivo ya existe antes de escribir
+	if (!fs.existsSync(archivoCompleto)) {
+		fs.writeFileSync(archivoCompleto, plantillaComponente);
+		console.log(`✅ ¡Éxito! Componente creado en: ${archivoCompleto}`);
+	} else {
+		console.warn(`\n⚠️  El componente "${nombreFormateado}.svelte" ya existe en esta ubicación.`);
+	}
 } catch (err) {
-    console.error(`\n❌ Error al generar el componente: ${err.message}`);
+	console.error(`\n❌ Error al generar el componente: ${err.message}`);
 }

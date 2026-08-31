@@ -5,44 +5,85 @@ const nombreForm = process.argv[2];
 const camposRaw = process.argv.slice(3); // Captura todos los argumentos después del nombre
 
 if (!nombreForm || camposRaw.length === 0) {
-    console.error("❌ Error: Uso correcto: node generar-formulario.js NombreForm campo1:tipo campo2:tipo");
-    console.error("💡 Ejemplo: node generar-formulario.js Registro email:email telefono:tel contraseña:password");
-    process.exit(1);
+	console.error(
+		'❌ Error: Uso correcto: node generar-formulario.js NombreForm campo1:tipo campo2:tipo'
+	);
+	console.error(
+		'💡 Ejemplo: node generar-formulario.js Registro email:email telefono:tel contraseña:password'
+	);
+	process.exit(1);
 }
 
-const nombreFormateado = nombreForm.charAt(0).toUpperCase() + nombreForm.slice(1) + "Form";
+const nombreFormateado = nombreForm.charAt(0).toUpperCase() + nombreForm.slice(1) + 'Form';
 const carpetaComponents = path.join('src', 'lib', 'components');
 const archivoCompleto = path.join(carpetaComponents, `${nombreFormateado}.svelte`);
 
 // Diccionario inteligente para placeholders, iconos y validaciones de formato
 const configuracionCampos = {
-    email: { icono: 'Mail', placeholder: 'ejemplo@correo.com', regex: '/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/', error: 'Email inválido' },
-    tel: { icono: 'Phone', placeholder: '0412-1234567', regex: '/^04[124626]\\d{7}$/', error: 'Formato de teléfono inválido (11 dígitos)' },
-    password: { icono: 'Lock', placeholder: '••••••••', regex: '/^.{6,}$/', error: 'Mínimo 6 caracteres' },
-    texto: { icono: 'User', placeholder: 'Escribe aquí...', regex: '/^.+$/', error: 'Este campo es requerido' },
-    numero: { icono: 'Hash', placeholder: '0.00', regex: '/^\\d+(\\.\\d+)?$/', error: 'Debe ser un número válido' }
+	email: {
+		icono: 'Mail',
+		placeholder: 'ejemplo@correo.com',
+		regex: '/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/',
+		error: 'Email inválido'
+	},
+	tel: {
+		icono: 'Phone',
+		placeholder: '0412-1234567',
+		regex: '/^04[124626]\\d{7}$/',
+		error: 'Formato de teléfono inválido (11 dígitos)'
+	},
+	password: {
+		icono: 'Lock',
+		placeholder: '••••••••',
+		regex: '/^.{6,}$/',
+		error: 'Mínimo 6 caracteres'
+	},
+	texto: {
+		icono: 'User',
+		placeholder: 'Escribe aquí...',
+		regex: '/^.+$/',
+		error: 'Este campo es requerido'
+	},
+	numero: {
+		icono: 'Hash',
+		placeholder: '0.00',
+		regex: '/^\\d+(\\.\\d+)?$/',
+		error: 'Debe ser un número válido'
+	}
 };
 
 // Procesar los campos enviados por la terminal
-const campos = camposRaw.map(item => {
-    const [nombre, tipo] = item.split(':');
-    const config = configuracionCampos[tipo] || configuracionCampos['texto'];
-    return { nombre, tipo: tipo === 'texto' ? 'text' : tipo === 'numero' ? 'number' : tipo, ...config };
+const campos = camposRaw.map((item) => {
+	const [nombre, tipo] = item.split(':');
+	const config = configuracionCampos[tipo] || configuracionCampos['texto'];
+	return {
+		nombre,
+		tipo: tipo === 'texto' ? 'text' : tipo === 'numero' ? 'number' : tipo,
+		...config
+	};
 });
 
 // Generar el estado inicial para Svelte 5
-const estadoInicial = campos.map(c => `    ${c.nombre}: ''`).join(',\n');
+const estadoInicial = campos.map((c) => `    ${c.nombre}: ''`).join(',\n');
 
 // Generar las validaciones reactivas con $derived
-const logicaValidacion = campos.map(c => {
-    return `  let error${c.nombre.charAt(0).toUpperCase() + c.nombre.slice(1)} = $derived(\n    valores.${c.nombre} && !${c.regex}.test(valores.${c.nombre}) ? '${c.error}' : ''\n  );`;
-}).join('\n');
+const logicaValidacion = campos
+	.map((c) => {
+		return `  let error${c.nombre.charAt(0).toUpperCase() + c.nombre.slice(1)} = $derived(\n    valores.${c.nombre} && !${c.regex}.test(valores.${c.nombre}) ? '${c.error}' : ''\n  );`;
+	})
+	.join('\n');
 
 // Condición para habilitar el botón de envío
-const condicionBoton = campos.map(c => `!valores.${c.nombre} || error${c.nombre.charAt(0).toUpperCase() + c.nombre.slice(1)}`).join(' || ');
+const condicionBoton = campos
+	.map(
+		(c) => `!valores.${c.nombre} || error${c.nombre.charAt(0).toUpperCase() + c.nombre.slice(1)}`
+	)
+	.join(' || ');
 
 // Generar el HTML de los inputs del formulario
-const htmlInputs = campos.map(c => `
+const htmlInputs = campos
+	.map(
+		(c) => `
   <div class="form-group">
     <label for="${c.nombre}">${c.nombre.toUpperCase()}</label>
     <div class="input-container">
@@ -59,7 +100,9 @@ const htmlInputs = campos.map(c => `
       <span class="error-text">{error${c.nombre.charAt(0).toUpperCase() + c.nombre.slice(1)}}</span>
     {/if}
   </div>
-`).join('\n');
+`
+	)
+	.join('\n');
 
 // Plantilla final del componente Svelte 5
 const plantillaFormulario = `
@@ -110,15 +153,15 @@ ${logicaValidacion}
 
 // Crear carpeta si no existe y escribir archivo
 try {
-    if (!fs.existsSync(carpetaComponents)) {
-        fs.mkdirSync(carpetaComponents, { recursive: true });
-    }
-    if (!fs.existsSync(archivoCompleto)) {
-        fs.writeFileSync(archivoCompleto, plantillaFormulario);
-        console.log(`\n🔥 ¡Formulario inteligente creado con éxito en: ${archivoCompleto}`);
-    } else {
-        console.warn(`\n⚠️ El archivo ${nombreFormateado}.svelte ya existe.`);
-    }
+	if (!fs.existsSync(carpetaComponents)) {
+		fs.mkdirSync(carpetaComponents, { recursive: true });
+	}
+	if (!fs.existsSync(archivoCompleto)) {
+		fs.writeFileSync(archivoCompleto, plantillaFormulario);
+		console.log(`\n🔥 ¡Formulario inteligente creado con éxito en: ${archivoCompleto}`);
+	} else {
+		console.warn(`\n⚠️ El archivo ${nombreFormateado}.svelte ya existe.`);
+	}
 } catch (err) {
-    console.error(`\n❌ Error: ${err.message}`);
+	console.error(`\n❌ Error: ${err.message}`);
 }

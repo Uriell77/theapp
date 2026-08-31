@@ -6,111 +6,126 @@ const nombreModulo = process.argv[2];
 const camposRaw = process.argv.slice(3);
 
 if (!nombreModulo || camposRaw.length === 0) {
-    console.error("❌ Error: Uso correcto: node generar-modulo-completo.js nombrePlural campo1:tipo campo2:tipo");
-    console.error("💡 Ejemplo: node generar-modulo-completo.js productos nombre:texto precio:numero stock:numero");
-    process.exit(1);
+	console.error(
+		'❌ Error: Uso correcto: node newModuloCompleto.js nombrePlural campo1:tipo campo2:tipo'
+	);
+	console.error(
+		'💡 Ejemplo: node newModuloCompleto.js productos nombre:texto precio:numero stock:numero'
+	);
+	process.exit(1);
 }
 
 // Formateadores de texto lógicos
 const tablaPlural = nombreModulo.toLowerCase();
-const modeloSingular = tablaPlural.endsWith('es') ? tablaPlural.slice(0, -2) : (tablaPlural.endsWith('s') ? tablaPlural.slice(0, -1) : tablaPlural);
+const modeloSingular = tablaPlural.endsWith('es')
+	? tablaPlural.slice(0, -2)
+	: tablaPlural.endsWith('s')
+		? tablaPlural.slice(0, -1)
+		: tablaPlural;
 const modeloCapitalizado = modeloSingular.charAt(0).toUpperCase() + modeloSingular.slice(1);
 
 const carpetaRuta = path.join('src', 'routes', tablaPlural);
-const archivoSchema = path.join('src', 'lib', 'server', 'schema.ts');
+const archivoSchema = path.join('src', 'lib', 'server', 'db', 'schema.ts');
 
-// Diccionario de tipos para SQLite (Drizzle) y UI
+// Diccionario de tipos para PostgreSQL (Drizzle) y UI
 const configTipos = {
-    texto: { drizzle: "text('${nombre}')", tipoInput: "text", placeholder: "Escribe aquí..." },
-    numero: { drizzle: "real('${nombre}')", tipoInput: "number", placeholder: "0.00" },
-    email: { drizzle: "text('${nombre}')", tipoInput: "email", placeholder: "correo@ejemplo.com" },
-    tel: { drizzle: "text('${nombre}')", tipoInput: "tel", placeholder: "04121234567" }
+	texto: { drizzle: "text('${nombre}')", tipoInput: 'text', placeholder: 'Escribe aquí...' },
+	numero: { drizzle: "real('${nombre}')", tipoInput: 'number', placeholder: '0.00' },
+	email: { drizzle: "text('${nombre}')", tipoInput: 'email', placeholder: 'correo@ejemplo.com' },
+	tel: { drizzle: "text('${nombre}')", tipoInput: 'tel', placeholder: '04121234567' }
 };
 
 // Procesar los argumentos de la terminal
-const campos = camposRaw.map(item => {
-    const [nombre, tipo] = item.split(':');
-    const config = configTipos[tipo] || configTipos['texto'];
-    return { nombre, tipoOriginal: tipo, ...config };
+const campos = camposRaw.map((item) => {
+	const [nombre, tipo] = item.split(':');
+	const config = configTipos[tipo] || configTipos['texto'];
+	return { nombre, tipoOriginal: tipo, ...config };
 });
 
-console.log(`\n⚙️  Iniciando scaffolding completo para el módulo: "${tablaPlural}"...`);
+console.log(`\n⚙️  Iniciando scaffolding completo para el módulo PostgreSQL: "${tablaPlural}"...`);
 
 // ==========================================
-// PASO 1: AGREGAR LA TABLA AL SCHEMA.TS (DB)
+// PASO 1: AGREGAR LA TABLA AL SCHEMA.TS (PostgreSQL)
 // ==========================================
 try {
-    if (fs.existsSync(archivoSchema)) {
-        let contenidoSchema = fs.readFileSync(archivoSchema, 'utf8');
+	if (fs.existsSync(archivoSchema)) {
+		let contenidoSchema = fs.readFileSync(archivoSchema, 'utf8');
 
-        if (!contenidoSchema.includes("from 'drizzle-orm/sqlite-core'")) {
-            const imports = "import { sqliteTable, text, real } from 'drizzle-orm/sqlite-core';\n";
-            fs.writeFileSync(archivoSchema, imports + contenidoSchema);
-        }
-        
-        if (!contenidoSchema.includes(`export const ${tablaPlural} =`)) {
-            let definicionTabla = `\n\n// Tabla ${tablaPlural} generada automáticamente\n`;
-            definicionTabla += `export const ${tablaPlural} = sqliteTable('${tablaPlural}', {\n`;
-            definicionTabla += `  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),\n`;
-            
-            campos.forEach(c => {
-                const filaDrizzle = c.drizzle.replace('${nombre}', c.nombre);
-                definicionTabla += `  ${c.nombre}: ${filaDrizzle},\n`;
-            });
-            
-            definicionTabla += `  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull()\n`;
-            definicionTabla += `});`;
+		if (!contenidoSchema.includes("from 'drizzle-orm/pg-core'")) {
+			const imports = "import { pgTable, text, real, timestamp } from 'drizzle-orm/pg-core';\n";
+			fs.writeFileSync(archivoSchema, imports + contenidoSchema);
+		}
 
-            fs.appendFileSync(archivoSchema, definicionTabla);
-            console.log(`  [DB] ✅ Tabla '${tablaPlural}' añadida a schema.ts`);
-        } else {
-            console.log(`  [DB] ⚠️  La tabla '${tablaPlural}' ya existía en el esquema. Saltando...`);
-        }
-    } else {
-        console.error(`  [DB] ❌ Error: No se encontró el archivo ${archivoSchema}. Configúralo primero.`);
-        process.exit(1);
-    }
+		if (!contenidoSchema.includes(`export const ${tablaPlural} =`)) {
+			let definicionTabla = `\n\n// Tabla ${tablaPlural} generada automáticamente\n`;
+			definicionTabla += `export const ${tablaPlural} = pgTable('${tablaPlural}', {\n`;
+			definicionTabla += `  id: text('id').primaryKey(),\n`;
+
+			campos.forEach((c) => {
+				const filaDrizzle = c.drizzle.replace('${nombre}', c.nombre);
+				definicionTabla += `  ${c.nombre}: ${filaDrizzle},\n`;
+			});
+
+			definicionTabla += `  createdAt: timestamp('created_at').defaultNow().notNull()\n`;
+			definicionTabla += `});`;
+
+			fs.appendFileSync(archivoSchema, definicionTabla);
+			console.log(`  [DB] ✅ Tabla '${tablaPlural}' añadida a schema.ts`);
+		} else {
+			console.log(`  [DB] ⚠️  La tabla '${tablaPlural}' ya existía en el esquema. Saltando...`);
+		}
+	} else {
+		console.error(`  [DB] ❌ Error: No se encontró el archivo ${archivoSchema}.`);
+		process.exit(1);
+	}
 } catch (err) {
-    console.error(`  [DB] ❌ Error al modificar el esquema: ${err.message}`);
-    process.exit(1);
+	console.error(`  [DB] ❌ Error al modificar el esquema: ${err.message}`);
+	process.exit(1);
 }
 
 // ==========================================
-// PASO 1.5: NUEVO GENERADOR DE ESQUEMA ZOD
+// PASO 1.5: GENERADOR DE ESQUEMA ZOD
 // ==========================================
-const camposZod = campos.map(c => {
-    if (c.tipoInput === 'number') {
-        return `  ${c.nombre}: z.coerce.number({ invalid_type_error: "Debe ser un número válido" })`;
-    } else if (c.tipoOriginal === 'email') {
-        return `  ${c.nombre}: z.string().email("Debe ser un correo electrónico válido")`;
-    } else if (c.tipoOriginal === 'tel') {
-        return `  ${c.nombre}: z.string().regex(/^04(12|14|16|24|26)\\d{7}$/, "Teléfono inválido (11 dígitos, ej: 0412...)")`;
-    }
-    return `  ${c.nombre}: z.string().min(1, "El campo ${c.nombre} es obligatorio")`;
-}).join(',\n');
+const camposZod = campos
+	.map((c) => {
+		if (c.tipoInput === 'number') {
+			return `  ${c.nombre}: z.coerce.number({ invalid_type_error: "Debe ser un número válido" })`;
+		} else if (c.tipoOriginal === 'email') {
+			return `  ${c.nombre}: z.string().email("Debe ser un correo electrónico válido")`;
+		} else if (c.tipoOriginal === 'tel') {
+			return `  ${c.nombre}: z.string().regex(/^04(12|14|16|24|26)\\d{7}$/, "Teléfono inválido (11 dígitos, ej: 0412...)")`;
+		}
+		return `  ${c.nombre}: z.string().min(1, "El campo ${c.nombre} es obligatorio")`;
+	})
+	.join(',\n');
 
 const validacionesCode = `import { z } from 'zod';\n\nexport const esquemaFormulario = z.object({\n${camposZod}\n});\n`;
 
 // ==========================================
 // PASO 2: CREAR EL BACKEND INTERNO (+page.server.ts)
 // ==========================================
-// Lógica para construir el buscador dinámico basado en campos de texto, email y tel
-const searchableCampos = campos.filter(c => ['text', 'email', 'tel'].includes(c.tipoInput) || ['texto', 'email', 'tel'].includes(c.tipoOriginal));
+const searchableCampos = campos.filter(
+	(c) =>
+		['text', 'email', 'tel'].includes(c.tipoInput) ||
+		['texto', 'email', 'tel'].includes(c.tipoOriginal)
+);
 let searchLogic = '';
 if (searchableCampos.length > 0) {
-    if (searchableCampos.length === 1) {
-        searchLogic = `const condicion = search ? like(${tablaPlural}.${searchableCampos[0].nombre}, \`%\${search}%\`) : undefined;`;
-    } else {
-        const orConditions = searchableCampos.map(c => `like(${tablaPlural}.${c.nombre}, \`%\${search}%\`)`).join(', ');
-        searchLogic = `const condicion = search ? or(${orConditions}) : undefined;`;
-    }
+	if (searchableCampos.length === 1) {
+		searchLogic = `const condicion = search ? like(${tablaPlural}.${searchableCampos[0].nombre}, \`%\${search}%\`) : undefined;`;
+	} else {
+		const orConditions = searchableCampos
+			.map((c) => `like(${tablaPlural}.${c.nombre}, \`%\${search}%\`)`)
+			.join(', ');
+		searchLogic = `const condicion = search ? or(${orConditions}) : undefined;`;
+	}
 } else {
-    searchLogic = `const condicion = undefined;`;
+	searchLogic = `const condicion = undefined;`;
 }
 
 const plantillaServer = `
 import { db } from '$lib/server/db';
-import { ${tablaPlural} } from '$lib/server/schema';
+import { ${tablaPlural} } from '$lib/server/db/schema';
 import { eq, like, or, sql } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { esquemaFormulario } from './validaciones';
@@ -119,7 +134,7 @@ import type { PageServerLoad, Actions } from './$types';
 export const load: PageServerLoad = async ({ url }) => {
     const search = url.searchParams.get('q') || '';
     const page = Number(url.searchParams.get('page')) || 1;
-    const limit = 5; // Cantidad de registros por página
+    const limit = 5;
     const offset = (page - 1) * limit;
 
     ${searchLogic}
@@ -131,12 +146,11 @@ export const load: PageServerLoad = async ({ url }) => {
             .limit(limit)
             .offset(offset);
 
-        // Contar el total de registros para la paginación
         const conteo = await db.select({ count: sql<number>\`count(*)\` })
             .from(${tablaPlural})
             .where(condicion);
         
-        const total = Number(conteo[0].count);
+        const total = Number(conteo[0]?.count || 0);
         const totalPages = Math.ceil(total / limit) || 1;
 
         return { 
@@ -155,7 +169,6 @@ export const actions: Actions = {
         const formData = await request.formData();
         const dataRaw = Object.fromEntries(formData.entries());
         
-        // Validación con Zod
         const validacion = esquemaFormulario.safeParse(dataRaw);
         
         if (!validacion.success) {
@@ -163,10 +176,13 @@ export const actions: Actions = {
         }
 
         try {
-            await db.insert(${tablaPlural}).values(validacion.data);
+            await db.insert(${tablaPlural}).values({
+                id: crypto.randomUUID(),
+                ...validacion.data
+            });
             return { success: true };
         } catch (err) {
-            return fail(500, { error: 'Error al guardar en la base de datos local' });
+            return fail(500, { error: 'Error al guardar en la base de datos' });
         }
     },
     actualizar: async ({ request }) => {
@@ -184,7 +200,7 @@ export const actions: Actions = {
             await db.update(${tablaPlural}).set(validacion.data).where(eq(${tablaPlural}.id, id));
             return { success: true };
         } catch (err) {
-            return fail(500, { error: 'Error al actualizar en la base de datos local' });
+            return fail(500, { error: 'Error al actualizar en la base de datos' });
         }
     },
     eliminar: async ({ request }) => {
@@ -204,9 +220,11 @@ export const actions: Actions = {
 // ==========================================
 // PASO 3: CREAR EL FRONTEND INTERACTIVO (+page.svelte)
 // ==========================================
-const estadoInicialForm = campos.map(c => `    ${c.nombre}: ''`).join(',\n');
+const estadoInicialForm = campos.map((c) => `    ${c.nombre}: ''`).join(',\n');
 
-const htmlFormInputs = campos.map(c => `
+const htmlFormInputs = campos
+	.map(
+		(c) => `
     <div class="field-group">
       <label for="${c.nombre}">${c.nombre.toUpperCase()}</label>
       <input type="${c.tipoInput}" id="${c.nombre}" name="${c.nombre}" placeholder="${c.placeholder}" bind:value={valores.${c.nombre}} />
@@ -214,12 +232,12 @@ const htmlFormInputs = campos.map(c => `
         <span class="err">{errores.${c.nombre}[0]}</span>
       {/if}
     </div>
-`).join('\n');
+`
+	)
+	.join('\n');
 
-const tablaCabeceras = campos.map(c => `<th>${c.nombre.toUpperCase()}</th>`).join('\n          ');
-const tablaCeldaDatos = campos.map(c => `<td>{item.${c.nombre}}</td>`).join('\n            ');
-
-// Calculamos que el botón se bloquee si hay errores, o si los campos están vacíos
+const tablaCabeceras = campos.map((c) => `<th>${c.nombre.toUpperCase()}</th>`).join('\n          ');
+const tablaCeldaDatos = campos.map((c) => `<td>{item.${c.nombre}}</td>`).join('\n            ');
 const primerCampo = campos[0].nombre;
 
 const plantillaSvelte = `
@@ -237,7 +255,7 @@ ${estadoInicialForm}
 
   const editar = (item: any) => {
     editandoId = item.id;
-    ${campos.map(c => `valores.${c.nombre} = item.${c.nombre};`).join('\n    ')}
+    ${campos.map((c) => `valores.${c.nombre} = item.${c.nombre};`).join('\n    ')}
   };
 
   const resetForm = () => {
@@ -245,7 +263,6 @@ ${estadoInicialForm}
     for (let key in valores) { valores[key as keyof typeof valores] = ''; }
   };
 
-  // Validación reactiva con Zod
   let errores = $derived.by(() => {
       const validacion = esquemaFormulario.safeParse(valores);
       if (validacion.success) return {};
@@ -282,7 +299,7 @@ ${estadoInicialForm}
   </form>
 
   <div class="header-tabla">
-    <h2>Registros en SQLite Local</h2>
+    <h2>Registros</h2>
     
     <form method="GET" class="buscador">
       <input type="search" name="q" placeholder="Buscar..." value={data.search} />
@@ -343,60 +360,55 @@ ${estadoInicialForm}
 
 <style>
   .panel-modulo { max-width: 900px; margin: 2rem auto; font-family: sans-serif; padding: 10px; }
-  .form-scaffold { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: #f4f4f5; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+  .form-scaffold { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: #2a2a2a; color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
   .field-group { display: flex; flex-direction: column; gap: .3rem; }
-  input { padding: .5rem; border: 1px solid #ccc; border-radius: 4px; }
+  input { padding: .5rem; border: 1px solid #444; background: #1e1e1e; color: white; border-radius: 4px; }
   .err { color: #ef4444; font-size: .8rem; }
-  .msg-error { color: #ef4444; font-weight: bold; background: #fee2e2; padding: 0.5rem; border-radius: 4px;}
+  .msg-error { color: #ef4444; font-weight: bold; background: rgba(239, 68, 68, 0.2); padding: 0.5rem; border-radius: 4px;}
   .header-tabla { display: flex; justify-content: space-between; align-items: end; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
   .buscador { display: flex; gap: 0.5rem; }
-  .buscador input { padding: 0.4rem; border: 1px solid #ccc; border-radius: 4px; }
+  .buscador input { padding: 0.4rem; border: 1px solid #444; background: #1e1e1e; color: white; border-radius: 4px; }
   .btn-clear { text-decoration: none; color: #ef4444; padding: 0.4rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-  th, td { text-align: left; padding: .75rem; border-bottom: 1px solid #e4e4e7; }
-  th { background: #f4f4f5; }
-  button { padding: .6rem 1rem; background: #0f172a; color: white; border: none; border-radius: 4px; cursor: pointer; }
-  button:disabled { background: #cbd5e1; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; color: white; }
+  th, td { text-align: left; padding: .75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+  th { background: #2a2a2a; }
+  button { padding: .6rem 1rem; background: hsl(155, 81%, 41%); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+  button:disabled { background: #555; cursor: not-allowed; }
   .msg-success { color: #10b981; font-weight: bold; text-align: center; }
   .btn-del { background: #dc2626; padding: .4rem .8rem; font-size: .8rem; }
   .btn-edit { background: #f59e0b; padding: .4rem .8rem; font-size: .8rem; }
   .btn-cancel { background: #64748b; margin-left: 0.5rem; }
   .acciones-celda { display: flex; gap: 0.5rem; }
   .form-botones { grid-column: 1 / -1; display: flex; align-items: flex-end; }
-  .paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px; }
-  .btn-page { padding: 0.5rem 1rem; background: #e2e8f0; border-radius: 4px; text-decoration: none; color: #0f172a; font-weight: 500; }
+  .paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding: 1rem; background: #2a2a2a; border-radius: 8px; color: white; }
+  .btn-page { padding: 0.5rem 1rem; background: #3a3a3a; border-radius: 4px; text-decoration: none; color: white; font-weight: 500; }
   .btn-page.disabled { pointer-events: none; opacity: 0.4; }
 </style>
 `.trim();
 
-// Escrbir los archivos del módulo frontend/backend
+// Escribir los archivos del módulo frontend/backend
 try {
-    let archivosCreados = false;
-    if (!fs.existsSync(carpetaRuta)) {
-        fs.mkdirSync(carpetaRuta, { recursive: true });
-        
-        // ¡NUEVO! Escribimos el archivo de validaciones.ts
-        fs.writeFileSync(path.join(carpetaRuta, 'validaciones.ts'), validacionesCode);
-        fs.writeFileSync(path.join(carpetaRuta, '+page.server.ts'), plantillaServer);
-        fs.writeFileSync(path.join(carpetaRuta, '+page.svelte'), plantillaSvelte);
-        console.log(`  [App] ✅ Archivos de interfaz, API y Validaciones Zod creados en ${carpetaRuta}`);
-        archivosCreados = true;
-    } else {
-        console.warn(`  [App] ⚠️  La ruta /${tablaPlural} ya existe. Saltando creación de archivos...`);
-    }
+	let archivosCreados = false;
+	if (!fs.existsSync(carpetaRuta)) {
+		fs.mkdirSync(carpetaRuta, { recursive: true });
+		fs.writeFileSync(path.join(carpetaRuta, 'validaciones.ts'), validacionesCode);
+		fs.writeFileSync(path.join(carpetaRuta, '+page.server.ts'), plantillaServer);
+		fs.writeFileSync(path.join(carpetaRuta, '+page.svelte'), plantillaSvelte);
+		console.log(
+			`  [App] ✅ Archivos de interfaz, API y Validaciones Zod creados en ${carpetaRuta}`
+		);
+		archivosCreados = true;
+	} else {
+		console.warn(`  [App] ⚠️  La ruta /${tablaPlural} ya existe. Saltando creación de archivos...`);
+	}
 
-    // ==========================================
-    // PASO 4: MIGRACIÓN EN CALIENTE DE LA DB
-    // ==========================================
-    console.log(`  [DB] 🔨 Sincronizando base de datos local...`);
-    execSync('npx drizzle-kit push', { stdio: 'inherit' });
-    
-    // Actualizar el menú de navegación para incluir el nuevo módulo
-    console.log(`  [UI] 🔄 Actualizando menú de navegación...`);
-    execSync('node actualizar-menu.js', { stdio: 'inherit' });
+	console.log(`  [DB] 🔨 Sincronizando base de datos PostgreSQL con Drizzle...`);
+	execSync('npx drizzle-kit push', { stdio: 'inherit' });
 
-    console.log(`\n🎉 Proceso finalizado para el módulo "${tablaPlural}".`);
+	console.log(`  [UI] 🔄 Actualizando menú de navegación...`);
+	execSync('node NF-Sca/actualizar-menu.js', { stdio: 'inherit' });
 
+	console.log(`\n🎉 Proceso finalizado para el módulo PostgreSQL "${tablaPlural}".`);
 } catch (err) {
-    console.error(`\n❌ Error general en la creación del módulo: ${err.message}`);
+	console.error(`\n❌ Error general en la creación del módulo: ${err.message}`);
 }

@@ -1,234 +1,242 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import { enhance } from '$app/forms';
-import CardTask from "$lib/components/CardTask.svelte";
-import SlidingPanel from "$lib/components/SlidingPanel.svelte";
-import { supabase } from "$lib/supabaseClient";
-import Estadistic from '$lib/components/Estadistic.svelte';
+	import { onMount } from 'svelte';
+	import { enhance } from '$app/forms';
+	import CardTask from '$lib/components/CardTask.svelte';
+	import SlidingPanel from '$lib/components/SlidingPanel.svelte';
+	import { supabase } from '$lib/supabaseClient';
+	import Estadistic from '$lib/components/Estadistic.svelte';
 
-  let { data } = $props();
-  // Hacemos que la lista de tareas sea reactiva y derivada de data
-  let tasks = $derived.by(() => data.user?.tasks || []);
-  let isPanelOpen = $state(false);
-  let panelMode = $state<'form' | 'details'>('form');
-  let selectedTask = $state<any>(null);
+	let { data } = $props();
 
-  // Estados para el formulario
-  let newTaskTitle = $state("");
-  let newTaskTema = $state("");
-  let newTaskNiveles = $state(1);
+	// Estado reactivo para las tareas
+	let tasks = $state<any[]>([]);
 
-  // Estados de carga y error
-  let isSubmitting = $state(false);
-  let errorMessage = $state<string | null>(null);
+	// Sincronizar estado cuando se actualiza data del servidor
+	$effect(() => {
+		tasks = data.user?.tasks || [];
+	});
 
-  onMount(() => {
-    // Suscripción a cambios en tiempo real
-    const channel = supabase
-      .channel('tasks_channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, (payload) => {
-        // Solo añadimos si la tarea pertenece al usuario actual
-        if (payload.new.user_id === data.user?.id) {
-            tasks = [...tasks, payload.new];
-        }
-      })
-      .subscribe();
+	let isPanelOpen = $state(false);
+	let panelMode = $state<'form' | 'details'>('form');
+	let selectedTask = $state<any>(null);
+	let viewedTasks = $state<Record<number, boolean>>({});
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  });
+	// Estados para el formulario
+	let newTaskTitle = $state('');
+	let newTaskTema = $state('Guerra Espacial');
+	let newTaskNiveles = $state(3);
 
-  let cardRefs: Record<number, any> = {};
+	// Estados de carga y error
+	let isSubmitting = $state(false);
+	let errorMessage = $state<string | null>(null);
 
-  function openPanel(e: MouseEvent, taskId?: number) {
-    const target = e.currentTarget as HTMLElement;
-    if (target.id === 'botonmas') {
-      panelMode = 'form';
-      selectedTask = null;
-    } else if (taskId) {
-      panelMode = 'details';
-      selectedTask = tasks.find((t: any) => t.id === taskId);
-      
-      // Marcar como visto
-      if (cardRefs[taskId]) {
-          cardRefs[taskId].setViewed();
-      }
-    }
-    isPanelOpen = true;
-  }
+	onMount(() => {
+		// Suscripción a cambios en tiempo real
+		const channel = supabase
+			.channel('tasks_channel')
+			.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, (payload) => {
+				if (payload.new && payload.new.user_id === data.user?.id) {
+					tasks = [...tasks, payload.new];
+				}
+			})
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	});
+
+	function openCreateForm() {
+		panelMode = 'form';
+		selectedTask = null;
+		isPanelOpen = true;
+	}
+
+	function openTaskDetails(taskId: number) {
+		panelMode = 'details';
+		selectedTask = tasks.find((t: any) => t.id === taskId) || null;
+		viewedTasks[taskId] = true;
+		isPanelOpen = true;
+	}
 </script>
 
 <svelte:head>
-  <title>DASHBOARD</title>
+	<title>Dashboard | Proyectos Narrativos</title>
 </svelte:head>
 
-<main class="section pt-1 px-0 pb-0 is-align-items-center is-justify-content-space-between">
+<main class="section pt-4 px-3 pb-6">
+	<button
+		class="button is-primary is-rounded floating-button"
+		onclick={openCreateForm}
+		title="Nueva Tarea"
+		aria-label="Nueva Tarea">+</button
+	>
 
-  <button class="button is-primary is-rounded floating-button" id="botonmas" onclick={(e) => openPanel(e)}>+</button>
+	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
+		{#if panelMode === 'form'}
+			<form
+				method="POST"
+				action="?/createTask"
+				use:enhance={() => {
+					isSubmitting = true;
+					errorMessage = null;
+					return async ({ update, result }) => {
+						isSubmitting = false;
+						if (result.type === 'success') {
+							isPanelOpen = false;
+							newTaskTitle = '';
+							newTaskTema = 'Guerra Espacial';
+							newTaskNiveles = 3;
+						} else if (result.type === 'failure') {
+							errorMessage = (result.data?.message as string) || 'Error al crear la tarea';
+						}
+						await update();
+					};
+				}}
+			>
+				{#if errorMessage}
+					<div class="notification is-danger is-light mb-3">
+						{errorMessage}
+					</div>
+				{/if}
 
-  <SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
-    {#if panelMode === 'form'}
-      <form 
-        method="POST" 
-        action="?/createTask" 
-        use:enhance={() => {
-            isSubmitting = true;
-            errorMessage = null;
-            return async ({ update, result }) => {
-                isSubmitting = false;
-                if (result.type === 'success') {
-                    isPanelOpen = false;
-                    newTaskTitle = "";
-                    newTaskTema = "";
-                    newTaskNiveles = 1;
-                } else if (result.type === 'failure') {
-                    errorMessage = (result.data?.message as string) || 'Error al crear la tarea';
-                }
-                await update();
-            };
-        }}
-      >
-        {#if errorMessage}
-            <div class="notification is-danger is-light">
-                {errorMessage}
-            </div>
-        {/if}
+				<div class="field">
+					<label class="label has-text-white" for="taskTitle">Título del proyecto</label>
+					<div class="control">
+						<input
+							class="input"
+							type="text"
+							name="title"
+							id="taskTitle"
+							bind:value={newTaskTitle}
+							placeholder="Ej: Odisea en Alfa Centauri"
+							required
+							disabled={isSubmitting}
+						/>
+					</div>
+				</div>
 
-        <div class="field">
-          <label class="label has-text-white" for="taskTitle">Título de la tarea</label>
-          <div class="control">
-            <input class="input" type="text" name="title" id="taskTitle" bind:value={newTaskTitle} placeholder="Ej: Aprender Svelte" required disabled={isSubmitting} />
-          </div>
-        </div>
-        <div class="field">
-          <label class="label has-text-white" for="taskTema">Temática</label>
-          <div class="control select is-fullwidth">
-          <select name="tema" id="tema" bind:value={newTaskTema} disabled={isSubmitting}>
-            <option value="Guerra Espacial">Guerra Espacial</option>
-            <option value="Cruzada Medieval">Cruzada Medieval</option>
-            <option value="Apocalipsis Zombi">Apocalipsis Zombi</option>
-            <option value="Superheroes">Superheroes</option>
-            <option value="Agente Secreto">Agente Secreto</option>
-            <option value="Magia">Magia</option>
-            <option value="Guerra Mundial">Guerra Mundial</option>
-            <option value="Catastrofe Natural">Catastrofe Natural</option>
-            <option value="Vaqueros">Vaqueros</option>
-            <option value="Lovecraft">Lovecraft</option>
-          </select>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label has-text-white" for="taskNiveles">Número de niveles</label>
-          <div class="control">
-            <input class="input" type="number" name="cantidad_de_niveles" id="taskNiveles" bind:value={newTaskNiveles} min="1" required disabled={isSubmitting} />
-          </div>
-        </div>
+				<div class="field">
+					<label class="label has-text-white" for="taskTema">Temática Narrativa</label>
+					<div class="control select is-fullwidth">
+						<select name="tema" id="taskTema" bind:value={newTaskTema} disabled={isSubmitting}>
+							<option value="Guerra Espacial">Guerra Espacial</option>
+							<option value="Cruzada Medieval">Cruzada Medieval</option>
+							<option value="Apocalipsis Zombi">Apocalipsis Zombi</option>
+							<option value="Superheroes">Superhéroes</option>
+							<option value="Agente Secreto">Agente Secreto</option>
+							<option value="Magia y Fantasía">Magia y Fantasía</option>
+							<option value="Guerra Mundial">Guerra Mundial</option>
+							<option value="Catastrofe Natural">Catástrofe Natural</option>
+							<option value="Vaqueros y Western">Vaqueros y Western</option>
+							<option value="Terror Lovecraftiano">Terror Lovecraftiano</option>
+						</select>
+					</div>
+				</div>
 
-        <button class="button is-primary mt-4" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Generando historia...' : 'Guardar'}
-        </button>
-      </form>
-    {/if}
+				<div class="field">
+					<label class="label has-text-white" for="taskNiveles"
+						>Cantidad de Capítulos / Niveles</label
+					>
+					<div class="control">
+						<input
+							class="input"
+							type="number"
+							name="cantidad_de_niveles"
+							id="taskNiveles"
+							bind:value={newTaskNiveles}
+							min="1"
+							max="20"
+							required
+							disabled={isSubmitting}
+						/>
+					</div>
+				</div>
 
-  </SlidingPanel>
+				<button class="button is-primary is-fullwidth mt-4" type="submit" disabled={isSubmitting}>
+					{isSubmitting ? 'Generando historia con IA...' : 'Guardar y Generar'}
+				</button>
+			</form>
+		{/if}
+	</SlidingPanel>
 
-  {#if data.user}
-  <div class="nombre is-flex ">
-    <p class="mt-2 mr-2">Bienvenido, <strong class=" has-text-weight-bold">{data.user.nombre_de_usuario || data.user.email}</strong></p>
-    <figure class="image is-32x32 ml-4">
-      <img class="is-rounded" src="/emptyavatar.avif" alt="Avatar del usuario" />
-    </figure>
-  </div>
+	{#if data.user}
+		<div class="user-badge is-flex is-align-items-center">
+			<p class="mr-2 is-size-7">
+				Hola, <strong class="has-text-primary">{data.user.nombre_de_usuario}</strong>
+			</p>
+			<figure class="image is-32x32">
+				<img class="is-rounded" src="/emptyavatar.avif" alt="Avatar" />
+			</figure>
+		</div>
 
+		<Estadistic datas={data} {tasks} />
 
-    <div class=" is-hiddem card mt-3">
-    <div class="card-header">
-      <p class=" is-hidden card-header-title">Información del Usuario</p>
-    </div>
-    <div class=" is-hidden card-content">
-      <p>Nombre: {data.user.nombre_de_usuario}</p> 
-      <p>ID: {data.user.id}</p>
-      <p>Email: {data.user.email}</p>
-      <p>Password: {data.user.password}</p>
-    </div>
-    </div>
+		<div class="columns is-centered">
+			<div class="column is-half-desktop is-full-mobile">
+				<div class="box is-cristal p-3">
+					<div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+						<h2 class="title is-5 has-text-white mb-0">Mis Proyectos</h2>
+						<span class="tag is-info">{tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}</span
+						>
+					</div>
+					<hr class="mt-1 mb-3" />
 
-    <Estadistic datas={data} tasks={tasks}/>
-
-    <div class="columns is-centered is-vcentered is-multiline is-mobile pt-0">
-      <div class="column is-half-desktop is-full-mobile pt-0 px-0 mx-1 mt-0">
-    <div class=" is-transparente box is-rounded has-background-dark p-2 is-cristal is-shadowless pt-0 mt-0">
-    <p class="is-hidden p-0 m-0 subtitle is-weight-bold is-size-6-mobile has-text-white p-0 ">Tienes {tasks.length} tareas activas</p>
-    <hr>
-    <p class="is-hidden">Lista de tareas:</p>
-    <ul>
-    {#if tasks.length > 0} 
-      {#each tasks as Task (Task.id)}        
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <CardTask 
-        task={Task} 
-        flag={(e) => openPanel(e, Task.id)}
-        bind:this={cardRefs[Task.id]}
-      />
-      {/each}
-      {:else}
-      <div class="section">
-      <div class="columns is-centered is-mobile is-vcentered">
-        <div class="column is-half">
-        <div class="box has-text-centered is-cristal has-text-weight-bold">
-        Aun no hay Tareas
-        </div>
-        </div>
-      </div>
-      </div>
-    {/if}
-    </ul>
-    </div>
-      </div>
-    </div>
-
-  {:else}
-  <div class="box">
-    <p>No se encontraron datos del usuario.</p>
-  </div>
-  {/if}
-
+					{#if tasks.length > 0}
+						<div>
+							{#each tasks as Task (Task.id)}
+								<CardTask
+									task={Task}
+									hasViewed={!!viewedTasks[Task.id]}
+									onSelect={() => openTaskDetails(Task.id)}
+								/>
+							{/each}
+						</div>
+					{:else}
+						<div class="has-text-centered py-6">
+							<p class="has-text-grey-light mb-3">Aún no tienes tareas activas.</p>
+							<button class="button is-primary is-small is-outlined" onclick={openCreateForm}>
+								Crear tu primera tarea
+							</button>
+						</div>
+					{/if}
+				</div>
+			</div>
+		</div>
+	{:else}
+		<div class="box has-text-centered">
+			<p>No se encontraron datos de usuario.</p>
+		</div>
+	{/if}
 </main>
 
 <style>
-  main { padding: 0rem;
-    
-  }
-  .box { background: #f4f4f5; padding: 1rem; border-radius: 8px; color: #333; margin-top: 1rem; }
-  strong { color: black; }
-  .is-cristal {
-    background: rgba(255, 255, 255, 0) !important;
-    backdrop-filter: blur(10px) !important;
-    border-radius: 8px !important;
-    padding: 1rem !important;
-    color: #fff !important;
-  }
-  .nombre {
-    font-size: 0.8rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    position: absolute;
-    top: 1rem;
-    right: 2rem;
-  }
+	.is-cristal {
+		background: rgba(255, 255, 255, 0.05) !important;
+		backdrop-filter: blur(12px) !important;
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-radius: 12px !important;
+	}
 
-  .floating-button {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 100;
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.5rem;
-  }
-  strong{
-    color: hsl(155, 81%, 41%);
-  }
+	.user-badge {
+		position: absolute;
+		top: 1rem;
+		right: 2rem;
+		z-index: 5;
+		background: rgba(0, 0, 0, 0.4);
+		padding: 0.25rem 0.75rem;
+		border-radius: 20px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.floating-button {
+		position: fixed;
+		bottom: 2rem;
+		right: 2rem;
+		z-index: 100;
+		width: 3.5rem;
+		height: 3.5rem;
+		font-size: 1.75rem;
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+	}
 </style>

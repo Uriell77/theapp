@@ -1,120 +1,156 @@
 <script lang="ts">
-  import { type Snippet } from 'svelte';
-  import { enhance } from '$app/forms';
+	import { enhance } from '$app/forms';
 
-  interface Props {
-    children?: Snippet;
-    task: any;
-    flag?: (e: any) => void;
-    [key: string]: any;
-  }
+	interface Props {
+		task: any;
+		hasViewed?: boolean;
+		onSelect?: () => void;
+	}
 
-  // Definimos las propiedades del componente con la sintaxis de Svelte 5
-  let { children, task, flag, ...props }: Props = $props();
-  
-  let hasViewedLevel = $state(false);
+	let { task, hasViewed = false, onSelect }: Props = $props();
 
-  // Exponer para que el padre lo llame
-  export function setViewed() {
-    hasViewedLevel = true;
-  }
-  
-  // Resetear cuando cambia la tarea
-  $effect(() => {
-    task.id;
-    hasViewedLevel = false;
-  });
+	let statusNum = $derived(parseInt(task?.status, 10) || 0);
+	let isLastLevel = $derived(task ? statusNum >= task.cantidad_de_niveles - 1 : false);
+	let currentLevelContent = $derived.by(() => {
+		if (!task?.levels?.[0]?.content) return '';
+		return task.levels[0].content[statusNum]?.split('.')[0] || `Nivel ${statusNum + 1}`;
+	});
+	let currentCinematica = $derived.by(() => {
+		if (!task?.levels?.[0]?.cinematica) return null;
+		return task.levels[0].cinematica[statusNum] || null;
+	});
+	let progressPercent = $derived(
+		task && task.cantidad_de_niveles > 1
+			? Math.min(100, (statusNum / (task.cantidad_de_niveles - 1)) * 100).toFixed(1)
+			: statusNum > 0
+				? '100'
+				: '0'
+	);
 </script>
 
-
 {#if task}
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="componente-cardtask " id="{task.title}">
-  <!-- Aquí va la estructura de tu componente -->
+	<div class="componente-cardtask mb-3" id={`task-${task.id}`}>
+		<div class="box is-rounded mb-2 has-background-dark p-4 px-5 card-wrapper">
+			<button
+				type="button"
+				class="clicker-btn"
+				onclick={onSelect}
+				aria-label={`Ver detalles de ${task.title}`}
+			></button>
 
+			<div>
+				<strong class="has-text-weight-bold has-text-centered py-0">
+					<p class="is-size-6-mobile py-0 has-text-white">{task.title}</p>
+				</strong>
+			</div>
+			<hr class="py-0 my-2 divider" />
 
-        <div class="box is-rounded mb-2 has-background-dark p-4 px-6 " id="card" style="position: relative;">
-            <div class="clicker" id="{task.title}" onclick="{flag}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; cursor: pointer;"></div>
-          <div><strong class="has-text-weight-bold has-text-centered py-0"><p class="is-size-6-mobile py-0">{task.title}</p></strong></div>
-          <hr class="py-0 my-0 mb-2">
-          <div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
-            <div class="column is-half">
-          <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Tematica: </strong> <p class="has-text-white pl-4">{task.tema}</p></div>
-          <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Numero de Niveles: </strong> <p class="has-text-white pl-4">{task.cantidad_de_niveles}</p></div>
-          <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Status:</strong> <p class="has-text-white pl-4">{task.status}</p></div>
-            {#each task.levels as level}
-              <div class="is-flex is-size-7-mobile is-justify-content-space-between"><strong>Nivel: </strong> <p class="has-text-white pl-4">{level.content[task.status].split('.')[0]}</p></div>
-            {/each}
-            </div>
-            <div class="column is-half is-flex is-justify-content-center is-align-items-center py-0 my-0">
-            {#each task.levels as level} 
-              <!-- <div class="is-hidden is-flex is-size-7-mobile is-justify-content-space-between py-0 my-0"><strong class="py-0 my-0">Cinematica: </strong> </div> -->
-              {#if level.cinematica && level.cinematica[parseInt(task.status)]}
-                <figure class="image is-9by3 py-0 my-0 is-flex">
-                  <img class="py-0 my-0" src="{level.cinematica[parseInt(task.status)]}" alt="cinematica" loading="lazy" />
-                </figure>
-              {/if}
-            {/each}
-            </div>
-              <div class="container progresscontainer mt-2 step-progress-bar" style="--steps: 5; --current-step: 2;">
-              <progress class="is-hidden progress is-primary is-rounded is-small py-0 my-0" value={task.status/100 } max={task.cantidad_de_niveles/100}></progress>
+			<div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
+				<div class="column is-half">
+					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+						<span class="label-field">Temática:</span>
+						<p class="has-text-white pl-2">{task.tema}</p>
+					</div>
+					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+						<span class="label-field">Niveles:</span>
+						<p class="has-text-white pl-2">{task.cantidad_de_niveles}</p>
+					</div>
+					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+						<span class="label-field">Nivel actual:</span>
+						<p class="has-text-white pl-2">{statusNum + 1} / {task.cantidad_de_niveles}</p>
+					</div>
+					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+						<span class="label-field">Capítulo:</span>
+						<p class="has-text-white pl-2 is-italic is-truncated">{currentLevelContent}</p>
+					</div>
+				</div>
 
-              {#each task.levels as lev}
-              {#each lev.content as le,index}
-              <div class="tag {index <= task.status ? "is-primary" : ""} px-4 py-0">
-              {index}
-              </div>                
-              {/each} 
-               <div class="tag {task.status == lev.content.length-1 ? "is-primary" :"is-danger"} has-text-weight-bold ml-4 is-pulled-right">{(task.status/(lev.content.length-1)*100).toFixed(2)} % </div>
-              {/each}
-               
-            </div>
-            </div>
-            
-            <form method="POST" action="?/advanceLevel" use:enhance>
-                <input type="hidden" name="taskId" value={task.id} />
-                <button 
-                  class="button is-small is-primary mt-2" 
-                  disabled={!hasViewedLevel} 
-                  type="submit"
-                  style="z-index: 101; position: relative;"
-                >
-                  Avanzar Nivel
-                </button>
-            </form>
-        </div>
+				<div
+					class="column is-half is-flex is-justify-content-center is-align-items-center py-0 my-0"
+				>
+					{#if currentCinematica}
+						<figure class="image is-9by3 py-0 my-0 is-flex">
+							<img class="py-0 my-0" src={currentCinematica} alt="cinemática" loading="lazy" />
+						</figure>
+					{/if}
+				</div>
 
-</div>
+				<div class="column is-full pt-2">
+					<div class="is-flex is-align-items-center is-justify-content-space-between">
+						<div class="tags are-small mb-0">
+							{#each Array(task.cantidad_de_niveles) as _, idx}
+								<span class="tag {idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0">
+									{idx + 1}
+								</span>
+							{/each}
+						</div>
+						<span class="tag {isLastLevel ? 'is-success' : 'is-info'} has-text-weight-bold ml-2">
+							{progressPercent}%
+						</span>
+					</div>
+				</div>
+			</div>
 
+			<form method="POST" action="?/advanceLevel" use:enhance class="mt-3">
+				<input type="hidden" name="taskId" value={task.id} />
+				<button
+					class="button is-small is-primary"
+					disabled={!hasViewed || isLastLevel}
+					type="submit"
+				>
+					{isLastLevel
+						? '¡Completada!'
+						: hasViewed
+							? 'Avanzar Nivel'
+							: 'Abre los detalles para avanzar'}
+				</button>
+			</form>
+		</div>
+	</div>
 {:else}
-
-<progress class="progress is-small is-primary" max="100"></progress>
-
+	<progress class="progress is-small is-primary" max="100"></progress>
 {/if}
 
-
-
-
 <style>
-  /* Estilos locales encapsulados */
-  .componente-cardtask {
-    display: block;
-  }
+	.card-wrapper {
+		position: relative;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
 
-  img{
-    border-radius: 10px;
-  }
-  .image{
-    padding: 0px !important;
-    margin: 0px !important;
-  }
-  strong{
-    color: hsl(155, 81%, 41%);
-  }
+	.clicker-btn {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: calc(100% - 40px);
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		z-index: 10;
+	}
 
+	.divider {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
 
+	.label-field {
+		color: hsl(155, 81%, 41%);
+		font-weight: bold;
+	}
 
+	.is-truncated {
+		max-width: 160px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
+	img {
+		border-radius: 8px;
+	}
 
+	button[type='submit'] {
+		position: relative;
+		z-index: 20;
+	}
 </style>
