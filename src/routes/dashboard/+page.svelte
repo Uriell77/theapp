@@ -64,7 +64,7 @@
 	<title>Dashboard | Proyectos Narrativos</title>
 </svelte:head>
 
-<main class="section pt-4 px-3 pb-6">
+<main class="section pt-4 px-0 pb-6">
 	<button
 		class="button is-primary is-rounded floating-button"
 		onclick={openCreateForm}
@@ -174,7 +174,7 @@
 
 		<div class="columns is-centered">
 			<div class="column is-half-desktop is-full-mobile">
-				<div class="box is-cristal p-3">
+				<div class="box is-cristal p-3 mx-0">
 					<div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
 						<h2 class="title is-5 has-text-white mb-0">Mis Proyectos</h2>
 						<span class="tag is-info">{tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}</span
