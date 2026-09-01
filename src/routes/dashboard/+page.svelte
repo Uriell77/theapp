@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { Motion } from 'svelte-motion';
 	import CardTask from '$lib/components/CardTask.svelte';
 	import SlidingPanel from '$lib/components/SlidingPanel.svelte';
 	import { supabase } from '$lib/supabaseClient';
@@ -65,12 +66,20 @@
 </svelte:head>
 
 <main class="section pt-4 px-0 pb-6">
-	<button
-		class="button is-primary is-rounded floating-button"
-		onclick={openCreateForm}
-		title="Nueva Tarea"
-		aria-label="Nueva Tarea">+</button
+	<Motion
+		whileHover={{ scale: 1.12, rotate: 90 }}
+		whileTap={{ scale: 0.92 }}
+		transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+		let:motion
 	>
+		<button
+			use:motion
+			class="button is-primary is-rounded floating-button"
+			onclick={openCreateForm}
+			title="Nueva Tarea"
+			aria-label="Nueva Tarea">+</button
+		>
+	</Motion>
 
 	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
 		{#if panelMode === 'form'}
@@ -154,54 +163,84 @@
 				</div>
 				<input class="is-hidden" type="text" value="{data?.user?.nombre_de_usuario}" name="nombredeusuario"/>
 
-				<button class="button is-primary is-fullwidth mt-4" type="submit" disabled={isSubmitting}>
-					{isSubmitting ? 'Generando historia con IA...' : 'Guardar y Generar'}
-				</button>
+				<Motion
+					whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+					whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+					let:motion
+				>
+					<button
+						use:motion
+						class="button is-primary is-fullwidth mt-4"
+						type="submit"
+						disabled={isSubmitting}
+					>
+						{isSubmitting ? 'Generando historia con IA...' : 'Guardar y Generar'}
+					</button>
+				</Motion>
 			</form>
 		{/if}
 	</SlidingPanel>
 
 	{#if data.user}
-		<div class="user-badge is-flex is-align-items-center">
-			<p class="mr-2 is-size-7">
-				Hola, <strong class="has-text-primary">{data.user.nombre_de_usuario}</strong>
-			</p>
-			<figure class="image is-32x32">
-				<img class="is-rounded" src="/emptyavatar.avif" alt="Avatar" />
-			</figure>
-		</div>
+		<Motion
+			initial={{ opacity: 0, y: -10 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.3 }}
+			let:motion
+		>
+			<div use:motion class="user-badge is-flex is-align-items-center">
+				<p class="mr-2 is-size-7">
+					Hola, <strong class="has-text-primary">{data.user.nombre_de_usuario}</strong>
+				</p>
+				<figure class="image is-32x32">
+					<img class="is-rounded" src="/emptyavatar.avif" alt="Avatar" />
+				</figure>
+			</div>
+		</Motion>
 
 		<Estadistic datas={data} {tasks} />
 
 		<div class="columns is-centered">
 			<div class="column is-half-desktop is-full-mobile">
-				<div class="box is-cristal p-3 mx-0">
-					<div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-						<h2 class="title is-5 has-text-white mb-0">Mis Proyectos</h2>
-						<span class="tag is-info">{tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}</span
-						>
-					</div>
-					<hr class="mt-1 mb-3" />
+				<Motion
+					initial={{ opacity: 0, y: 15 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.35, delay: 0.1 }}
+					let:motion
+				>
+					<div use:motion class="box is-cristal p-3 mx-0">
+						<div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+							<h2 class="title is-5 has-text-white mb-0">Mis Proyectos</h2>
+							<span class="tag is-info">{tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}</span>
+						</div>
+						<hr class="mt-1 mb-3" />
 
-					{#if tasks.length > 0}
-						<div>
-							{#each tasks as Task (Task.id)}
-								<CardTask
-									task={Task}
-									hasViewed={!!viewedTasks[Task.id]}
-									onSelect={() => openTaskDetails(Task.id)}
-								/>
-							{/each}
-						</div>
-					{:else}
-						<div class="has-text-centered py-6">
-							<p class="has-text-grey-light mb-3">Aún no tienes tareas activas.</p>
-							<button class="button is-primary is-small is-outlined" onclick={openCreateForm}>
-								Crear tu primera tarea
-							</button>
-						</div>
-					{/if}
-				</div>
+						{#if tasks.length > 0}
+							<div>
+								{#each tasks as Task (Task.id)}
+									<CardTask
+										task={Task}
+										hasViewed={!!viewedTasks[Task.id]}
+										onSelect={() => openTaskDetails(Task.id)}
+									/>
+								{/each}
+							</div>
+						{:else}
+							<div class="has-text-centered py-6">
+								<p class="has-text-grey-light mb-3">Aún no tienes tareas activas.</p>
+								<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
+									<button
+										use:motion
+										class="button is-primary is-small is-outlined"
+										onclick={openCreateForm}
+									>
+										Crear tu primera tarea
+									</button>
+								</Motion>
+							</div>
+						{/if}
+					</div>
+				</Motion>
 			</div>
 		</div>
 	{:else}

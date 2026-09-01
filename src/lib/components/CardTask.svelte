@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { Motion } from 'svelte-motion';
 
 	interface Props {
 		task: any;
@@ -29,84 +30,99 @@
 </script>
 
 {#if task}
-	<div class="componente-cardtask mb-3" id={`task-${task.id}`}>
-		<div class="box is-rounded mb-2 has-background-dark p-4 px-5 card-wrapper">
-			<button
-				type="button"
-				class="clicker-btn"
-				onclick={onSelect}
-				aria-label={`Ver detalles de ${task.title}`}
-			></button>
-
-			<div>
-				<strong class="has-text-weight-bold has-text-centered py-0">
-					<p class="is-size-6-mobile py-0 has-text-white">{task.title}</p>
-				</strong>
-			</div>
-			<hr class="py-0 my-2 divider" />
-
-			<div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
-				<div class="column is-half">
-					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
-						<span class="label-field">Temática:</span>
-						<p class="has-text-white pl-2">{task.tema}</p>
-					</div>
-					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
-						<span class="label-field">Niveles:</span>
-						<p class="has-text-white pl-2">{task.cantidad_de_niveles}</p>
-					</div>
-					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
-						<span class="label-field">Nivel actual:</span>
-						<p class="has-text-white pl-2">{statusNum + 1} / {task.cantidad_de_niveles}</p>
-					</div>
-					<div class="is-flex is-size-7-mobile is-justify-content-space-between">
-						<span class="label-field">Capítulo:</span>
-						<p class="has-text-white pl-2 is-italic is-truncated">{currentLevelContent}</p>
-					</div>
-				</div>
-
-				<div
-					class="column is-half is-flex is-justify-content-center is-align-items-center py-0 my-0"
-				>
-					{#if currentCinematica}
-						<figure class="image is-9by3 py-0 my-0 is-flex">
-							<img class="py-0 my-0" src={currentCinematica} alt="cinemática" loading="lazy" />
-						</figure>
-					{/if}
-				</div>
-
-				<div class="column is-full pt-2">
-					<div class="is-flex is-align-items-center is-justify-content-space-between">
-						<div class="tags are-small mb-0">
-							{#each Array(task.cantidad_de_niveles) as _, idx}
-								<span class="tag {idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0">
-									{idx + 1}
-								</span>
-							{/each}
-						</div>
-						<span class="tag {isLastLevel ? 'is-success' : 'is-info'} has-text-weight-bold ml-2">
-							{progressPercent}%
-						</span>
-					</div>
-				</div>
-			</div>
-
-			<form method="POST" action="?/advanceLevel" use:enhance class="mt-3">
-				<input type="hidden" name="taskId" value={task.id} />
+	<Motion
+		initial={{ opacity: 0, y: 12 }}
+		animate={{ opacity: 1, y: 0 }}
+		whileHover={{ y: -3, transition: { duration: 0.2 } }}
+		transition={{ duration: 0.3 }}
+		let:motion
+	>
+		<div use:motion class="componente-cardtask mb-3" id={`task-${task.id}`}>
+			<div class="box is-rounded mb-2 has-background-dark p-4 px-5 card-wrapper">
 				<button
-					class="button is-small is-primary"
-					disabled={!hasViewed || isLastLevel}
-					type="submit"
-				>
-					{isLastLevel
-						? '¡Completada!'
-						: hasViewed
-							? 'Avanzar Nivel'
-							: 'Abre los detalles para avanzar'}
-				</button>
-			</form>
+					type="button"
+					class="clicker-btn"
+					onclick={onSelect}
+					aria-label={`Ver detalles de ${task.title}`}
+				></button>
+
+				<div>
+					<strong class="has-text-weight-bold has-text-centered py-0">
+						<p class="is-size-6-mobile py-0 has-text-white">{task.title}</p>
+					</strong>
+				</div>
+				<hr class="py-0 my-2 divider" />
+
+				<div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
+					<div class="column is-half">
+						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+							<span class="label-field">Temática:</span>
+							<p class="has-text-white pl-2">{task.tema}</p>
+						</div>
+						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+							<span class="label-field">Niveles:</span>
+							<p class="has-text-white pl-2">{task.cantidad_de_niveles}</p>
+						</div>
+						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+							<span class="label-field">Nivel actual:</span>
+							<p class="has-text-white pl-2">{statusNum + 1} / {task.cantidad_de_niveles}</p>
+						</div>
+						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+							<span class="label-field">Capítulo:</span>
+							<p class="has-text-white pl-2 is-italic is-truncated">{currentLevelContent}</p>
+						</div>
+					</div>
+
+					<div
+						class="column is-half is-flex is-justify-content-center is-align-items-center py-0 my-0"
+					>
+						{#if currentCinematica}
+							<figure class="image is-9by3 py-0 my-0 is-flex">
+								<img class="py-0 my-0" src={currentCinematica} alt="cinemática" loading="lazy" />
+							</figure>
+						{/if}
+					</div>
+
+					<div class="column is-full pt-2">
+						<div class="is-flex is-align-items-center is-justify-content-space-between">
+							<div class="tags are-small mb-0">
+								{#each Array(task.cantidad_de_niveles) as _, idx}
+									<span class="tag {idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0">
+										{idx + 1}
+									</span>
+								{/each}
+							</div>
+							<span class="tag {isLastLevel ? 'is-success' : 'is-info'} has-text-weight-bold ml-2">
+								{progressPercent}%
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<form method="POST" action="?/advanceLevel" use:enhance class="mt-3">
+					<input type="hidden" name="taskId" value={task.id} />
+					<Motion
+						whileHover={hasViewed && !isLastLevel ? { scale: 1.04 } : {}}
+						whileTap={hasViewed && !isLastLevel ? { scale: 0.95 } : {}}
+						let:motion
+					>
+						<button
+							use:motion
+							class="button is-small is-primary"
+							disabled={!hasViewed || isLastLevel}
+							type="submit"
+						>
+							{isLastLevel
+								? '¡Completada!'
+								: hasViewed
+									? 'Avanzar Nivel'
+									: 'Abre los detalles para avanzar'}
+						</button>
+					</Motion>
+				</form>
+			</div>
 		</div>
-	</div>
+	</Motion>
 {:else}
 	<progress class="progress is-small is-primary" max="100"></progress>
 {/if}

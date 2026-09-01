@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
+	import { Motion } from 'svelte-motion';
 	import { esquemaRegistro, esquemaLogin } from './validaciones';
 	import type { ActionData } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -66,111 +67,130 @@
 	};
 </script>
 
-<div class="auth-container">
-	<h1>{esLogin ? 'Iniciar Sesión' : 'Registro'}</h1>
+<Motion
+	initial={{ opacity: 0, y: 20 }}
+	animate={{ opacity: 1, y: 0 }}
+	transition={{ duration: 0.4 }}
+	let:motion
+>
+	<div use:motion class="auth-container">
+		<h1>{esLogin ? 'Iniciar Sesión' : 'Registro'}</h1>
 
-	{#if form?.error}
-		<p class="error">⚠️ {form.error}</p>
-	{/if}
+		{#if form?.error}
+			<p class="error">⚠️ {form.error}</p>
+		{/if}
 
-	{#if esLogin}
-		<form method="POST" action="?/login" use:enhance={handleEnhance}>
-			<div class="field-group">
-				<label for="login-email">Correo</label>
-				<input
-					type="email"
-					id="login-email"
-					name="email"
-					placeholder="correo@ejemplo.com"
-					bind:value={valores.email}
-				/>
-				{#if erroresLogin.email}
-					<span class="err">{erroresLogin.email[0]}</span>
-				{/if}
-			</div>
-			<div class="field-group">
-				<label for="login-password">Contraseña</label>
-				<input
-					type="password"
-					id="login-password"
-					name="password"
-					placeholder="••••••••"
-					bind:value={valores.password}
-				/>
-				{#if erroresLogin.password}
-					<span class="err">{erroresLogin.password[0]}</span>
-				{/if}
-			</div>
-			<button type="submit" disabled={bloqueadoLogin}>Entrar</button>
-		</form>
-	{:else}
-		<form method="POST" action="?/registrar" use:enhance={handleEnhance}>
-			<div class="field-group">
-				<label for="registro-nombre_de_usuario">Nombre de usuario</label>
-				<input
-					type="text"
-					id="registro-nombre_de_usuario"
-					name="nombre_de_usuario"
-					placeholder="Tu nombre de usuario"
-					bind:value={valores.nombre_de_usuario}
-				/>
-				{#if erroresRegistro.nombre_de_usuario}
-					<span class="err">{erroresRegistro.nombre_de_usuario[0]}</span>
-				{/if}
-			</div>
-			<div class="field-group">
-				<label for="registro-email">Correo</label>
-				<input
-					type="email"
-					id="registro-email"
-					name="email"
-					placeholder="correo@ejemplo.com"
-					bind:value={valores.email}
-				/>
-				{#if erroresRegistro.email}
-					<span class="err">{erroresRegistro.email[0]}</span>
-				{/if}
-			</div>
-			<div class="field-group">
-				<label for="registro-password">Contraseña</label>
-				<input
-					type="password"
-					id="registro-password"
-					name="password"
-					placeholder="••••••••"
-					bind:value={valores.password}
-				/>
-				{#if erroresRegistro.password}
-					<span class="err">{erroresRegistro.password[0]}</span>
-				{/if}
-			</div>
-			<div class="field-group">
-				<label for="registro-confirmar_password">Confirmar Contraseña</label>
-				<input
-					type="password"
-					id="registro-confirmar_password"
-					name="confirmar_password"
-					placeholder="Repite tu contraseña"
-					bind:value={valores.confirmar_password}
-				/>
-				{#if erroresRegistro.confirmar_password}
-					<span class="err">{erroresRegistro.confirmar_password[0]}</span>
-				{/if}
-			</div>
-			<button type="submit" disabled={bloqueadoRegistro}>Registrarme</button>
-		</form>
-	{/if}
+		{#if esLogin}
+			<form method="POST" action="?/login" use:enhance={handleEnhance}>
+				<div class="field-group">
+					<label for="login-email">Correo</label>
+					<input
+						type="email"
+						id="login-email"
+						name="email"
+						placeholder="correo@ejemplo.com"
+						bind:value={valores.email}
+					/>
+					{#if erroresLogin.email}
+						<span class="err">{erroresLogin.email[0]}</span>
+					{/if}
+				</div>
+				<div class="field-group">
+					<label for="login-password">Contraseña</label>
+					<input
+						type="password"
+						id="login-password"
+						name="password"
+						placeholder="••••••••"
+						bind:value={valores.password}
+					/>
+					{#if erroresLogin.password}
+						<span class="err">{erroresLogin.password[0]}</span>
+					{/if}
+				</div>
+				<Motion
+					whileHover={!bloqueadoLogin ? { scale: 1.02 } : {}}
+					whileTap={!bloqueadoLogin ? { scale: 0.98 } : {}}
+					let:motion
+				>
+					<button use:motion type="submit" disabled={bloqueadoLogin}>Entrar</button>
+				</Motion>
+			</form>
+		{:else}
+			<form method="POST" action="?/registrar" use:enhance={handleEnhance}>
+				<div class="field-group">
+					<label for="registro-nombre_de_usuario">Nombre de usuario</label>
+					<input
+						type="text"
+						id="registro-nombre_de_usuario"
+						name="nombre_de_usuario"
+						placeholder="Tu nombre de usuario"
+						bind:value={valores.nombre_de_usuario}
+					/>
+					{#if erroresRegistro.nombre_de_usuario}
+						<span class="err">{erroresRegistro.nombre_de_usuario[0]}</span>
+					{/if}
+				</div>
+				<div class="field-group">
+					<label for="registro-email">Correo</label>
+					<input
+						type="email"
+						id="registro-email"
+						name="email"
+						placeholder="correo@ejemplo.com"
+						bind:value={valores.email}
+					/>
+					{#if erroresRegistro.email}
+						<span class="err">{erroresRegistro.email[0]}</span>
+					{/if}
+				</div>
+				<div class="field-group">
+					<label for="registro-password">Contraseña</label>
+					<input
+						type="password"
+						id="registro-password"
+						name="password"
+						placeholder="••••••••"
+						bind:value={valores.password}
+					/>
+					{#if erroresRegistro.password}
+						<span class="err">{erroresRegistro.password[0]}</span>
+					{/if}
+				</div>
+				<div class="field-group">
+					<label for="registro-confirmar_password">Confirmar Contraseña</label>
+					<input
+						type="password"
+						id="registro-confirmar_password"
+						name="confirmar_password"
+						placeholder="Repite tu contraseña"
+						bind:value={valores.confirmar_password}
+					/>
+					{#if erroresRegistro.confirmar_password}
+						<span class="err">{erroresRegistro.confirmar_password[0]}</span>
+					{/if}
+				</div>
+				<Motion
+					whileHover={!bloqueadoRegistro ? { scale: 1.02 } : {}}
+					whileTap={!bloqueadoRegistro ? { scale: 0.98 } : {}}
+					let:motion
+				>
+					<button use:motion type="submit" disabled={bloqueadoRegistro}>Registrarme</button>
+				</Motion>
+			</form>
+		{/if}
 
-	<button
-		class="toggle"
-		onclick={() => {
-			esLogin = !esLogin;
-			resetForm();
-		}}
-	>
-		{esLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
-	</button>
-</div>
+		<button
+			class="toggle"
+			onclick={() => {
+				esLogin = !esLogin;
+				resetForm();
+			}}
+		>
+			{esLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
+		</button>
+	</div>
+</Motion>
 
 <style>
 	.auth-container {

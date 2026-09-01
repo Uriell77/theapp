@@ -64,7 +64,8 @@ export const actions: Actions = {
 		// 1. Generar narrativa con Gemini (modelo gemini-3.6-flash)
 		let chapters: string[] = [];
 		try {
-			const prompt = `Eres un escritor experto en historias secuenciales. Genera una historia cuyo protagonista es ${nombre_de_usuario} dividida exactamente en ${cantidad_de_niveles} capítulos para el proyecto "${title}" con temática "${tema}".
+			const prompt = `Eres un escritor experto en narrativas inmersivas y gamificación. Genera una historia secuencial y emocionante dividida exactamente en ${cantidad_de_niveles} capítulos para el proyecto "${title}" con temática "${tema}".
+Cada capítulo debe relatar de forma inmersiva y descriptiva el desafío, hito o avance correspondiente a ese nivel, manteniendo coherencia de inicio a fin.
 Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Capítulo 2: ..."] }. Solo devuelve el JSON sin formato extra.`;
 
 			let result;
@@ -80,9 +81,10 @@ Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Ca
 					});
 					break;
 				} catch (aiError: any) {
-					if (aiError.status === 503 && retries > 1) {
+					if ((aiError.status === 503 || aiError.status === 429) && retries > 1) {
 						retries--;
-						await new Promise((resolve) => setTimeout(resolve, 2000));
+						const waitTime = aiError.status === 429 ? 3000 : 2000;
+						await new Promise((resolve) => setTimeout(resolve, waitTime));
 						continue;
 					}
 					throw aiError;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { Motion } from 'svelte-motion';
 
 	interface Props {
 		children?: Snippet;
@@ -24,34 +25,66 @@
 	<div class="column is-half-desktop is-full-mobile">
 		<div class="grid has-col-min-12">
 			<div class="cell">
-				<div class="box is-shadowless has-background-dark has-text-white stat-box">
-					<p class="is-size-7 is-uppercase has-text-grey-light">Usuario</p>
-					<p class="is-size-6 has-text-weight-bold has-text-primary">
-						{datas?.user?.nombre_de_usuario || 'Anónimo'}
-					</p>
-					<p class="is-size-7 has-text-grey-lighter is-truncated">{datas?.user?.email || ''}</p>
-				</div>
+				<Motion
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					whileHover={{ y: -2, scale: 1.02 }}
+					transition={{ duration: 0.2 }}
+					let:motion
+				>
+					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
+						<p class="is-size-7 is-uppercase has-text-grey-light">Usuario</p>
+						<p class="is-size-6 has-text-weight-bold has-text-primary">
+							{datas?.user?.nombre_de_usuario || 'Anónimo'}
+						</p>
+						<p class="is-size-7 has-text-grey-lighter is-truncated">{datas?.user?.email || ''}</p>
+					</div>
+				</Motion>
 			</div>
 
 			<div class="cell">
-				<div class="box is-shadowless has-background-dark has-text-white stat-box">
-					<p class="is-size-7 is-uppercase has-text-grey-light">Total Proyectos</p>
-					<p class="is-size-4 has-text-weight-bold has-text-info">{tasks.length}</p>
-				</div>
+				<Motion
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					whileHover={{ y: -2, scale: 1.02 }}
+					transition={{ duration: 0.2, delay: 0.05 }}
+					let:motion
+				>
+					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
+						<p class="is-size-7 is-uppercase has-text-grey-light">Total Proyectos</p>
+						<p class="is-size-4 has-text-weight-bold has-text-info">{tasks.length}</p>
+					</div>
+				</Motion>
 			</div>
 
 			<div class="cell">
-				<div class="box is-shadowless has-background-dark has-text-white stat-box">
-					<p class="is-size-7 is-uppercase has-text-grey-light">En Progreso</p>
-					<p class="is-size-4 has-text-weight-bold has-text-warning">{activeTasks}</p>
-				</div>
+				<Motion
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					whileHover={{ y: -2, scale: 1.02 }}
+					transition={{ duration: 0.2, delay: 0.1 }}
+					let:motion
+				>
+					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
+						<p class="is-size-7 is-uppercase has-text-grey-light">En Progreso</p>
+						<p class="is-size-4 has-text-weight-bold has-text-warning">{activeTasks}</p>
+					</div>
+				</Motion>
 			</div>
 
 			<div class="cell">
-				<div class="box is-shadowless has-background-dark has-text-white stat-box">
-					<p class="is-size-7 is-uppercase has-text-grey-light">Completadas</p>
-					<p class="is-size-4 has-text-weight-bold has-text-success">{completedTasks}</p>
-				</div>
+				<Motion
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					whileHover={{ y: -2, scale: 1.02 }}
+					transition={{ duration: 0.2, delay: 0.15 }}
+					let:motion
+				>
+					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
+						<p class="is-size-7 is-uppercase has-text-grey-light">Completadas</p>
+						<p class="is-size-4 has-text-weight-bold has-text-success">{completedTasks}</p>
+					</div>
+				</Motion>
 			</div>
 		</div>
 		{@render children?.()}

@@ -1,5 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { fly, fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
+	import { Motion } from 'svelte-motion';
+
 	let {
 		isOpen = $bindable(),
 		mode = 'form',
@@ -8,128 +12,161 @@
 	}: { isOpen: boolean; mode: 'form' | 'details'; taskData?: any; children?: Snippet } = $props();
 </script>
 
-<div class="panel-overlay {isOpen ? 'is-active' : ''}">
-	<div
-		class="panel-background"
-		onclick={() => (isOpen = false)}
-		role="button"
-		aria-label="Close"
-		aria-hidden="true"
-	></div>
-	<div class="panel-content px-2">
-		<button class="delete" onclick={() => (isOpen = false)} aria-label="Close"></button>
+{#if isOpen}
+	<div class="panel-overlay">
+		<!-- Fondo oscuro atenuado con fade -->
+		<div
+			class="panel-background"
+			onclick={() => (isOpen = false)}
+			transition:fade={{ duration: 250 }}
+			role="button"
+			tabindex="0"
+			aria-label="Cerrar panel"
+			onkeydown={(e) => e.key === 'Escape' && (isOpen = false)}
+		></div>
 
-		<section class="section p-0">
-			<div class="container">
-				{#if mode === 'form'}
-					<h2 class="title has-text-white">Nueva Tarea</h2>
-					{@render children?.()}
-				{:else if mode === 'details' && taskData}
-					<h2 class="title has-text-white is-capitalized">{taskData.title}</h2>
-					<div class="box pb-4 mb-4 pt-0 is-transparent">
-						<p class="is-hidden"><strong>Temática:</strong> {taskData.tema}</p>
-						<p class="is-hidden"><strong>Niveles:</strong> {taskData.cantidad_de_niveles}</p>
-						<p class="is-hidden"><strong>Status:</strong> {taskData.status}</p>
+		<!-- Panel deslizante con transición fly suave desde el fondo -->
+		<div
+			class="panel-content px-4"
+			transition:fly={{ y: 600, duration: 350, easing: cubicOut }}
+		>
+			<!-- Manija de arrastre / indicador visual estético -->
+			<div class="drag-handle-bar"></div>
 
-						<p class="mt-4"><strong>Narrativa:</strong></p>
-						{#if taskData.levels && taskData.levels.length > 0}
-							{#each taskData.levels as level (level.id)}
-								<div class="narrative-container">
-									<!-- Imagen Cinemática si existe para el estado actual -->
-									{#if level.cinematica && level.cinematica[taskData.status]}
-										<div class="mb-3 mt-2">
-											<figure class="image is-16by9" style="max-width: 320px; margin: 0 auto;">
-												<img
-													src={level.cinematica[taskData.status]}
-													alt="Cinemática"
-													style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
-												/>
-											</figure>
-										</div>
-									{/if}
+			<Motion whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.85 }} let:motion>
+				<button
+					use:motion
+					class="delete"
+					onclick={() => (isOpen = false)}
+					aria-label="Cerrar"
+				></button>
+			</Motion>
 
-									<!-- Narrativa Actual -->
-									{#if level.content && level.content[taskData.status] !== undefined}
-										<div
-											class="notification is-light p-3 mb-3"
-											style="border-left: 4px solid hsl(155, 81%, 41%); background-color: #f0fdf4;"
-										>
-											<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #000000;">
-												"{level.content[taskData.status]}"
-											</p>
-										</div>
-									{:else if level.content && level.content[0] !== undefined}
-										<div
-											class="notification is-light p-3 mb-3"
-											style="border-left: 4px solid #ccc; background-color: #f9fafb;"
-										>
-											<p class="is-italic" style="color: #4b5563;">"{level.content[0]}"</p>
-										</div>
-									{/if}
+			<section class="section p-0">
+				<div class="container">
+					{#if mode === 'form'}
+						<div>
+							<h2 class="title has-text-white mb-4">Nueva Tarea</h2>
+							{@render children?.()}
+						</div>
+					{:else if mode === 'details' && taskData}
+						<div>
+							<h2 class="title has-text-white is-capitalized mb-3">{taskData.title}</h2>
+							<div class="box pb-4 mb-4 pt-0 is-transparent">
+								<div class="tags are-medium mb-3">
+									<span class="tag is-dark has-text-grey-light">
+										Temática: <strong class="has-text-primary ml-1">{taskData.tema}</strong>
+									</span>
+									<span class="tag is-dark has-text-grey-light">
+										Progreso: <strong class="has-text-info ml-1">
+											{Number(taskData.status) + 1} / {taskData.cantidad_de_niveles}
+										</strong>
+									</span>
 								</div>
-							{/each}
-						{:else}
-							<p class="has-text-grey-light">No hay narrativa asociada a esta tarea.</p>
-						{/if}
-						<!-- Añadir más detalles aquí -->
-					</div>
-				{/if}
-			</div>
-		</section>
+
+								<p class="mt-4 mb-2"><strong>Narrativa de la Aventura:</strong></p>
+								{#if taskData.levels && taskData.levels.length > 0}
+									{#each taskData.levels as level (level.id)}
+										<div class="narrative-container">
+											<!-- Imagen Cinemática si existe para el estado actual -->
+											{#if level.cinematica && level.cinematica[taskData.status]}
+												<div class="mb-3 mt-2">
+													<figure class="image is-16by9" style="max-width: 320px; margin: 0 auto;">
+														<img
+															src={level.cinematica[taskData.status]}
+															alt="Cinemática"
+															style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
+														/>
+													</figure>
+												</div>
+											{/if}
+
+											<!-- Narrativa Actual -->
+											{#if level.content && level.content[taskData.status] !== undefined}
+												<div
+													class="notification is-light p-4 mb-3"
+													style="border-left: 4px solid hsl(155, 81%, 41%); background-color: #f0fdf4;"
+												>
+													<p
+														class="is-italic has-text-weight-bold is-size-7-mobile"
+														style="color: #052e16; line-height: 1.6;"
+													>
+														"{level.content[taskData.status]}"
+													</p>
+												</div>
+											{:else if level.content && level.content[0] !== undefined}
+												<div
+													class="notification is-light p-3 mb-3"
+													style="border-left: 4px solid #ccc; background-color: #f9fafb;"
+												>
+													<p class="is-italic" style="color: #4b5563;">"{level.content[0]}"</p>
+												</div>
+											{/if}
+										</div>
+									{/each}
+								{:else}
+									<p class="has-text-grey-light">No hay narrativa asociada a esta tarea.</p>
+								{/if}
+							</div>
+						</div>
+					{/if}
+				</div>
+			</section>
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	.panel-overlay {
 		position: fixed;
 		top: 0;
 		left: 0;
-		width: 98%;
-		height: 100%;
+		width: 100vw;
+		height: 100vh;
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-end;
-		visibility: hidden;
+		align-items: center;
 		z-index: 1000;
-	}
-
-	.panel-overlay.is-active {
-		visibility: visible;
+		pointer-events: auto;
+		overflow: hidden;
 	}
 
 	.panel-background {
-		position: absolute;
+		position: fixed;
 		top: 0;
 		left: 0;
 		width: 100vw;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		opacity: 0;
-		transition: opacity 0.3s ease;
-	}
-
-	.panel-overlay.is-active .panel-background {
-		opacity: 1;
+		height: 100vh;
+		background: rgba(0, 0, 0, 0.65);
+		backdrop-filter: blur(5px);
+		-webkit-backdrop-filter: blur(5px);
+		z-index: 1001;
 	}
 
 	.panel-content {
-		background: rgba(255, 255, 255, 0.1); /* Ajuste del cristal */
-		backdrop-filter: blur(20px);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		width: 100vw;
-		height: 60vh;
-		border-radius: 1rem 1rem 0 0;
-		box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.3);
-		transform: translateY(100%);
-		transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-		padding: 2rem;
 		position: relative;
-		z-index: 1;
+		z-index: 1002;
+		background: rgba(22, 27, 34, 0.95);
+		backdrop-filter: blur(25px);
+		-webkit-backdrop-filter: blur(25px);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		width: 100vw;
+		max-height: 80vh;
+		min-height: 45vh;
+		border-radius: 1.25rem 1.25rem 0 0;
+		box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+		padding: 1.5rem 1.75rem 2.5rem 1.75rem;
 		color: white;
+		overflow-y: auto;
 	}
 
-	.panel-overlay.is-active .panel-content {
-		transform: translateY(0);
+	.drag-handle-bar {
+		width: 44px;
+		height: 5px;
+		background: rgba(255, 255, 255, 0.3);
+		border-radius: 3px;
+		margin: 0 auto 1.25rem auto;
 	}
 
 	.delete {
@@ -140,11 +177,20 @@
 		border-radius: 50%;
 		cursor: pointer;
 		position: absolute;
-		top: 1rem;
-		right: 1rem;
+		top: 1.25rem;
+		right: 1.25rem;
+		z-index: 10;
 	}
 
 	.box {
 		background-color: transparent;
+	}
+
+	@media (min-width: 1024px) {
+		.panel-content {
+			width: 50vw;
+			max-width: 680px;
+			border-radius: 1.25rem 1.25rem 0 0;
+		}
 	}
 </style>

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { Motion } from 'svelte-motion';
 	import { page } from '$app/state';
+	import { playClick, toggleSound, isSoundEnabled } from '$lib/audio';
 
 	let { children }: { children?: Snippet } = $props();
 
@@ -8,6 +10,16 @@
 	let isDashboard = $derived(pathname.startsWith('/dashboard'));
 	let isAuth = $derived(pathname.startsWith('/auth'));
 	let isHome = $derived(pathname === '/');
+
+	let soundOn = $state(true);
+
+	$effect(() => {
+		soundOn = isSoundEnabled();
+	});
+
+	function handleToggleSound() {
+		soundOn = toggleSound();
+	}
 </script>
 
 <header class="navbar-wrapper px-4 pt-3 pb-1">
@@ -17,28 +29,73 @@
 		<nav class="breadcrumb is-small py-0 mb-0" aria-label="breadcrumbs">
 			<ul class="mb-0">
 				<li class={isHome ? 'is-active' : ''}>
-					<a class="button is-small is-rounded {isHome ? 'is-primary' : 'is-dark'}" href="/"
-						>Inicio</a
-					>
+					<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
+						<a
+							use:motion
+							onclick={playClick}
+							class="button is-small is-rounded {isHome ? 'is-primary' : 'is-dark'}"
+							href="/"
+						>
+							Inicio
+						</a>
+					</Motion>
 				</li>
 				<li class={isDashboard ? 'is-active ml-2' : 'ml-2'}>
-					<a
-						class="button is-small is-rounded {isDashboard ? 'is-primary' : 'is-dark'}"
-						href="/dashboard">Dashboard</a
-					>
+					<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
+						<a
+							use:motion
+							onclick={playClick}
+							class="button is-small is-rounded {isDashboard ? 'is-primary' : 'is-dark'}"
+							href="/dashboard"
+						>
+							Dashboard
+						</a>
+					</Motion>
 				</li>
 			</ul>
 		</nav>
 
-		<div class="buttons are-small mb-0">
+		<div class="buttons are-small mb-0 is-flex is-align-items-center">
+			<!-- Botón sutil de efectos de sonido -->
+			<Motion whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} let:motion>
+				<button
+					use:motion
+					type="button"
+					class="button is-small is-dark is-rounded mr-2 sound-toggle-btn"
+					onclick={handleToggleSound}
+					title={soundOn ? 'Desactivar efectos de sonido' : 'Activar efectos de sonido'}
+					aria-label={soundOn ? 'Sonido activado' : 'Sonido desactivado'}
+				>
+					<span class="icon is-small">
+						{soundOn ? '🔊' : '🔇'}
+					</span>
+				</button>
+			</Motion>
+
 			{#if isDashboard}
 				<form method="POST" action="/auth?/logout">
-					<button type="submit" class="button is-small is-danger is-outlined is-rounded">
-						Cerrar Sesión
-					</button>
+					<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
+						<button
+							use:motion
+							onclick={playClick}
+							type="submit"
+							class="button is-small is-danger is-outlined is-rounded"
+						>
+							Cerrar Sesión
+						</button>
+					</Motion>
 				</form>
 			{:else if !isAuth}
-				<a href="/auth" class="button is-small is-primary is-rounded"> Acceder </a>
+				<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
+					<a
+						use:motion
+						onclick={playClick}
+						href="/auth"
+						class="button is-small is-primary is-rounded"
+					>
+						Acceder
+					</a>
+				</Motion>
 			{/if}
 		</div>
 
