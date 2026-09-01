@@ -57,20 +57,6 @@
 
 		<div class="buttons are-small mb-0 is-flex is-align-items-center">
 			<!-- Botón sutil de efectos de sonido -->
-			<Motion whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} let:motion>
-				<button
-					use:motion
-					type="button"
-					class="button is-small is-dark is-rounded mr-2 sound-toggle-btn"
-					onclick={handleToggleSound}
-					title={soundOn ? 'Desactivar efectos de sonido' : 'Activar efectos de sonido'}
-					aria-label={soundOn ? 'Sonido activado' : 'Sonido desactivado'}
-				>
-					<span class="icon is-small">
-						{soundOn ? '🔊' : '🔇'}
-					</span>
-				</button>
-			</Motion>
 
 			{#if isDashboard}
 				<form method="POST" action="/auth?/logout">
