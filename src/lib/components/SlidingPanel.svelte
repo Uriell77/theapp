@@ -55,7 +55,7 @@
 
 						<div>
 							<h2 class="subtitle has-text-white is-capitalized mb-3">{taskData.title}</h2>
-							<div class="box pb-4 p-0 is-transparent">
+							<div class="box is-shadowless pb-4 p-0 is-transparent">
 								<div class="tags are-medium mb-3">
 									<span class="tag is-dark has-text-grey-light is-size-7">
 										Temática: <strong class="has-text-primary ml-1">{taskData.tema}</strong>
@@ -87,11 +87,11 @@
 											<!-- Narrativa Actual -->
 											{#if level.content && level.content[taskData.status] !== undefined}
 												<div
-													class=" is-light p-4 mb-3 levelcontent"
-													style="border-left: 4px solid hsl(155, 81%, 41%); background-color: #f0fdf4;"
+													class=" is-light p-4 mb-3 levelcontent is-transparent"
+													style="border-left: 4px solid hsl(155, 81%, 41%);"
 												>
 													<p
-														class="is-italic has-text-weight-bold is-size-7-mobile"
+														class="is-italic has-text-weight-bold is-size-6-mobile"
 														style="color: #052e16; line-height: 1.6;"
 													>
 														"{level.content[taskData.status]}"
