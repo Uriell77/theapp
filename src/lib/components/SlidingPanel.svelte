@@ -11,6 +11,46 @@
 		taskData,
 		children
 	}: { isOpen: boolean; mode: 'form' | 'details'; taskData?: any; children?: Snippet } = $props();
+
+
+
+
+// Acción de Svelte para el efecto
+	function typewriter(node: HTMLElement, { text, speed }: { text: string; speed: number }) {
+		let currentText = '';
+		let index = 0;
+		let interval: ReturnType<typeof setInterval>;
+
+		function startEffect(txt: string) {
+			clearInterval(interval);
+			currentText = '';
+			index = 0;
+			node.textContent = '';
+			interval = setInterval(() => {
+				if (index < txt.length) {
+					currentText += txt[index];
+					node.textContent = currentText;
+					index++;
+				} else {
+					clearInterval(interval);
+				}
+			}, speed);
+		}
+
+		startEffect(text);
+
+		return {
+			update({ text: newText }: { text: string; speed: number }) {
+				startEffect(newText);
+			},
+			destroy() {
+				clearInterval(interval);
+			}
+		};
+	}
+
+
+
 </script>
 
 {#if isOpen}
@@ -86,25 +126,24 @@
 
 											<!-- Narrativa Actual -->
 											{#if level.content && level.content[taskData.status] !== undefined}
-												<div
-													class=" is-light p-4 mb-3 levelcontent is-transparent"
-													style="border-left: 4px solid hsl(155, 81%, 41%);"
-												>
-													<p
-														class="is-italic has-text-weight-bold is-size-6-mobile"
-														style="color: #052e16; line-height: 1.6;"
-													>
-														"{level.content[taskData.status]}"
-													</p>
-												</div>
-											{:else if level.content && level.content[0] !== undefined}
-												<div
-													class="notification is-light p-3 mb-3"
-													style="border-left: 4px solid #ccc; background-color: #f9fafb;"
-												>
-													<p class="is-italic" style="color: #4b5563;">"{level.content[0]}"</p>
-												</div>
-											{/if}
+							<div
+								class=" is-light p-4 mb-3 levelcontent is-transparent"
+								style="border-left: 4px solid hsl(155, 81%, 41%);"
+							>
+								<p
+									class="is-italic has-text-weight-bold is-size-6-mobile"
+									style="color: #052e16; line-height: 1.6;"
+									use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}
+								></p>
+							</div>
+						{:else if level.content && level.content[0] !== undefined}
+							<div
+								class="notification is-light p-3 mb-3"
+								style="border-left: 4px solid #ccc; background-color: #f9fafb;"
+							>
+								<p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
+							</div>
+						{/if}
 										</div>
 									{/each}
 								{:else}
