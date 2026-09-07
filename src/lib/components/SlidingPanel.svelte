@@ -132,7 +132,7 @@
 							>
 								<p
 									class="is-italic has-text-weight-bold is-size-6-mobile"
-									style="color: #052e16; line-height: 1.6;"
+									style="color: #f0f0f0; line-height: 1.6;"
 									use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}
 								></p>
 							</div>
@@ -194,7 +194,7 @@
 	.panel-content {
 		position: relative;
 		z-index: 1002;
-		background: rgba(22, 27, 34, 0.95);
+		background: rgba(82, 93, 84, 0.99);
 		backdrop-filter: blur(25px);
 		-webkit-backdrop-filter: blur(25px);
 		border: 1px solid rgba(255, 255, 255, 0.15);
@@ -205,7 +205,16 @@
 		box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
 		padding: 1.5rem 1.75rem 2.5rem 1.75rem;
 		color: white;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.section {
+		flex: 1;
 		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 	}
 
 	.drag-handle-bar {
