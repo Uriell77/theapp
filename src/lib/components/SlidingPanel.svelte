@@ -83,7 +83,7 @@
 				></button>
 			</Motion>
 
-			<section class="section p-0">
+			<section class="section p-4">
 				<div class="container">
 					{#if mode === 'form'}
 						<div>
@@ -91,7 +91,6 @@
 							{@render children?.()}
 						</div>
 					{:else if mode === 'details' && taskData}
-					<Visualizer>
 
 						<div>
 							<h2 class="subtitle has-text-white is-capitalized mb-3">{taskData.title}</h2>
@@ -126,8 +125,9 @@
 
 											<!-- Narrativa Actual -->
 											{#if level.content && level.content[taskData.status] !== undefined}
+					<Visualizer>
 							<div
-								class=" is-light p-4 mb-3 levelcontent is-transparent"
+								class=" is-light p-0 mb-1 levelcontent is-transparent"
 								style="border-left: 4px solid hsl(155, 81%, 41%);"
 							>
 								<p
@@ -136,6 +136,7 @@
 									use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}
 								></p>
 							</div>
+					</Visualizer>
 						{:else if level.content && level.content[0] !== undefined}
 							<div
 								class="notification is-light p-3 mb-3"
@@ -151,7 +152,6 @@
 								{/if}
 							</div>
 						</div>
-					</Visualizer>
 					{/if}
 				</div>
 			</section>

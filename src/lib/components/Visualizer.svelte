@@ -154,7 +154,7 @@
     .canvas-container {
         position: relative;
         width: 100%;
-        height: 50vh;
+        height: 40vh;
         border-radius: 16px;
         overflow:hidden;
     }
