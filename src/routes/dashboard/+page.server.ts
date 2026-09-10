@@ -63,11 +63,42 @@ export const actions: Actions = {
 
 		// 1. Generar narrativa con Gemini (modelo gemini-3.6-flash)
 		let chapters: string[] = [];
+		let cinematicaTags: any[] = [];
 		try {
-			const prompt = `Eres un escritor experto en narrativas inmersivas y gamificación. Genera una historia secuencial y emocionante dividida exactamente en ${cantidad_de_niveles} capítulos para el proyecto "${title}" con temática "${tema}".
-Cada capítulo debe relatar de forma inmersiva y descriptiva el desafío, hito o avance correspondiente a ese nivel, manteniendo coherencia de inicio a fin.
-Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Capítulo 2: ..."] }. Solo devuelve el JSON sin formato extra.`;
+			const prompt = `Eres un novelista y diseñador narrativo de alta literatura. 
+El usuario, llamado "${nombre_de_usuario}", tiene un desafío de productividad en el mundo real: "${title}".
+El tema estético y narrativo elegido es: "${tema}".
 
+Tu objetivo es construir una narrativa inmersiva y estrictamente secuencial dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista absoluto.
+
+REGLAS NARRATIVAS (METÁFORA SUTIL):
+1. NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas ni infantiles.
+2. Trata el universo narrativo con seriedad. El progreso en la vida real de ${nombre_de_usuario} debe traducirse en una odisea profunda de supervivencia, exploración, combate o descubrimiento acorde al tema "${tema}".
+3. Estructura: El primer capítulo establece el misterio y el entorno. Los intermedios aumentan drásticamente la tensión, los obstáculos y la psicología del personaje. El último capítulo de esta lista es el Clímax Épico y la victoria absoluta.
+
+REGLAS VISUALES (CINEMÁTICA):
+Para cada capítulo, debes asignar una atmósfera visual. Usa EXCLUSIVAMENTE combinaciones de las siguientes etiquetas para poblar el objeto JSON:
+- effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust.
+- color: deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust.
+- speed: static, slow, normal, fast, chaotic, pulsing.
+- lighting: vignette-dark, lens-flare, strobe-alarm, candle-flicker, lightning-flash, eclipse-ring, none.
+- mood: intro, rising-tension, boss-fight, victory, defeat.
+
+FORMATO DE SALIDA:
+Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown, sin texto extra) con esta estructura exacta:
+{
+  "chapters": [
+    "Capítulo 1: [Narrativa inmersiva del inicio...]",
+    "Capítulo 2: [Narrativa del desarrollo...]",
+    ... (debe haber exactamente ${cantidad_de_niveles} capítulos aquí)
+  ],
+  "cinematica": [
+    { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." },
+    ... (debe haber exactamente ${cantidad_de_niveles} objetos aquí, correspondientes a cada capítulo)
+  ],
+  "defeatChapter": "Final Alternativo: [Narra una retirada estratégica de ${nombre_de_usuario} ante el peso de su misión. Debe tener un mensaje profundamente humano, reflexivo y de ánimo, recordando que las cicatrices enseñan y siempre se puede volver a intentar.]",
+  "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "static", "lighting": "vignette-dark", "mood": "defeat" }
+}`;
 			let result;
 			let retries = 3;
 			while (retries > 0) {
@@ -104,6 +135,7 @@ Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Ca
 
 			const parsed = JSON.parse(rawText);
 			chapters = Array.isArray(parsed.chapters) ? parsed.chapters : [];
+			let cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
 
 			if (chapters.length === 0) {
 				chapters = Array.from(
@@ -119,6 +151,36 @@ Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Ca
 				(_, i) => `Nivel ${i + 1}: Explorando ${tema} en ${title}`
 			);
 		}
+
+		// Generar etiquetas cinemática basadas en los capítulos creados
+		cinematicaTags = chapters.map((cap) => {
+			const lower = cap.toLowerCase();
+			if (lower.includes('tormenta')) {
+				return {
+					effect: 'storm',
+					color: '#001f3f', // azul oscuro
+					speed: 'fast',
+					lighting: 'flashes',
+					mood: 'dramatic'
+				};
+			} else if (lower.includes('volcán') || lower.includes('erupción')) {
+				return {
+					effect: 'volcano',
+					color: '#ff4500', // rojo‑naranja
+					speed: 'medium',
+					lighting: 'smoke',
+					mood: 'intense'
+				};
+			} else {
+				return {
+					effect: 'default',
+					color: '#ffffff',
+					speed: 'normal',
+					lighting: 'none',
+					mood: 'neutral'
+				};
+			}
+		});
 
 		// 2. Insertar tarea y niveles con Drizzle ORM
 		try {
@@ -140,7 +202,7 @@ Devuelve un JSON estricto con el formato: { "chapters": ["Capítulo 1: ...", "Ca
 			await db.insert(levels).values({
 				taskId: newTask.id,
 				content: chapters,
-				cinematica: Array(cantidad_de_niveles).fill(''),
+				cinematica: cinematicaTags.map(tag => JSON.stringify(tag)),
 				vista: Array(cantidad_de_niveles).fill(false)
 			});
 

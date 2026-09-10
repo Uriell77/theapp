@@ -54,7 +54,7 @@
 				<hr class="py-0 my-2 divider" />
 
 				<div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
-					<div class="column is-half">
+					<div class="column is-full">
 						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
 							<span class="label-field">Temática:</span>
 							<p class="has-text-white pl-2">{task.tema}</p>
@@ -69,19 +69,12 @@
 						</div>
 						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
 							<span class="label-field">Capítulo:</span>
-							<p class="has-text-white pl-2 is-italic is-truncated">{currentLevelContent}</p>
-						</div>
+<p class="has-text-white pl-2 is-italic ">
+  {currentLevelContent.split(/[.,]/)[0].trim()}
+</p>
 					</div>
 
 					<div
-						class="column is-half is-flex is-justify-content-center is-align-items-center py-0 my-0"
-					>
-						{#if currentCinematica}
-							<figure class="image is-9by3 py-0 my-0 is-flex">
-								<img class="py-0 my-0" src={currentCinematica} alt="cinemática" loading="lazy" />
-							</figure>
-						{/if}
-					</div>
 
 					<div class="column is-full pt-2">
 						<div class="is-flex is-align-items-center is-justify-content-space-between">

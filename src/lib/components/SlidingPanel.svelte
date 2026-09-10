@@ -83,7 +83,7 @@
 				></button>
 			</Motion>
 
-			<section class="section p-4">
+			<section class="section p-0">
 				<div class="container">
 					{#if mode === 'form'}
 						<div>
@@ -111,40 +111,27 @@
 									{#each taskData.levels as level (level.id)}
 										<div class="narrative-container">
 											<!-- Imagen Cinemática si existe para el estado actual -->
-											{#if level.cinematica && level.cinematica[taskData.status]}
-												<div class="mb-3 mt-2">
-													<figure class="image is-16by9" style="max-width: 320px; margin: 0 auto;">
-														<img
-															src={level.cinematica[taskData.status]}
-															alt="Cinemática"
-															style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
-														/>
-													</figure>
-												</div>
-											{/if}
 
 											<!-- Narrativa Actual -->
 											{#if level.content && level.content[taskData.status] !== undefined}
-					<Visualizer>
-							<div
-								class=" is-light p-0 mb-1 levelcontent is-transparent"
-								style="border-left: 4px solid hsl(155, 81%, 41%);"
-							>
-								<p
-									class="is-italic has-text-weight-bold is-size-6-mobile"
-									style="color: #f0f0f0; line-height: 1.6;"
-									use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}
-								></p>
-							</div>
-					</Visualizer>
-						{:else if level.content && level.content[0] !== undefined}
-							<div
-								class="notification is-light p-3 mb-3"
-								style="border-left: 4px solid #ccc; background-color: #f9fafb;"
-							>
-								<p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
-							</div>
-						{/if}
+  {#if level.cinematica && level.cinematica[taskData.status]}
+    <Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}> 
+      <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+        <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}></p>
+      </div>
+    </Visualizer>
+  {:else}
+    <Visualizer>
+      <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+        <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}></p>
+      </div>
+    </Visualizer>
+  {/if}
+{:else if level.content && level.content[0] !== undefined}
+  <div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
+    <p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
+  </div>
+{/if}
 										</div>
 									{/each}
 								{:else}
@@ -194,7 +181,7 @@
 	.panel-content {
 		position: relative;
 		z-index: 1002;
-		background: rgba(82, 93, 84, 0.99);
+		background: hsla(134, 15%, 17%, 0.99);
 		backdrop-filter: blur(25px);
 		-webkit-backdrop-filter: blur(25px);
 		border: 1px solid rgba(255, 255, 255, 0.15);
@@ -203,7 +190,7 @@
 		min-height: 45vh;
 		border-radius: 1.25rem 1.25rem 0 0;
 		box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
-		padding: 1.5rem 1.75rem 2.5rem 1.75rem;
+		padding: 1.0rem 1.0rem 1.5rem 1.0rem;
 		color: white;
 		display: flex;
 		flex-direction: column;
