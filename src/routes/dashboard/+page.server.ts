@@ -64,6 +64,7 @@ export const actions: Actions = {
 		// 1. Generar narrativa con Gemini (modelo gemini-3.6-flash)
 		let chapters: string[] = [];
 		let cinematicaTags: any[] = [];
+		let defeatChapter = '';
 		try {
 			const prompt = `Eres un novelista y diseñador narrativo de alta literatura. 
 El usuario, llamado "${nombre_de_usuario}", tiene un desafío de productividad en el mundo real: "${title}".
@@ -136,6 +137,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown,
 			const parsed = JSON.parse(rawText);
 			chapters = Array.isArray(parsed.chapters) ? parsed.chapters : [];
 			let cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
+			defeatChapter = parsed.defeatChapter || '';
 
 			if (chapters.length === 0) {
 				chapters = Array.from(
@@ -203,7 +205,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown,
 				taskId: newTask.id,
 				content: chapters,
 				cinematica: cinematicaTags.map(tag => JSON.stringify(tag)),
-				vista: Array(cantidad_de_niveles).fill(false)
+				vista: [defeatChapter]
 			});
 
 			return { success: true };
@@ -252,5 +254,52 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown,
 		}
 
 		return { success: true };
-	}
+	},
+  abandonTask: async ({ request, locals }) => {
+    if (!locals.user) {
+      return fail(401, { message: 'No autenticado' });
+    }
+    const formData = await request.formData();
+    const taskId = parseInt(formData.get('taskId') as string, 10);
+    if (isNaN(taskId)) {
+      return fail(400, { message: 'ID de tarea inválido' });
+    }
+    const [task] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+      .limit(1);
+    if (!task) {
+      return fail(404, { message: 'Tarea no encontrada' });
+    }
+    await db
+      .update(tasks)
+      .set({ status: '-1'})
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+    return { success: true };
+  },
+
+  resetTask: async ({ request, locals }) => {
+    if (!locals.user) {
+      return fail(401, { message: 'No autenticado' });
+    }
+    const formData = await request.formData();
+    const taskId = parseInt(formData.get('taskId') as string, 10);
+    if (isNaN(taskId)) {
+      return fail(400, { message: 'ID de tarea inválido' });
+    }
+    const [task] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+      .limit(1);
+    if (!task) {
+      return fail(404, { message: 'Tarea no encontrada' });
+    }
+    await db
+      .update(tasks)
+      .set({ status: '0' })
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+    return { success: true };
+  }
 };

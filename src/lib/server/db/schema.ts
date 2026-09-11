@@ -33,7 +33,7 @@ export const levels = pgTable('levels', {
 		.notNull(),
 	content: text('content').array().notNull(),
 	cinematica: text('cinematica').array().notNull(),
-	vista: boolean('vista').array().notNull(),
+	vista: text('vista').array().notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 

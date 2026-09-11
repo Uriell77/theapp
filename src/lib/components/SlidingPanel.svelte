@@ -101,42 +101,52 @@
 									</span>
 									<span class="tag is-dark has-text-grey-light is-size-7">
 										Progreso: <strong class="has-text-info ml-1">
-											{Number(taskData.status) + 1} / {taskData.cantidad_de_niveles}
+											{taskData.status === '-1' ? 'Abandonada' : `${Number(taskData.status) + 1} / ${taskData.cantidad_de_niveles}`}
 										</strong>
 									</span>
 								</div>
 
 								<p class="mt-4 mb-2 is-hidden"><strong>Narrativa de la Aventura:</strong></p>
-								{#if taskData.levels && taskData.levels.length > 0}
-									{#each taskData.levels as level (level.id)}
-										<div class="narrative-container">
-											<!-- Imagen Cinemática si existe para el estado actual -->
-
-											<!-- Narrativa Actual -->
-											{#if level.content && level.content[taskData.status] !== undefined}
-  {#if level.cinematica && level.cinematica[taskData.status]}
-    <Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}> 
-      <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-        <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}></p>
-      </div>
-    </Visualizer>
-  {:else}
-    <Visualizer>
-      <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-        <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `"${level.content[taskData.status]}"`, speed: 100 }}></p>
-      </div>
-    </Visualizer>
-  {/if}
-{:else if level.content && level.content[0] !== undefined}
-  <div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
-    <p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
+								{#if taskData.status === '-1'}
+  <div class="narrative-container">
+            <Visualizer >
+    <div class="is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+      <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: taskData.levels?.[0]?.vista?.[0], speed: 100 }}></p>
+    </div>
+            </Visualizer>
   </div>
+{:else}
+  {#if taskData.levels && taskData.levels.length > 0}
+    {#each taskData.levels as level (level.id)}
+      <div class="narrative-container">
+        <!-- Imagen Cinemática si existe para el estado actual -->
+
+        <!-- Narrativa Actual -->
+        {#if level.content && level.content[taskData.status] !== undefined}
+          {#if level.cinematica && level.cinematica[taskData.status]}
+            <Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
+              <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+                <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `${level.content[taskData.status]}`, speed: 100 }}></p>
+              </div>
+            </Visualizer>
+          {:else}
+            <Visualizer>
+              <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+                <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `${level.content[taskData.status]}`, speed: 100 }}></p>
+              </div>
+            </Visualizer>
+          {/if}
+        {:else if level.content && level.content[0] !== undefined}
+          <div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
+            <p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
+          </div>
+        {/if}
+      </div>
+    {/each}
+  {:else}
+    <p class="has-text-grey-light">No hay narrativa asociada a esta tarea.</p>
+  {/if}
 {/if}
-										</div>
-									{/each}
-								{:else}
-									<p class="has-text-grey-light">No hay narrativa asociada a esta tarea.</p>
-								{/if}
 							</div>
 						</div>
 					{/if}

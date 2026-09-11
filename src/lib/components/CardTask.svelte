@@ -27,6 +27,16 @@
 				? '100'
 				: '0'
 	);
+	let defeatChapter = $derived.by(() => {
+		if (!task?.levels?.[0]?.vista) return null;
+		return task.levels[0].vista || null;
+	});
+
+	let renunciar = $derived(false);
+
+	function renunciarMision() {
+		renunciar = true;
+	}
 </script>
 
 {#if task}
@@ -46,11 +56,10 @@
 					aria-label={`Ver detalles de ${task.title}`}
 				></button>
 
-				<div>
+				
 					<strong class="has-text-weight-bold has-text-centered py-0">
 						<p class="is-size-6-mobile py-0 has-text-white">{task.title}</p>
 					</strong>
-				</div>
 				<hr class="py-0 my-2 divider" />
 
 				<div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
@@ -65,16 +74,18 @@
 						</div>
 						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
 							<span class="label-field">Nivel actual:</span>
-							<p class="has-text-white pl-2">{statusNum + 1} / {task.cantidad_de_niveles}</p>
+							<p class="has-text-white pl-2">{statusNum =="-1" ? "defeatChapter" : `${statusNum + 1} / ${task.cantidad_de_niveles}`}</p>
 						</div>
 						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
 							<span class="label-field">Capítulo:</span>
-<p class="has-text-white pl-2 is-italic ">
-  {currentLevelContent.split(/[.,]/)[0].trim()}
-</p>
+							<p class="has-text-white pl-2 is-italic ">
+							{renunciar ? defeatChapter[0].split(/[.,]/)[0].trim() : currentLevelContent.split(/[.,]/)[0].trim()}
+							</p>
+						</div>
+
 					</div>
 
-					<div
+					
 
 					<div class="column is-full pt-2">
 						<div class="is-flex is-align-items-center is-justify-content-space-between">
@@ -91,6 +102,8 @@
 						</div>
 					</div>
 				</div>
+
+				<div class="buttons is-flex">
 
 				<form method="POST" action="?/advanceLevel" use:enhance class="mt-3">
 					<input type="hidden" name="taskId" value={task.id} />
@@ -113,12 +126,36 @@
 						</button>
 					</Motion>
 				</form>
+				<form method="POST" action="?/abandonTask" use:enhance class="mt-3">
+					<input type="hidden" name="taskId" value={task.id} />
+					<Motion
+						whileHover={hasViewed && !isLastLevel ? { scale: 1.04 } : {}}
+						whileTap={hasViewed && !isLastLevel ? { scale: 0.95 } : {}}
+						let:motion
+					>
+						<button
+							use:motion
+							class="button is-small is-danger"
+							disabled={!hasViewed || isLastLevel}
+							type="submit"
+							onclick={() => (renunciar = true)}	
+						>
+							{renunciar
+								? '¡Abandonada!'
+								: hasViewed
+									? 'Abandonar Tarea'
+									: 'Mira el final alternativo'}
+						</button>
+					</Motion>
+				</form>
+				</div>
 			</div>
 		</div>
 	</Motion>
 {:else}
 	<progress class="progress is-small is-primary" max="100"></progress>
 {/if}
+
 
 <style>
 	.card-wrapper {
@@ -147,18 +184,12 @@
 		font-weight: bold;
 	}
 
-	.is-truncated {
-		max-width: 160px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	img {
-		border-radius: 8px;
-	}
 
 	button[type='submit'] {
+		position: relative;
+		z-index: 20;
+	}
+	.is-renuncia {
 		position: relative;
 		z-index: 20;
 	}
