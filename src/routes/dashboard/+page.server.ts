@@ -75,7 +75,14 @@ Tu objetivo es construir una narrativa inmersiva y estrictamente secuencial divi
 REGLAS NARRATIVAS (METÁFORA SUTIL):
 1. NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas ni infantiles.
 2. Trata el universo narrativo con seriedad. El progreso en la vida real de ${nombre_de_usuario} debe traducirse en una odisea profunda de supervivencia, exploración, combate o descubrimiento acorde al tema "${tema}".
-3. Estructura: El primer capítulo establece el misterio y el entorno. Los intermedios aumentan drásticamente la tensión, los obstáculos y la psicología del personaje. El último capítulo de esta lista es el Clímax Épico y la victoria absoluta.
+3. Estructura: El primer capítulo establece el misterio y el entorno. Los intermedios aumentan drásticamente la tensión, los obstáculos y la psicología del personaje. El último capítulo de esta lista es el Clímax Épico batalla final contra algun enemigo fuerte o desenlace y la victoria absoluta.
+4. Cada capítulo debe tener un título evocador seguido de un punto (.)  y una narrativa que haga sentir al lector que está viviendo la experiencia de ${nombre_de_usuario} en primera persona.
+5. La narrativa debe ser inmersiva, con descripciones sensoriales, emociones y decisiones críticas que reflejen la lucha interna y externa del protagonista.
+6. Evita clichés y lugares comunes. La narrativa debe ser original, profunda y resonante, con un estilo literario que mantenga al lector en vilo.
+7. El capítulo final debe ser un clímax épico que refleje la culminación de la odisea de ${nombre_de_usuario}, con un desenlace que deje una sensación de logro y transformación personal.
+8. Incluye un capítulo alternativo de derrota, donde ${nombre_de_usuario} enfrenta una retirada estratégica ante la magnitud de su misión, con un mensaje humano y reflexivo sobre la resiliencia y el aprendizaje de las cicatrices.
+9. al final de cada capítulo, incluye una frase motivacional sin mencionar que lo es, que inspire a ${nombre_de_usuario} a continuar su viaje, reforzando la idea de que cada desafío es una oportunidad de crecimiento y aprendizaje.
+10. las narrativas denben ilustrarse como un viaje del heroe similar a los juegos de rol, donde cada nivel representa un obstáculo que debe superar para alcanzar la victoria final.
 
 REGLAS VISUALES (CINEMÁTICA):
 Para cada capítulo, debes asignar una atmósfera visual. Usa EXCLUSIVAMENTE combinaciones de las siguientes etiquetas para poblar el objeto JSON:

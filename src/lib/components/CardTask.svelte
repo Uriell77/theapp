@@ -118,7 +118,9 @@
 							disabled={!hasViewed || isLastLevel}
 							type="submit"
 						>
-							{isLastLevel
+							{statusNum == '-1' 
+							? '¡Reactivar Tarea!'
+							: isLastLevel
 								? '¡Completada!'
 								: hasViewed
 									? 'Avanzar Nivel'
@@ -136,11 +138,11 @@
 						<button
 							use:motion
 							class="button is-small is-danger"
-							disabled={!hasViewed || isLastLevel}
+							disabled={!hasViewed || isLastLevel || statusNum == '-1'}
 							type="submit"
 							onclick={() => (renunciar = true)}	
 						>
-							{renunciar
+							{statusNum == '-1'
 								? '¡Abandonada!'
 								: hasViewed
 									? 'Abandonar Tarea'

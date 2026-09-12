@@ -159,6 +159,9 @@
 <style>
 	.levelcontent{
 		min-height: 30vh;
+		max-height: 100vh;
+		overflow-y:auto;
+		scroll-behavior: smooth;
 	}
 
 	.panel-overlay {
