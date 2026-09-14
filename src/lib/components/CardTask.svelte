@@ -48,7 +48,7 @@
 		let:motion
 	>
 		<div use:motion class="componente-cardtask mb-3" id={`task-${task.id}`}>
-			<div class="box is-rounded mb-2 has-background-dark p-4 px-5 card-wrapper">
+			<div class="box is-rounded mb-2 has-background-dark py-1 px-3 card-wrapper">
 				<button
 					type="button"
 					class="clicker-btn"
@@ -62,36 +62,43 @@
 					</strong>
 				<hr class="py-0 my-2 divider" />
 
-				<div class="columns is-centered is-vcentered is-multiline is-mobile py-0 my-0">
-					<div class="column is-full">
-						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+				<div class="columns is-centered  is-multiline is-mobile py-0 my-0">
+					<div class="column is-full is-align-items-center ">
+
+						<div class="columns is-mobile is-multiline is-centered is-gapless py-0 my-0 px-0 is-narrow">
+							<div class="column is-one-third">
+						<div class="is-size-7-mobile has-text-aligned-center">
 							<span class="label-field">Temática:</span>
-							<p class="has-text-white pl-2">{task.tema}</p>
+							<p class="has-text-white pl-0">{task.tema}</p>
 						</div>
-						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
-							<span class="label-field">Niveles:</span>
-							<p class="has-text-white pl-2">{task.cantidad_de_niveles}</p>
+							</div>
+							<div class="column is-one-third">
+						<div class="is-size-7-mobile has-text-aligned-center">
+							<span class="label-field">Progreso:</span>
+							<p class="has-text-white pl-0">{statusNum =="-1" ? "defeatChapter" : `${statusNum + 1} / ${task.cantidad_de_niveles}`}</p>
 						</div>
-						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
-							<span class="label-field">Nivel actual:</span>
-							<p class="has-text-white pl-2">{statusNum =="-1" ? "defeatChapter" : `${statusNum + 1} / ${task.cantidad_de_niveles}`}</p>
-						</div>
-						<div class="is-flex is-size-7-mobile is-justify-content-space-between">
+							</div>
+							<div class="column is-one-third">
+						<div class="is-size-7-mobile has-text-aligned-center">
 							<span class="label-field">Capítulo:</span>
-							<p class="has-text-white pl-2 is-italic ">
-							{renunciar ? defeatChapter[0].split(/[.,]/)[0].trim() : currentLevelContent.split(/[.,]/)[0].trim()}
+							<p class="has-text-white pl-0 is-italic ">
+							{statusNum == -1 ? defeatChapter[0].split(/[.]/)[0].trim() : currentLevelContent.split(/[.]/)[0].trim()}
 							</p>
 						</div>
+							</div>
+						</div>
+
+
 
 					</div>
 
 					
 
 					<div class="column is-full pt-2">
-						<div class="is-flex is-align-items-center is-justify-content-space-between">
+						<div class="is-flex is-align-items-center is-justify-content-space-between is-tags-centered is-tags">
 							<div class="tags are-small mb-0">
 								{#each Array(task.cantidad_de_niveles) as _, idx}
-									<span class="tag {idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0">
+									<span class="tag {idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0 mx-0">
 										{idx + 1}
 									</span>
 								{/each}
@@ -114,11 +121,11 @@
 					>
 						<button
 							use:motion
-							class="button is-small is-primary"
+							class="button is-small is-primary is-rounded"
 							disabled={!hasViewed || isLastLevel}
 							type="submit"
 						>
-							{statusNum == '-1' 
+							{statusNum == -1 
 							? '¡Reactivar Tarea!'
 							: isLastLevel
 								? '¡Completada!'
@@ -137,12 +144,12 @@
 					>
 						<button
 							use:motion
-							class="button is-small is-danger"
-							disabled={!hasViewed || isLastLevel || statusNum == '-1'}
+							class="button is-small is-danger is-rounded"
+							disabled={!hasViewed || isLastLevel || statusNum == -1}
 							type="submit"
 							onclick={() => (renunciar = true)}	
 						>
-							{statusNum == '-1'
+							{statusNum == -1
 								? '¡Abandonada!'
 								: hasViewed
 									? 'Abandonar Tarea'
@@ -160,6 +167,13 @@
 
 
 <style>
+
+	.is-tags{
+		border-style: solid ;
+		border-width: 1px;
+		border-color: rgba(255, 255, 255, 0.1);
+
+	}
 	.card-wrapper {
 		position: relative;
 		border: 1px solid rgba(255, 255, 255, 0.1);
@@ -188,10 +202,6 @@
 
 
 	button[type='submit'] {
-		position: relative;
-		z-index: 20;
-	}
-	.is-renuncia {
 		position: relative;
 		z-index: 20;
 	}
