@@ -125,8 +125,9 @@
         {#if level.content && level.content[taskData.status] !== undefined}
           {#if level.cinematica && level.cinematica[taskData.status]}
             <Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
-              <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-                <p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `${level.content[taskData.status]}`, speed: 100 }}></p>
+              <div class=" is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+                <!-- <p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: `${level.content[taskData.status].split(/[.,]/)[0].trim()}` +  `${level.content[taskData.status].split(/[]/)[1].trim()}`, speed: 100 }}></p> -->
+			<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: `${level.content[taskData.status].split(/[.]/)[0].trim()}\n\n${level.content[taskData.status].split(/[.]/)[1].trim()}`, speed: 100 }}></p>
               </div>
             </Visualizer>
           {:else}
@@ -162,7 +163,6 @@
 		max-height: 120%;
 		overflow-y:auto;
 		scroll-behavior: smooth;
-		background: rgb(181, 19, 19);
 		top:1px;
 		position: absolute;
 	}

@@ -76,7 +76,7 @@ REGLAS NARRATIVAS (METÁFORA SUTIL):
 1. NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas ni infantiles.
 2. Trata el universo narrativo con seriedad. El progreso en la vida real de ${nombre_de_usuario} debe traducirse en una odisea profunda de supervivencia, exploración, combate o descubrimiento acorde al tema "${tema}".
 3. Estructura: El primer capítulo establece el misterio y el entorno. Los intermedios aumentan drásticamente la tensión, los obstáculos y la psicología del personaje. El último capítulo de esta lista es el Clímax Épico batalla final contra algun enemigo fuerte o desenlace y la victoria absoluta.
-4. Cada capítulo debe tener un título evocador seguido de un punto (.)  y una narrativa que haga sentir al lector que está viviendo la experiencia de ${nombre_de_usuario} en primera persona.
+4. Cada capítulo debe tener un título evocador seguido de un punto (.)  solo debes usar el punto(.) esa vez y el resto puedes usar comas (,) u otros signos de puntuacion.
 5. La narrativa debe ser inmersiva, con descripciones sensoriales, emociones y decisiones críticas que reflejen la lucha interna y externa del protagonista.
 6. Evita clichés y lugares comunes. La narrativa debe ser original, profunda y resonante, con un estilo literario que mantenga al lector en vilo.
 7. El capítulo final debe ser un clímax épico que refleje la culminación de la odisea de ${nombre_de_usuario}, con un desenlace que deje una sensación de logro y transformación personal.
