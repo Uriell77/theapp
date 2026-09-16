@@ -26,12 +26,12 @@
 	<div
 		class="componente-navbar is-cristal box py-2 px-4 is-flex is-justify-content-space-between is-align-items-center"
 	>
-		<nav class="breadcrumb is-small py-0 mb-0 is-justify-content-center" aria-label="breadcrumbs">
+		<nav class="breadcrumb is-small py-0 mb-0 is-flex is-justify-content-center" aria-label="breadcrumbs">
 			<ul class="mb-0">
 				<li class={isHome ? 'is-active' : ''}>
 					<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
 					<button
-							class="button is-small is-rounded has-text-centered {isHome ? 'is-primary is-outlined' : 'is-dark has-text-white'}"
+							class="button px-1 is-small is-rounded has-text-centered {isHome ? 'is-primary is-outlined' : 'is-dark has-text-white'}"
 					>
 
 						<a
@@ -47,7 +47,7 @@
 				<li class={isDashboard ? 'is-active ml-2' : 'ml-2'}>
 					<Motion whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} let:motion>
 					<button
-							class="button is-small is-rounded has-text-centered {isDashboard ? 'is-primary is-outlined' : 'is-dark has-text-white'}"
+							class="button px-0 is-small is-rounded has-text-centered {isDashboard ? 'is-primary is-outlined' : 'is-dark has-text-white'}"
 					>
 
 						<a
@@ -73,7 +73,7 @@
 							use:motion
 							onclick={playClick}
 							type="submit"
-							class="button is-small is-danger is-outlined is-rounded"
+							class="button px-0 is-small is-danger is-outlined is-rounded"
 						>
 							Cerrar Sesión
 						</button>
@@ -85,7 +85,7 @@
 						use:motion
 						onclick={playClick}
 						href="/auth"
-						class="button is-small is-primary is-rounded is-outlined"
+						class="button px-1 is-small is-primary is-rounded is-outlined"
 					>
 						Acceder
 					</a>
