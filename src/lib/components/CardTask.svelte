@@ -11,6 +11,17 @@
 	let { task, hasViewed = false, onSelect }: Props = $props();
 
 	let statusNum = $derived(parseInt(task?.status, 10) || 0);
+	let isAbandoned = $derived(statusNum === -1);
+
+	function handleAdvanceClick(e: MouseEvent) {
+		if (isAbandoned) {
+			return;
+		}
+		if (!hasViewed) {
+			e.preventDefault();
+			if (onSelect) onSelect();
+		}
+	}
 	let isLastLevel = $derived(task ? statusNum >= task.cantidad_de_niveles - 1 : false);
 	let currentLevelContent = $derived.by(() => {
 		if (!task?.levels?.[0]?.content) return '';
@@ -32,7 +43,17 @@
 		return task.levels[0].vista || null;
 	});
 
-	let renunciar = $derived(false);
+	let chapterTitle = $derived.by(() => {
+		if (statusNum === -1) {
+			if (Array.isArray(defeatChapter) && typeof defeatChapter[0] === 'string') {
+				return defeatChapter[0].split('.')[0].trim();
+			}
+			return 'Final Alternativo';
+		}
+		return currentLevelContent ? currentLevelContent.split('.')[0].trim() : `Nivel ${statusNum + 1}`;
+	});
+
+	let renunciar = $state(false);
 
 	function renunciarMision() {
 		renunciar = true;
@@ -75,14 +96,14 @@
 							<div class="column is-one-third">
 						<div class="is-size-7-mobile has-text-aligned-center">
 							<span class="label-field">Progreso:</span>
-							<p class="has-text-white pl-0">{statusNum =="-1" ? "defeatChapter" : `${statusNum + 1} / ${task.cantidad_de_niveles}`}</p>
+							<p class="has-text-white pl-0">{statusNum === -1 ? 'Abandonada' : `${statusNum + 1} / ${task.cantidad_de_niveles}`}</p>
 						</div>
 							</div>
 							<div class="column is-one-third">
 						<div class="is-size-7-mobile has-text-aligned-center">
 							<span class="label-field">Capítulo:</span>
 							<p class="has-text-white pl-0 is-italic ">
-							{statusNum == -1 ? defeatChapter[0].split(/[.]/)[0].trim() : currentLevelContent.split(/[.]/)[0].trim()}
+							{chapterTitle}
 							</p>
 						</div>
 							</div>
@@ -98,62 +119,85 @@
 						<div class="is-flex is-align-items-center is-justify-content-space-between is-tags-centered is-tags">
 							<div class="tags are-small mb-0">
 								{#each Array(task.cantidad_de_niveles) as _, idx}
-									<span class="tag {idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0 mx-0">
+									<span class="tag {statusNum !== -1 && idx <= statusNum ? 'is-primary' : 'is-dark'} mb-0 mx-0">
 										{idx + 1}
 									</span>
 								{/each}
 							</div>
-							<span class="tag {isLastLevel ? 'is-success' : 'is-info'} has-text-weight-bold ml-2">
-								{progressPercent}%
+							<span class="tag {statusNum === -1 ? 'is-danger' : isLastLevel ? 'is-success' : 'is-info'} has-text-weight-bold ml-2">
+								{statusNum === -1 ? '0%' : `${progressPercent}%`}
 							</span>
 						</div>
 					</div>
 				</div>
 
-				<div class="buttons is-flex">
+				<div class="buttons is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap">
 
-				<form method="POST" action="?/advanceLevel" use:enhance class="mt-3">
+				<form
+					method="POST"
+					action='?/advanceLevel'
+					use:enhance={() => {
+						return async ({ update, result }) => {
+							if (result.type === 'success') {
+								// Eliminamos la mutación manual de task.status y hasViewed
+								// ya que await update() refrescará los datos del servidor
+								// y la reactividad de Svelte 5 se encargará del resto.
+							}
+							await update();
+						};
+					}}
+					class="mt-3"
+				>
 					<input type="hidden" name="taskId" value={task.id} />
 					<Motion
-						whileHover={hasViewed && !isLastLevel ? { scale: 1.04 } : {}}
-						whileTap={hasViewed && !isLastLevel ? { scale: 0.95 } : {}}
+						whileHover={!isLastLevel || isAbandoned ? { scale: 1.04 } : {}}
+						whileTap={!isLastLevel || isAbandoned ? { scale: 0.95 } : {}}
 						let:motion
 					>
 						<button
 							use:motion
 							class="button is-small is-primary is-rounded"
-							disabled={!hasViewed || isLastLevel}
-							type="submit"
+							disabled={isLastLevel && !isAbandoned}
+							type={isAbandoned || hasViewed ? 'submit' : 'button'}
+							onclick={handleAdvanceClick}
 						>
-							{statusNum == -1 
-							? '¡Reactivar Tarea!'
-							: isLastLevel
-								? '¡Completada!'
-								: hasViewed
-									? 'Avanzar Nivel'
-									: 'Abre los detalles para avanzar'}
+							{ isAbandoned
+								? 'Reiniciar'
+								: isLastLevel
+									? '¡Completada!'
+									: hasViewed
+										? 'Avanzar'
+										: 'Abrir para Avanzar'}
 						</button>
 					</Motion>
 				</form>
-				<form method="POST" action="?/abandonTask" use:enhance class="mt-3">
+				<form
+					method="POST"
+					action="?/abandonTask"
+					use:enhance={() => {
+						return async ({ update, result }) => {
+							if (result.type === 'success') {
+								// Al igual que en avanzar, dejamos que update() maneje la sincronización
+							}
+							await update();
+						};
+					}}
+					class="mt-3"
+				>
 					<input type="hidden" name="taskId" value={task.id} />
+					<input type="hidden" name="status" value=-1 />
 					<Motion
-						whileHover={hasViewed && !isLastLevel ? { scale: 1.04 } : {}}
-						whileTap={hasViewed && !isLastLevel ? { scale: 0.95 } : {}}
+						whileHover={hasViewed && !isLastLevel && !isAbandoned ? { scale: 1.04 } : {}}
+						whileTap={hasViewed && !isLastLevel && !isAbandoned ? { scale: 0.95 } : {}}
 						let:motion
 					>
 						<button
 							use:motion
-							class="button is-small is-danger is-rounded"
-							disabled={!hasViewed || isLastLevel || statusNum == -1}
+							class="button is-small is-danger is-rounded {isAbandoned ? 'is-hidden' : ''}"
+							disabled={!hasViewed || isLastLevel || isAbandoned}
 							type="submit"
-							onclick={() => (renunciar = true)}	
 						>
-							{statusNum == -1
-								? '¡Abandonada!'
-								: hasViewed
-									? 'Abandonar Tarea'
-									: 'Mira el final alternativo'}
+							Abandonar
 						</button>
 					</Motion>
 				</form>
@@ -200,7 +244,7 @@
 		font-weight: bold;
 	}
 
-
+	.buttons button,
 	button[type='submit'] {
 		position: relative;
 		z-index: 20;

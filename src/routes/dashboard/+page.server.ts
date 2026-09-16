@@ -279,9 +279,10 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown,
     if (!task) {
       return fail(404, { message: 'Tarea no encontrada' });
     }
+    const statusVal = (formData.get('status') as string) || '-1';
     await db
       .update(tasks)
-      .set({ status: '-1'})
+      .set({ status: statusVal })
       .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
     return { success: true };
   },

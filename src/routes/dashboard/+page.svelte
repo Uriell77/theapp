@@ -19,8 +19,9 @@
 
 	let isPanelOpen = $state(false);
 	let panelMode = $state<'form' | 'details'>('form');
-	let selectedTask = $state<any>(null);
-	let viewedTasks = $state<Record<number, boolean>>({});
+	let selectedTaskId = $state<number | null>(null);
+	let selectedTask = $derived(tasks.find((t: any) => t.id === selectedTaskId) || null);
+	let viewedTasks = $state<Record<string, string>>({});
 
 	// Estados para el formulario
 	let newTaskTitle = $state('');
@@ -49,14 +50,18 @@
 
 	function openCreateForm() {
 		panelMode = 'form';
-		selectedTask = null;
+		selectedTaskId = null;
 		isPanelOpen = true;
 	}
 
 	function openTaskDetails(taskId: number) {
 		panelMode = 'details';
-		selectedTask = tasks.find((t: any) => t.id === taskId) || null;
-		viewedTasks[taskId] = true;
+		selectedTaskId = taskId;
+		const task = tasks.find((t: any) => t.id === taskId);
+		if (task) {
+			// Usamos el ID como string para la llave y el status como string para el valor
+			viewedTasks[String(taskId)] = String(task.status);
+		}
 		isPanelOpen = true;
 	}
 </script>
@@ -220,7 +225,7 @@
 								{#each tasks as Task (Task.id)}
 									<CardTask
 										task={Task}
-										hasViewed={!!viewedTasks[Task.id]}
+										hasViewed={viewedTasks[String(Task.id)] !== undefined && String(viewedTasks[String(Task.id)]) === String(Task.status)}
 										onSelect={() => openTaskDetails(Task.id)}
 									/>
 								{/each}
