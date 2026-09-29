@@ -66,26 +66,26 @@ export const actions: Actions = {
 		let cinematicaTags: any[] = [];
 		let defeatChapter = '';
 		try {
-			const prompt = `Eres un novelista y diseñador narrativo de alta literatura. 
+			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos. 
 El usuario, llamado "${nombre_de_usuario}", tiene un desafío de productividad en el mundo real: "${title}".
 El tema estético y narrativo elegido es: "${tema}".
 
-Tu objetivo es construir una narrativa inmersiva y estrictamente secuencial dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista absoluto.
+Tu objetivo es construir una campaña narrativa inmersiva de pura acción, estrictamente secuencial y dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista y héroe absoluto.
 
-REGLAS NARRATIVAS (METÁFORA SUTIL):
-1. NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas ni infantiles.
-2. Trata el universo narrativo con seriedad. El progreso en la vida real de ${nombre_de_usuario} debe traducirse en una odisea profunda de supervivencia, exploración, combate o descubrimiento acorde al tema "${tema}".
-3. Estructura: El primer capítulo establece el misterio y el entorno. Los intermedios aumentan drásticamente la tensión, los obstáculos y la psicología del personaje. El último capítulo de esta lista es el Clímax Épico batalla final contra algun enemigo fuerte o desenlace y la victoria absoluta.
-4. Cada capítulo debe tener un título evocador seguido de un punto (.)  solo debes usar el punto(.) esa vez y el resto puedes usar comas (,) u otros signos de puntuacion.
-5. La narrativa debe ser inmersiva, con descripciones sensoriales, emociones y decisiones críticas que reflejen la lucha interna y externa del protagonista.
-6. Evita clichés y lugares comunes. La narrativa debe ser original, profunda y resonante, con un estilo literario que mantenga al lector en vilo.
-7. El capítulo final debe ser un clímax épico que refleje la culminación de la odisea de ${nombre_de_usuario}, con un desenlace que deje una sensación de logro y transformación personal.
-8. Incluye un capítulo alternativo de derrota, donde ${nombre_de_usuario} enfrenta una retirada estratégica ante la magnitud de su misión, con un mensaje humano y reflexivo sobre la resiliencia y el aprendizaje de las cicatrices.
-9. al final de cada capítulo, incluye una frase motivacional sin mencionar que lo es, que inspire a ${nombre_de_usuario} a continuar su viaje, reforzando la idea de que cada desafío es una oportunidad de crecimiento y aprendizaje.
-10. las narrativas denben ilustrarse como un viaje del heroe similar a los juegos de rol, donde cada nivel representa un obstáculo que debe superar para alcanzar la victoria final.
+REGLAS NARRATIVAS (METÁFORA DE MISIÓN Y CONTINUIDAD PERFECTA):
+1. MISIÓN Y ENEMIGO CLARO: Desde el Capítulo 1, establece una AMENAZA inminente (un imperio, una horda, un cataclismo, un monstruo) y un OBJETIVO TANGIBLE que el protagonista debe lograr paso a paso (ej: cargar un arma gigante, reparar un escudo, forjar un artefacto, recorrer un territorio hostil). 
+2. CONTINUIDAD ABSOLUTA: La historia NO son viñetas aisladas. Es un solo arco argumental ininterrumpido. Cada capítulo debe retomar la acción exactamente donde la dejó el anterior y escalar la tensión, sintiéndose como fases consecutivas de una misma operación contrarreloj.
+3. INMERSIÓN DE VIDEOJUEGO: Utiliza un tono de urgencia. Puedes iniciar los capítulos simulando interfaces (ej: "Transmisión Entrante", "Alerta de Proximidad", "Reporte de Daños") para darle dinamismo a la historia.
+4. METÁFORA SUTIL: NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas. El progreso real se traduce 100% en avance de la misión ficticia.
+5. ESTRUCTURA DE LA CAMPAÑA: 
+   - Capítulo inicial: Presenta la crisis, el enemigo y la secuencia de inicio de la misión.
+   - Capítulos intermedios: El enemigo ataca, las defensas sufren, hay tensión y resistencia, pero el objetivo de ${nombre_de_usuario} (el arma, escudo o viaje) acumula poder gracias a su esfuerzo continuo.
+   - Capítulo final: El Clímax Épico. El enfrentamiento cara a cara contra el Jefe Final o la catástrofe, la ejecución de la misión al 100% y una victoria absoluta y explosiva.
+6. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo (debes hilar las ideas usando comas, punto y coma, o signos de exclamación).
+7. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración (sin decir que es motivacional) que empuje a ${nombre_de_usuario} a no rendirse y prepararse para el siguiente embate.
 
 REGLAS VISUALES (CINEMÁTICA):
-Para cada capítulo, debes asignar una atmósfera visual. Usa EXCLUSIVAMENTE combinaciones de las siguientes etiquetas para poblar el objeto JSON:
+Para cada capítulo, asigna una atmósfera visual usando EXCLUSIVAMENTE combinaciones de las siguientes etiquetas:
 - effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust.
 - color: deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust.
 - speed: static, slow, normal, fast, chaotic, pulsing.
@@ -93,19 +93,19 @@ Para cada capítulo, debes asignar una atmósfera visual. Usa EXCLUSIVAMENTE com
 - mood: intro, rising-tension, boss-fight, victory, defeat.
 
 FORMATO DE SALIDA:
-Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown, sin texto extra) con esta estructura exacta:
+Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) con esta estructura exacta:
 {
   "chapters": [
-    "Capítulo 1: [Narrativa inmersiva del inicio...]",
-    "Capítulo 2: [Narrativa del desarrollo...]",
+    "Capítulo 1: Título. [Narrativa continua sin usar más puntos...]",
+    "Capítulo 2: Título. [Continuación directa de la acción sin usar más puntos...]",
     ... (debe haber exactamente ${cantidad_de_niveles} capítulos aquí)
   ],
   "cinematica": [
     { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." },
-    ... (debe haber exactamente ${cantidad_de_niveles} objetos aquí, correspondientes a cada capítulo)
+    ... (debe haber exactamente ${cantidad_de_niveles} objetos aquí)
   ],
-  "defeatChapter": "Final Alternativo: [Narra una retirada estratégica de ${nombre_de_usuario} ante el peso de su misión. Debe tener un mensaje profundamente humano, reflexivo y de ánimo, recordando que las cicatrices enseñan y siempre se puede volver a intentar.]",
-  "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "static", "lighting": "vignette-dark", "mood": "defeat" }
+  "defeatChapter": "Final Alternativo: Retirada Táctica. [Narra de forma épica cómo ${nombre_de_usuario} debe ordenar la retirada ante fuerzas abrumadoras, dejando un mensaje profundamente humano sobre lamer las heridas, aprender de la derrota y prepararse para volver a luchar otro día, sin usar más puntos.]",
+  "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
 }`;
 			let result;
 			let retries = 3;
