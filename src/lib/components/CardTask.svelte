@@ -93,7 +93,7 @@
 				Temática: <span style="color: white;">{task.tema}</span>
 			</div>
 			<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">
-				Capítulo: <span style="color: white;">{chapterTitle}</span>
+		   	<span style="color: white;" class="has-text-weight-bold">{chapterTitle}</span>
 			</div>
 
 			<!-- Progress Timeline -->
