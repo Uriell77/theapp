@@ -122,7 +122,7 @@
 				<div class="field mb-4">
 					<label class="label" for="taskTema" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Temática Narrativa</label>
 					<div class="control select is-fullwidth" style="width: 100%;">
-						<select name="tema" id="taskTema" bind:value={newTaskTema} disabled={isSubmitting} style="background: #142127; border: 1px solid var(--card-border); color: white; border-radius: 14px; padding: 12px 16px; width: 100%; font-family: inherit;">
+						<select name="tema" id="taskTema" bind:value={newTaskTema} disabled={isSubmitting} style="background: #142127; border: 1px solid var(--card-border); color: white; border-radius: 14px; padding: 2px 16px; width: 100%; font-family: inherit;">
 							<option value="Guerra Espacial">Guerra Espacial</option>
 							<option value="Cruzada Medieval">Cruzada Medieval</option>
 							<option value="Apocalipsis Zombi">Apocalipsis Zombi</option>
