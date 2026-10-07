@@ -65,6 +65,130 @@ export const actions: Actions = {
 		let chapters: string[] = [];
 		let cinematicaTags: any[] = [];
 		let defeatChapter = '';
+		let defeatCinematica: any = null;
+
+		function detectCinematicaForText(text: string, defaultMood: string = 'rising-tension') {
+			const lower = (text || '').toLowerCase();
+
+			// Fuego / Volcán / Batalla Ígnea / Magma / Explosiones
+			if (/(fuego|llama|ardient|infernal|volc[aá]n|lava|magma|incendio|combusti[oó]n|ceniza|explosi[oó]n|abrasad|calor|ascuas|antorcha)/.test(lower)) {
+				return {
+					effect: lower.includes('volc') || lower.includes('ceniza') ? 'volcano-embers' : 'fire-battle',
+					color: 'infernal-orange',
+					speed: 'normal',
+					lighting: 'candle-flicker',
+					mood: defaultMood === 'defeat' ? 'defeat' : 'boss-fight'
+				};
+			}
+
+			// Tormenta Eléctrica / Rayos / Truenos / Tempestad / Relámpagos
+			if (/(tormenta|rayo|rel[aá]mpago|trueno|tempestad|el[eé]ctric|cielo oscuro|hurac[aá]n|cicl[oó]n|lluvia|truenos)/.test(lower)) {
+				return {
+					effect: 'electric-storm',
+					color: 'deep-space-blue',
+					speed: 'fast',
+					lighting: 'lightning-flash',
+					mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension'
+				};
+			}
+
+			// Nieve / Ventisca / Hielo / Glaciar / Congelación
+			if (/(nieve|hielo|ventisca|glaci|polar|congelad|helad|fr[ií]o|escarcha|tundra|avalancha)/.test(lower)) {
+				return {
+					effect: 'snow-blizzard',
+					color: 'ice-cyan',
+					speed: 'normal',
+					lighting: 'vignette-dark',
+					mood: defaultMood
+				};
+			}
+
+			// Submarino / Océano / Agua / Abismo Marino
+			if (/(mar\b|oc[eé]ano|agua|submarin|abismo|profundidad|acu[aá]tic|olas|inmersi[oó]n|naufragio)/.test(lower)) {
+				return {
+					effect: 'underwater-bubbles',
+					color: 'deep-space-blue',
+					speed: 'slow',
+					lighting: 'none',
+					mood: defaultMood
+				};
+			}
+
+			// Tóxico / Veneno / Selva Alienígena / Ácido / Radiación / Pantano
+			if (/(t[oó]xic|veneno|pantano|selva|alien|alien[ií]gena|mutaci[oó]n|espora|qu[ií]mic|[aá]cido|radiaci[oó]n)/.test(lower)) {
+				return {
+					effect: lower.includes('selva') || lower.includes('espora') ? 'alien-forest' : 'toxic-rain',
+					color: 'toxic-green',
+					speed: 'normal',
+					lighting: 'none',
+					mood: defaultMood
+				};
+			}
+
+			// Ciberespacio / Matriz / Código / Hack / Digital / Red / IA
+			if (/(ciber|matriz|matrix|c[oó]digo|hacker|digital|servidor|terminal|red\b|protocolo|ia\b|algoritmo|interfaz|firewall)/.test(lower)) {
+				return {
+					effect: 'data-matrix',
+					color: 'cyberpunk-neon',
+					speed: 'normal',
+					lighting: 'none',
+					mood: defaultMood
+				};
+			}
+
+			// Magia Arcana / Runas / Hechicería / Reliquias
+			if (/(magi|arcano|runa|hechizo|m[ií]stic|reliquia|portal|energ[ií]a ancestral|templo|ancestral)/.test(lower)) {
+				return {
+					effect: 'magic-runes',
+					color: 'fantasy-gold',
+					speed: 'slow',
+					lighting: 'eclipse-ring',
+					mood: defaultMood
+				};
+			}
+
+			// Sangre / Masacre / Violencia Cruda / Carmesí
+			if (/(sangre|carmes[ií]|masacre|herida|desgarr|carnicer[ií]a|degoll)/.test(lower)) {
+				return {
+					effect: 'blood-drip',
+					color: 'blood-red',
+					speed: 'normal',
+					lighting: 'strobe-alarm',
+					mood: defaultMood
+				};
+			}
+
+			// Cenizas / Páramo / Desierto / Polvo / Apocalipsis / Retirada
+			if (/(ceniza|desierto|p[aá]ramo|ruinas|apocal[ií]pt|polvo|destrucci[oó]n|desolaci[oó]n|retirada)/.test(lower)) {
+				return {
+					effect: 'ash-storm',
+					color: 'apocalyptic-rust',
+					speed: 'slow',
+					lighting: 'vignette-dark',
+					mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension'
+				};
+			}
+
+			// Espacio / Galaxia / Estelar / Naves / Hiperespacio
+			if (/(espaci|galaxi|nave|estelar|hiperespacio|cosmos|estrellas|astral|orbital|warp)/.test(lower)) {
+				return {
+					effect: lower.includes('warp') || lower.includes('hiper') ? 'hyper-warp' : 'space-cockpit',
+					color: 'deep-space-blue',
+					speed: 'normal',
+					lighting: 'lens-flare',
+					mood: defaultMood
+				};
+			}
+
+			return {
+				effect: defaultMood === 'defeat' ? 'ash-storm' : 'space-cockpit',
+				color: defaultMood === 'defeat' ? 'apocalyptic-rust' : 'deep-space-blue',
+				speed: 'normal',
+				lighting: defaultMood === 'defeat' ? 'vignette-dark' : 'none',
+				mood: defaultMood
+			};
+		}
+
 		try {
 			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos. 
 El usuario, llamado "${nombre_de_usuario}", tiene un desafío de productividad en el mundo real: "${title}".
@@ -84,8 +208,20 @@ REGLAS NARRATIVAS (METÁFORA DE MISIÓN Y CONTINUIDAD PERFECTA):
 6. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo (debes hilar las ideas usando comas, punto y coma, o signos de exclamación).
 7. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración (sin decir que es motivacional) que empuje a ${nombre_de_usuario} a no rendirse y prepararse para el siguiente embate.
 
-REGLAS VISUALES (CINEMÁTICA):
-Para cada capítulo, asigna una atmósfera visual usando EXCLUSIVAMENTE combinaciones de las siguientes etiquetas:
+REGLAS VISUALES (CINEMÁTICA REALISTA Y ADAPTATIVA AL ENTORNO):
+Analiza detalladamente el entorno, clima, atmósfera y nivel de acción de CADA capítulo individual para que la atmósfera visual represente fielmente lo narrado:
+- Si el capítulo ocurre en llamas, fuego, explosiones o lava: usa effect: "fire-battle" o "volcano-embers", color: "infernal-orange" o "blood-red", lighting: "candle-flicker" o "strobe-alarm".
+- Si ocurre en una tormenta, cielo oscuro, lluvia o relámpagos: usa effect: "electric-storm", color: "deep-space-blue" o "ice-cyan", lighting: "lightning-flash", speed: "fast" o "chaotic".
+- Si ocurre en nieve, hielo, ventiscas o frío glacial: usa effect: "snow-blizzard", color: "ice-cyan", lighting: "vignette-dark".
+- Si ocurre en el océano, agua profunda o abismo submarino: usa effect: "underwater-bubbles", color: "deep-space-blue" o "ice-cyan", speed: "slow".
+- Si ocurre en pantanos, junglas alienígenas, radiación o veneno: usa effect: "toxic-rain" o "alien-forest", color: "toxic-green".
+- Si ocurre en el ciberespacio, terminales, hacking o redes: usa effect: "data-matrix", color: "cyberpunk-neon" o "toxic-green".
+- Si ocurre en el cosmos abierto, vuelo espacial o hipervelocidad: usa effect: "space-cockpit", "hyper-warp" o "nebula-dust", color: "deep-space-blue" o "void-purple", lighting: "lens-flare".
+- Si ocurre en templos arcanos, hechicería o magia ancestral: usa effect: "magic-runes", color: "fantasy-gold" o "void-purple", lighting: "eclipse-ring".
+- Si ocurre en combate cuerpo a cuerpo sangriento: usa effect: "blood-drip", color: "blood-red", lighting: "strobe-alarm".
+- Si ocurre en ruinas desérticas, cenizas o páramos desolados: usa effect: "ash-storm", color: "apocalyptic-rust" o "military-khaki".
+
+Valores permitidos exactos:
 - effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust.
 - color: deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust.
 - speed: static, slow, normal, fast, chaotic, pulsing.
@@ -105,7 +241,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) 
     ... (debe haber exactamente ${cantidad_de_niveles} objetos aquí)
   ],
   "defeatChapter": "Final Alternativo: Retirada Táctica. [Narra de forma épica cómo ${nombre_de_usuario} debe ordenar la retirada ante fuerzas abrumadoras, dejando un mensaje profundamente humano sobre lamer las heridas, aprender de la derrota y prepararse para volver a luchar otro día, sin usar más puntos.]",
-  "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
+  "defeatCinematica": { "effect": "ash-storm", "color": "apocalyptic-rust", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
 }`;
 			const availableModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
 			let result;
@@ -153,6 +289,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) 
 			chapters = Array.isArray(parsed.chapters) ? parsed.chapters : [];
 			cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
 			defeatChapter = parsed.defeatChapter || '';
+			defeatCinematica = parsed.defeatCinematica || detectCinematicaForText(defeatChapter, 'defeat');
 
 			if (chapters.length === 0) {
 				return fail(500, {
@@ -175,36 +312,19 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) 
 			});
 		}
 
-		// Si no hay suficientes etiquetas cinemáticas devueltas por la IA, generar etiquetas de respaldo acordes
+		// Validar y rellenar cinematicaTags para cada capítulo asegurando coincidencia temática y ambiental
 		if (cinematicaTags.length !== chapters.length) {
-			cinematicaTags = chapters.map((cap) => {
-				const lower = cap.toLowerCase();
-				if (lower.includes('tormenta') || lower.includes('espacio') || lower.includes('espacial')) {
-					return {
-						effect: 'electric-storm',
-						color: 'deep-space-blue',
-						speed: 'fast',
-						lighting: 'lightning-flash',
-						mood: 'rising-tension'
-					};
-				} else if (lower.includes('volcán') || lower.includes('fuego') || lower.includes('guerra')) {
-					return {
-						effect: 'fire-battle',
-						color: 'infernal-orange',
-						speed: 'normal',
-						lighting: 'strobe-alarm',
-						mood: 'boss-fight'
-					};
-				} else {
-					return {
-						effect: 'data-matrix',
-						color: 'cyberpunk-neon',
-						speed: 'normal',
-						lighting: 'none',
-						mood: 'intro'
-					};
+			cinematicaTags = chapters.map((cap, idx) => {
+				if (cinematicaTags[idx] && cinematicaTags[idx].effect) {
+					return cinematicaTags[idx];
 				}
+				const mood = idx === 0 ? 'intro' : idx === chapters.length - 1 ? 'boss-fight' : 'rising-tension';
+				return detectCinematicaForText(`${tema} ${cap}`, mood);
 			});
+		}
+
+		if (!defeatCinematica) {
+			defeatCinematica = detectCinematicaForText(defeatChapter || 'retirada', 'defeat');
 		}
 
 		// 2. Insertar tarea y niveles con Drizzle ORM
@@ -228,7 +348,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) 
 				taskId: newTask.id,
 				content: chapters,
 				cinematica: cinematicaTags.map(tag => JSON.stringify(tag)),
-				vista: [defeatChapter]
+				vista: [defeatChapter, JSON.stringify(defeatCinematica)]
 			});
 
 			return { success: true };

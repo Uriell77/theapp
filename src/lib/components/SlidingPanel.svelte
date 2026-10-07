@@ -112,8 +112,11 @@
 									{@const defeatRaw = String(taskData.levels?.[0]?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.')}
 									{@const dotPos = defeatRaw.indexOf('.')}
 									{@const formattedDefeatText = dotPos !== -1 ? `${defeatRaw.slice(0, dotPos).trim()}\n\n${defeatRaw.slice(dotPos + 1).trim()}` : defeatRaw}
+									{@const defeatCinematicaRaw = taskData.levels?.[0]?.vista?.[1]}
+									{@const defeatCinematicaParsed = defeatCinematicaRaw ? (() => { try { return JSON.parse(defeatCinematicaRaw); } catch { return null; } })() : null}
+									{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
 									<div class="narrative-container">
-										<Visualizer effectConfig="effect:ash-storm;color:deep-space-blue;speed:slow;lighting:vignette-dark;mood:defeat">
+										<Visualizer effectConfig={defeatEffectConfig}>
 											<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
 												<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedDefeatText, speed: 100 }}></p>
 											</div>
