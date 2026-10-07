@@ -53,6 +53,15 @@
 		return currentLevelContent ? currentLevelContent.split('.')[0].trim() : `Nivel ${statusNum + 1}`;
 	});
 
+	let stepRatio = $derived.by(() => {
+		if (!task) return 0;
+		const clampedStatus = statusNum === -1 ? 0 : Math.max(0, statusNum);
+		const maxSteps = Math.max(1, task.cantidad_de_niveles - 1);
+		return Math.min(1, Math.max(0, clampedStatus / maxSteps));
+	});
+
+	let stepPercent = $derived((stepRatio * 100).toFixed(1));
+
 	let renunciar = $state(false);
 
 	function renunciarMision() {
@@ -91,7 +100,7 @@
 			<div class="progress-timeline">
 				<div
 					class="tooltip-progress"
-					style="left: calc({task.cantidad_de_niveles > 1 ? Math.min(100, Math.max(0, (Math.max(0, statusNum) / (task.cantidad_de_niveles - 1)) * 100)) : 0}% - 14px);"
+					style="left: calc(14px + (100% - 28px) * {stepRatio}); transform: translateX(-{stepPercent}%); --arrow-left: {Math.max(14, Math.min(86, Number(stepPercent)))}%;"
 				>
 					{statusNum === -1 ? `1 de ${task.cantidad_de_niveles} (0.0%)` : `${statusNum + 1} de ${task.cantidad_de_niveles} (${progressPercent}%)`}
 				</div>
