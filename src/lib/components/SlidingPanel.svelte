@@ -109,37 +109,40 @@
 
 								<p class="mt-4 mb-2 is-hidden"><strong>Narrativa de la Aventura:</strong></p>
 								{#if taskData.status === '-1'}
-  <div class="narrative-container">
-            <Visualizer >
-    <div class="is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-      <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: taskData.levels?.[0]?.vista?.[0] || 'Misión abandonada.', speed: 100 }}></p>
-    </div>
-            </Visualizer>
-  </div>
-{:else}
-  {#if taskData.levels && taskData.levels.length > 0}
-    {#each taskData.levels as level (level.id)}
-      <div class="narrative-container">
-        <!-- Imagen Cinemática si existe para el estado actual -->
+									{@const defeatRaw = String(taskData.levels?.[0]?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.')}
+									{@const dotPos = defeatRaw.indexOf('.')}
+									{@const formattedDefeatText = dotPos !== -1 ? `${defeatRaw.slice(0, dotPos).trim()}\n\n${defeatRaw.slice(dotPos + 1).trim()}` : defeatRaw}
+									<div class="narrative-container">
+										<Visualizer effectConfig="effect:ash-storm;color:deep-space-blue;speed:slow;lighting:vignette-dark;mood:defeat">
+											<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+												<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedDefeatText, speed: 100 }}></p>
+											</div>
+										</Visualizer>
+									</div>
+								{:else}
+									{#if taskData.levels && taskData.levels.length > 0}
+										{#each taskData.levels as level (level.id)}
+											<div class="narrative-container">
+												<!-- Imagen Cinemática si existe para el estado actual -->
 
-        <!-- Narrativa Actual -->
-        {#if level.content && level.content[taskData.status] !== undefined}
-          {@const currentRaw = String(level.content[taskData.status] || '')}
-          {@const dotPos = currentRaw.indexOf('.')}
-          {@const formattedText = dotPos !== -1 ? `${currentRaw.slice(0, dotPos).trim()}\n\n${currentRaw.slice(dotPos + 1).trim()}` : currentRaw}
-          {#if level.cinematica && level.cinematica[taskData.status]}
-            <Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
-              <div class=" is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-			<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
-              </div>
-            </Visualizer>
-          {:else}
-            <Visualizer>
-              <div class=" is-light p-0 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-                <p class="is-italic has-text-weight-bold is-size-6-mobile" style="color: #f0f0f0; line-height: 1.6;" use:typewriter={{ text: currentRaw, speed: 100 }}></p>
-              </div>
-            </Visualizer>
-          {/if}
+												<!-- Narrativa Actual -->
+												{#if level.content && level.content[taskData.status] !== undefined}
+													{@const currentRaw = String(level.content[taskData.status] || '')}
+													{@const dotPos = currentRaw.indexOf('.')}
+													{@const formattedText = dotPos !== -1 ? `${currentRaw.slice(0, dotPos).trim()}\n\n${currentRaw.slice(dotPos + 1).trim()}` : currentRaw}
+													{#if level.cinematica && level.cinematica[taskData.status]}
+														<Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
+															<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+																<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
+															</div>
+														</Visualizer>
+													{:else}
+														<Visualizer>
+															<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
+																<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
+															</div>
+														</Visualizer>
+													{/if}
         {:else if level.content && level.content[0] !== undefined}
           <div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
             <p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>

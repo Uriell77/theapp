@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { Motion } from 'svelte-motion';
 	import CardTask from '$lib/components/CardTask.svelte';
 	import SlidingPanel from '$lib/components/SlidingPanel.svelte';
@@ -36,10 +37,8 @@
 		// Suscripción a cambios en tiempo real
 		const channel = supabase
 			.channel('tasks_channel')
-			.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, (payload) => {
-				if (payload.new && payload.new.user_id === data.user?.id) {
-					tasks = [...tasks, payload.new];
-				}
+			.on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+				invalidateAll();
 			})
 			.subscribe();
 

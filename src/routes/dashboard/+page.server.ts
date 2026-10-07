@@ -61,7 +61,7 @@ export const actions: Actions = {
 			});
 		}
 
-		// 1. Generar narrativa con Gemini (modelo gemini-3.6-flash)
+		// 1. Generar narrativa con Gemini (modelo gemini-2.5-flash)
 		let chapters: string[] = [];
 		let cinematicaTags: any[] = [];
 		let defeatChapter = '';
@@ -107,31 +107,39 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) 
   "defeatChapter": "Final Alternativo: Retirada Táctica. [Narra de forma épica cómo ${nombre_de_usuario} debe ordenar la retirada ante fuerzas abrumadoras, dejando un mensaje profundamente humano sobre lamer las heridas, aprender de la derrota y prepararse para volver a luchar otro día, sin usar más puntos.]",
   "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
 }`;
+			const availableModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
 			let result;
-			let retries = 3;
-			while (retries > 0) {
-				try {
-					result = await ai.models.generateContent({
-						model: 'gemini-3.6-flash',
-						contents: prompt,
-						config: {
-							responseMimeType: 'application/json'
+			let lastError: any = null;
+
+			for (const modelName of availableModels) {
+				let retries = 2;
+				while (retries > 0) {
+					try {
+						result = await ai.models.generateContent({
+							model: modelName,
+							contents: prompt,
+							config: {
+								responseMimeType: 'application/json'
+							}
+						});
+						break;
+					} catch (aiError: any) {
+						lastError = aiError;
+						if ((aiError.status === 503 || aiError.status === 429) && retries > 1) {
+							retries--;
+							await new Promise((resolve) => setTimeout(resolve, 1500));
+							continue;
 						}
-					});
-					break;
-				} catch (aiError: any) {
-					if ((aiError.status === 503 || aiError.status === 429) && retries > 1) {
-						retries--;
-						const waitTime = aiError.status === 429 ? 3000 : 2000;
-						await new Promise((resolve) => setTimeout(resolve, waitTime));
-						continue;
+						break;
 					}
-					throw aiError;
+				}
+				if (result?.text) {
+					break;
 				}
 			}
 
 			if (!result?.text) {
-				throw new Error('Respuesta vacía del modelo de IA');
+				throw lastError || new Error('Respuesta vacía del modelo de IA');
 			}
 
 			let rawText = result.text.trim();
@@ -143,53 +151,61 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) 
 
 			const parsed = JSON.parse(rawText);
 			chapters = Array.isArray(parsed.chapters) ? parsed.chapters : [];
-			let cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
+			cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
 			defeatChapter = parsed.defeatChapter || '';
 
 			if (chapters.length === 0) {
-				chapters = Array.from(
-					{ length: cantidad_de_niveles },
-					(_, i) => `Nivel ${i + 1}: Desafío de ${title}`
-				);
+				return fail(500, {
+					title,
+					tema,
+					cantidad_de_niveles,
+					message: 'No fue posible estructurar los capítulos de la historia. Por favor, inténtalo de nuevo.'
+				});
 			}
-		} catch (aiError) {
+		} catch (aiError: any) {
 			console.error('Error generando historia con IA:', aiError);
-			// Fallback seguro si falla la IA
-			chapters = Array.from(
-				{ length: cantidad_de_niveles },
-				(_, i) => `Nivel ${i + 1}: Explorando ${tema} en ${title}`
-			);
+			const isSaturated = aiError?.status === 429 || aiError?.status === 503;
+			return fail(isSaturated ? 503 : 500, {
+				title,
+				tema,
+				cantidad_de_niveles,
+				message: isSaturated
+					? 'El servicio de IA se encuentra saturado en este momento. Por favor, inténtalo de nuevo en unos minutos.'
+					: 'No se pudieron generar las historias debido a un inconveniente con el servicio de IA. Por favor, inténtalo más tarde.'
+			});
 		}
 
-		// Generar etiquetas cinemática basadas en los capítulos creados
-		cinematicaTags = chapters.map((cap) => {
-			const lower = cap.toLowerCase();
-			if (lower.includes('tormenta')) {
-				return {
-					effect: 'storm',
-					color: '#001f3f', // azul oscuro
-					speed: 'fast',
-					lighting: 'flashes',
-					mood: 'dramatic'
-				};
-			} else if (lower.includes('volcán') || lower.includes('erupción')) {
-				return {
-					effect: 'volcano',
-					color: '#ff4500', // rojo‑naranja
-					speed: 'medium',
-					lighting: 'smoke',
-					mood: 'intense'
-				};
-			} else {
-				return {
-					effect: 'default',
-					color: '#ffffff',
-					speed: 'normal',
-					lighting: 'none',
-					mood: 'neutral'
-				};
-			}
-		});
+		// Si no hay suficientes etiquetas cinemáticas devueltas por la IA, generar etiquetas de respaldo acordes
+		if (cinematicaTags.length !== chapters.length) {
+			cinematicaTags = chapters.map((cap) => {
+				const lower = cap.toLowerCase();
+				if (lower.includes('tormenta') || lower.includes('espacio') || lower.includes('espacial')) {
+					return {
+						effect: 'electric-storm',
+						color: 'deep-space-blue',
+						speed: 'fast',
+						lighting: 'lightning-flash',
+						mood: 'rising-tension'
+					};
+				} else if (lower.includes('volcán') || lower.includes('fuego') || lower.includes('guerra')) {
+					return {
+						effect: 'fire-battle',
+						color: 'infernal-orange',
+						speed: 'normal',
+						lighting: 'strobe-alarm',
+						mood: 'boss-fight'
+					};
+				} else {
+					return {
+						effect: 'data-matrix',
+						color: 'cyberpunk-neon',
+						speed: 'normal',
+						lighting: 'none',
+						mood: 'intro'
+					};
+				}
+			});
+		}
 
 		// 2. Insertar tarea y niveles con Drizzle ORM
 		try {
