@@ -117,12 +117,12 @@
 					<label class="label has-text-white" for="taskTitle">Título del proyecto</label>
 					<div class="control">
 						<input
-							class="input"
+							class="input is-rounded"
 							type="text"
 							name="title"
 							id="taskTitle"
 							bind:value={newTaskTitle}
-							placeholder="Ej: Odisea en Alfa Centauri"
+							placeholder="Ej: Levantar 70Kg en el gimnasio"
 							required
 							disabled={isSubmitting}
 						/>
@@ -131,7 +131,7 @@
 
 				<div class="field">
 					<label class="label has-text-white" for="taskTema">Temática Narrativa</label>
-					<div class="control select is-fullwidth">
+					<div class="control select is-fullwidth is-rounded">
 						<select name="tema" id="taskTema" bind:value={newTaskTema} disabled={isSubmitting}>
 							<option value="Guerra Espacial">Guerra Espacial</option>
 							<option value="Cruzada Medieval">Cruzada Medieval</option>
@@ -148,12 +148,13 @@
 				</div>
 
 				<div class="field">
-					<label class="label has-text-white" for="taskNiveles"
-						>Cantidad de Capítulos / Niveles</label
+					<label class="label has-text-white mb-0 pb-0" for="taskNiveles"
+						>Numero de Capítulos / Niveles</label
 					>
+					<small class="has-text-grey-light pt-0 mt-0 is-size-7"> Fragmentos en los que se divide tu proyecto</small>
 					<div class="control">
 						<input
-							class="input"
+							class="input is-rounded"
 							type="number"
 							name="cantidad_de_niveles"
 							id="taskNiveles"
