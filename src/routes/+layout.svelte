@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../Styles/theme.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/Navbar.svelte';
 
@@ -16,9 +17,4 @@
 </div>
 
 <style>
-	.principal {
-		background: linear-gradient(to bottom, #1e1e1e, #3b8196);
-		color: white;
-		min-height: 100vh;
-	}
 </style>

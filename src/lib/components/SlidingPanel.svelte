@@ -75,89 +75,88 @@
 			<!-- Manija de arrastre / indicador visual estético -->
 			<div class="drag-handle-bar"></div>
 
-			<Motion whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.85 }} let:motion>
+			<Motion whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} let:motion>
 				<button
 					use:motion
-					class="delete"
+					class="close-btn"
 					onclick={() => (isOpen = false)}
 					aria-label="Cerrar"
-				></button>
+				>
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="18" y1="6" x2="6" y2="18"></line>
+						<line x1="6" y1="6" x2="18" y2="18"></line>
+					</svg>
+				</button>
 			</Motion>
 
 			<section class="section p-0">
 				<div class="container">
 					{#if mode === 'form'}
 						<div>
-							<h2 class="title has-text-white mb-4">Nueva Tarea</h2>
+							<h2 class="panel-title">Nueva Tarea</h2>
 							{@render children?.()}
 						</div>
 					{:else if mode === 'details' && taskData}
-
 						<div>
-							<h2 class="subtitle has-text-white is-capitalized mb-3">{taskData.title}</h2>
-							<div class="box is-shadowless pb-4 p-0 is-transparent">
-								<div class="tags are-medium mb-3">
-									<span class="tag is-dark has-text-grey-light is-size-7">
-										Temática: <strong class="has-text-primary ml-1">{taskData.tema}</strong>
-									</span>
-									<span class="tag is-dark has-text-grey-light is-size-7">
-										Progreso: <strong class="has-text-info ml-1">
-											{taskData.status === '-1' ? 'Abandonada' : `${Number(taskData.status) + 1} / ${taskData.cantidad_de_niveles}`}
-										</strong>
-									</span>
-								</div>
-
-								<p class="mt-4 mb-2 is-hidden"><strong>Narrativa de la Aventura:</strong></p>
-								{#if taskData.status === '-1'}
-									{@const defeatRaw = String(taskData.levels?.[0]?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.')}
-									{@const dotPos = defeatRaw.indexOf('.')}
-									{@const formattedDefeatText = dotPos !== -1 ? `${defeatRaw.slice(0, dotPos).trim()}\n\n${defeatRaw.slice(dotPos + 1).trim()}` : defeatRaw}
-									{@const defeatCinematicaRaw = taskData.levels?.[0]?.vista?.[1]}
-									{@const defeatCinematicaParsed = defeatCinematicaRaw ? (() => { try { return JSON.parse(defeatCinematicaRaw); } catch { return null; } })() : null}
-									{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
-									<div class="narrative-container">
-										<Visualizer effectConfig={defeatEffectConfig}>
-											<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-												<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedDefeatText, speed: 100 }}></p>
-											</div>
-										</Visualizer>
-									</div>
-								{:else}
-									{#if taskData.levels && taskData.levels.length > 0}
-										{#each taskData.levels as level (level.id)}
-											<div class="narrative-container">
-												<!-- Imagen Cinemática si existe para el estado actual -->
-
-												<!-- Narrativa Actual -->
-												{#if level.content && level.content[taskData.status] !== undefined}
-													{@const currentRaw = String(level.content[taskData.status] || '')}
-													{@const dotPos = currentRaw.indexOf('.')}
-													{@const formattedText = dotPos !== -1 ? `${currentRaw.slice(0, dotPos).trim()}\n\n${currentRaw.slice(dotPos + 1).trim()}` : currentRaw}
-													{#if level.cinematica && level.cinematica[taskData.status]}
-														<Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
-															<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-																<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
-															</div>
-														</Visualizer>
-													{:else}
-														<Visualizer>
-															<div class="is-light p-1 mb-1 levelcontent is-transparent" style="border-left: 4px solid hsl(155, 81%, 41%);">
-																<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.6; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
-															</div>
-														</Visualizer>
-													{/if}
-        {:else if level.content && level.content[0] !== undefined}
-          <div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
-            <p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
-          </div>
-        {/if}
-      </div>
-    {/each}
-  {:else}
-    <p class="has-text-grey-light">No hay narrativa asociada a esta tarea.</p>
-  {/if}
-{/if}
+							<h2 class="panel-title is-capitalized">{taskData.title}</h2>
+							<div class="meta-tags mb-4">
+								<span class="meta-tag">
+									Temática: <strong>{taskData.tema}</strong>
+								</span>
+								<span class="meta-tag">
+									Progreso: <strong>
+										{taskData.status === '-1' ? 'Abandonada' : `${Number(taskData.status) + 1} / ${taskData.cantidad_de_niveles}`}
+									</strong>
+								</span>
 							</div>
+
+							{#if taskData.status === '-1'}
+								{@const defeatRaw = String(taskData.levels?.[0]?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.')}
+								{@const dotPos = defeatRaw.indexOf('.')}
+								{@const formattedDefeatText = dotPos !== -1 ? `${defeatRaw.slice(0, dotPos).trim()}\n\n${defeatRaw.slice(dotPos + 1).trim()}` : defeatRaw}
+								{@const defeatCinematicaRaw = taskData.levels?.[0]?.vista?.[1]}
+								{@const defeatCinematicaParsed = defeatCinematicaRaw ? (() => { try { return JSON.parse(defeatCinematicaRaw); } catch { return null; } })() : null}
+								{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
+								<div class="narrative-container">
+									<Visualizer effectConfig={defeatEffectConfig}>
+										<div class="p-2 mb-1 levelcontent" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
+											<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedDefeatText, speed: 100 }}></p>
+										</div>
+									</Visualizer>
+								</div>
+							{:else}
+								{#if taskData.levels && taskData.levels.length > 0}
+									{#each taskData.levels as level (level.id)}
+										<div class="narrative-container">
+											<!-- Narrativa Actual -->
+											{#if level.content && level.content[taskData.status] !== undefined}
+												{@const currentRaw = String(level.content[taskData.status] || '')}
+												{@const dotPos = currentRaw.indexOf('.')}
+												{@const formattedText = dotPos !== -1 ? `${currentRaw.slice(0, dotPos).trim()}\n\n${currentRaw.slice(dotPos + 1).trim()}` : currentRaw}
+												{#if level.cinematica && level.cinematica[taskData.status]}
+													<Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
+														<div class="p-2 mb-1 levelcontent" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
+															<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
+														</div>
+													</Visualizer>
+												{:else}
+													<Visualizer>
+														<div class="p-2 mb-1 levelcontent" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
+															<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
+														</div>
+													</Visualizer>
+												{/if}
+											{:else if level.content && level.content[0] !== undefined}
+												<div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
+													<p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
+												</div>
+											{/if}
+										</div>
+									{/each}
+								{:else}
+									<p style="color: var(--text-muted, #9aa6ad);">No hay narrativa asociada a esta tarea.</p>
+								{/if}
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -167,12 +166,12 @@
 {/if}
 
 <style>
-	.levelcontent{
-		min-height:10%;
+	.levelcontent {
+		min-height: 10%;
 		max-height: 120%;
-		overflow-y:auto;
+		overflow-y: auto;
 		scroll-behavior: smooth;
-		top:1px;
+		top: 1px;
 		position: absolute;
 	}
 
@@ -189,6 +188,7 @@
 		z-index: 1000;
 		pointer-events: auto;
 		overflow: hidden;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	}
 
 	.panel-background {
@@ -197,29 +197,31 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
-		background: rgba(0, 0, 0, 0.65);
-		backdrop-filter: blur(5px);
-		-webkit-backdrop-filter: blur(5px);
+		background: rgba(10, 18, 22, 0.7);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 		z-index: 1001;
 	}
 
 	.panel-content {
 		position: relative;
 		z-index: 1002;
-		background: hsla(134, 15%, 17%, 0.99);
-		backdrop-filter: blur(25px);
-		-webkit-backdrop-filter: blur(25px);
-		border: 1px solid rgba(255, 255, 255, 0.15);
+		background: rgba(22, 33, 40, 0.9);
+		backdrop-filter: blur(28px);
+		-webkit-backdrop-filter: blur(28px);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-bottom: none;
 		width: 100vw;
-		max-height: 80vh;
-		min-height: 45vh;
-		border-radius: 1.25rem 1.25rem 0 0;
-		box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
-		padding: 1.0rem 1.0rem 1.5rem 1.0rem;
-		color: white;
+		max-height: 85vh;
+		min-height: 48vh;
+		border-radius: 28px 28px 0 0;
+		box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+		padding: 1.2rem 1.4rem 2rem 1.4rem;
+		color: var(--text-main, #ffffff);
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	}
 
 	.section {
@@ -230,35 +232,70 @@
 	}
 
 	.drag-handle-bar {
-		width: 44px;
-		height: 5px;
-		background: rgba(255, 255, 255, 0.3);
-		border-radius: 3px;
-		margin: 0 auto 1.25rem auto;
+		width: 42px;
+		height: 4px;
+		background: rgba(255, 255, 255, 0.25);
+		border-radius: 4px;
+		margin: 0 auto 1.2rem auto;
 	}
 
-	.delete {
-		background: rgba(255, 255, 255, 0.2);
-		border: none;
-		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 50%;
-		cursor: pointer;
+	.close-btn {
 		position: absolute;
-		top: 1.25rem;
-		right: 1.25rem;
+		top: 1.2rem;
+		right: 1.2rem;
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: var(--text-muted, #9aa6ad);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
 		z-index: 10;
+		transition: all 0.2s ease;
 	}
 
-	.box {
-		background-color: transparent;
+	.close-btn:hover {
+		background: rgba(255, 255, 255, 0.16);
+		color: #ffffff;
+	}
+
+	.panel-title {
+		font-size: 1.35rem;
+		font-weight: 700;
+		color: #ffffff;
+		margin-bottom: 0.75rem;
+		letter-spacing: -0.01em;
+	}
+
+	.meta-tags {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.meta-tag {
+		background: rgba(0, 0, 0, 0.25);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 12px;
+		padding: 6px 12px;
+		font-size: 0.8rem;
+		color: var(--text-muted, #9aa6ad);
+		font-weight: 500;
+	}
+
+	.meta-tag strong {
+		color: var(--accent-primary, #19d4a8);
+		font-weight: 700;
 	}
 
 	@media (min-width: 1024px) {
 		.panel-content {
 			width: 50vw;
 			max-width: 680px;
-			border-radius: 1.25rem 1.25rem 0 0;
+			border-radius: 28px 28px 0 0;
 		}
 	}
 </style>

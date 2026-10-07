@@ -4,12 +4,12 @@
 
 	interface Props {
 		children?: Snippet;
-		datas: any;
-		tasks: any[];
+		datas?: any;
+		tasks?: any[];
 		[key: string]: any;
 	}
 
-	let { children, datas, tasks = [] }: Props = $props();
+	let { children, tasks = [] }: Props = $props();
 
 	let completedTasks = $derived(
 		tasks.filter((t) => {
@@ -18,89 +18,68 @@
 		}).length
 	);
 
-	let activeTasks = $derived(tasks.length - completedTasks);
+	let activeTasks = $derived(tasks.filter((t) => parseInt(t.status, 10) !== -1 && parseInt(t.status, 10) < t.cantidad_de_niveles - 1).length);
 </script>
 
-<div class="columns is-centered is-mobile mb-4">
-	<div class="column is-half-desktop is-full-mobile">
-		<div class="grid has-col-min-12">
-			<div class="cell">
-				<Motion
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					whileHover={{ y: -2, scale: 1.02 }}
-					transition={{ duration: 0.2 }}
-					let:motion
-				>
-					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
-						<p class="is-size-7 is-uppercase has-text-grey-light">Usuario</p>
-						<p class="is-size-6 has-text-weight-bold has-text-primary">
-							{datas?.user?.nombre_de_usuario || 'Anónimo'}
-						</p>
-						<p class="is-size-7 has-text-grey-lighter is-truncated">{datas?.user?.email || ''}</p>
-					</div>
-				</Motion>
+<div class="bento-grid">
+	<!-- Card 1: Total proyectos -->
+	<Motion
+		initial={{ opacity: 0, y: 10 }}
+		animate={{ opacity: 1, y: 0 }}
+		whileHover={{ y: -2 }}
+		transition={{ duration: 0.2 }}
+		let:motion
+	>
+		<div use:motion class="glass-panel bento-card">
+			<div class="is-flex is-justify-content-space-between is-align-items-center">
+				<span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">Total proyectos</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent-primary)">
+					<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+				</svg>
 			</div>
-
-			<div class="cell">
-				<Motion
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					whileHover={{ y: -2, scale: 1.02 }}
-					transition={{ duration: 0.2, delay: 0.05 }}
-					let:motion
-				>
-					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
-						<p class="is-size-7 is-uppercase has-text-grey-light">Total Proyectos</p>
-						<p class="is-size-4 has-text-weight-bold has-text-info">{tasks.length}</p>
-					</div>
-				</Motion>
+			<div style="font-size: 2.2rem; font-weight: bold; color: var(--accent-primary); line-height: 1; margin: 4px 0;">
+				{tasks.length}
 			</div>
+			<div class="ring-chart"></div>
+		</div>
+	</Motion>
 
-			<div class="cell">
-				<Motion
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					whileHover={{ y: -2, scale: 1.02 }}
-					transition={{ duration: 0.2, delay: 0.1 }}
-					let:motion
-				>
-					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
-						<p class="is-size-7 is-uppercase has-text-grey-light">En Progreso</p>
-						<p class="is-size-4 has-text-weight-bold has-text-warning">{activeTasks}</p>
-					</div>
-				</Motion>
+	<!-- Card 2: Tareas en progreso -->
+	<Motion
+		initial={{ opacity: 0, y: 10 }}
+		animate={{ opacity: 1, y: 0 }}
+		whileHover={{ y: -2 }}
+		transition={{ duration: 0.2, delay: 0.05 }}
+		let:motion
+	>
+		<div use:motion class="glass-panel bento-card">
+			<div class="is-flex is-justify-content-space-between is-align-items-center">
+				<span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">Tareas en progreso</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent-primary)">
+					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+				</svg>
 			</div>
-
-			<div class="cell">
-				<Motion
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					whileHover={{ y: -2, scale: 1.02 }}
-					transition={{ duration: 0.2, delay: 0.15 }}
-					let:motion
-				>
-					<div use:motion class="box is-shadowless has-background-dark has-text-white stat-box">
-						<p class="is-size-7 is-uppercase has-text-grey-light">Completadas</p>
-						<p class="is-size-4 has-text-weight-bold has-text-success">{completedTasks}</p>
-					</div>
-				</Motion>
+			<div style="font-size: 2.2rem; font-weight: bold; color: var(--accent-primary); line-height: 1; margin: 4px 0;">
+				{activeTasks}
+			</div>
+			<div style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+				<div class="is-flex is-justify-content-space-between is-align-items-center">
+					<span class="is-flex is-align-items-center">
+						<span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent-primary); display: inline-block; margin-right: 6px;"></span>
+						<span style="color: var(--text-muted);">En curso</span>
+					</span>
+					<span style="color: white; font-weight: bold;">{activeTasks}</span>
+				</div>
+				<div class="is-flex is-justify-content-space-between is-align-items-center">
+					<span class="is-flex is-align-items-center">
+						<span style="width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); display: inline-block; margin-right: 6px;"></span>
+						<span style="color: var(--text-muted);">Completadas</span>
+					</span>
+					<span style="color: white; font-weight: bold;">{completedTasks}</span>
+				</div>
 			</div>
 		</div>
-		{@render children?.()}
-	</div>
+	</Motion>
 </div>
 
-<style>
-	.stat-box {
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 8px;
-		height: 100%;
-	}
-
-	.is-truncated {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-</style>
+{@render children?.()}
