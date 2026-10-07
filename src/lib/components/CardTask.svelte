@@ -93,7 +93,7 @@
 				Temática: <span style="color: white;">{task.tema}</span>
 			</div>
 			<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">
-				Capítulo: <span style="color: white;">Nivel {statusNum === -1 ? 1 : statusNum + 1} • {chapterTitle}</span>
+				Capítulo: <span style="color: white;">{chapterTitle}</span>
 			</div>
 
 			<!-- Progress Timeline -->
@@ -198,5 +198,22 @@
 		border: none;
 		cursor: pointer;
 		z-index: 10;
+	}
+
+	/* Reducir tamaño de letra en botones de las cards */
+	:global(.project-card .btn-primary),
+	:global(.project-card .btn-outline) {
+		font-size: 0.72rem;
+		padding: 8px 10px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	:global(.project-card .btn-primary span:first-child),
+	:global(.project-card .btn-outline span:first-child) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
