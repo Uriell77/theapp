@@ -55,6 +55,15 @@ const tematicasAgrupadas = [
             { valor: "El Gran Atraco", etiqueta: "El Gran Atraco (Heist)" },
             { valor: "Romance Diurno", etiqueta: "Romance Diurno" }
         ]
+    },
+    {
+	  grupo: "Aprendizaje y Exploración",
+	  opciones: [
+		{ valor: "Aprendizaje Infantil", etiqueta: "Aprendizaje Infantil" },
+		{ valor: "Aprendizaje Adolescente", etiqueta: "Aprendizaje Adolescente" },
+		{ valor: "Aprendizaje de Habilidades", etiqueta: "Aprendizaje de Habilidades" },
+		{ valor: "Conocimiento Universal", etiqueta: "Conocimiento Universal" },
+	  ]
     }
 ];
 
@@ -270,7 +279,7 @@ function incrementarNiveles() {
 						type="submit"
 						disabled={isSubmitting}
 					>
-						{isSubmitting ? 'Generando historia con IA...' : 'Guardar y Generar'}
+						{isSubmitting ? 'Generando Historia...' : 'Guardar y Generar'}
 					</button>
 				</section>
 				</Motion>

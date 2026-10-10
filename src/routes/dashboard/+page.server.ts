@@ -206,6 +206,8 @@ REGLAS NARRATIVAS (METÁFORA Y CONTINUIDAD):
 4. METÁFORA SUTIL: NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas; el esfuerzo real equivale al progreso en la historia.
 5. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
 6. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración que empuje a ${nombre_de_usuario} a continuar.
+7. PARA LOS TEMAS NARRATIVOS DE APRENDIZAJE Y CONOCIMIENTO, la historia debe girar en torno a la exploración de un mundo desconocido, la resolución de acertijos y la adquisición de habilidades únicas que reflejen el aprendizaje progresivo del usuario, es decir la historia tiene que enseñar al usuario la habilidad elegida. ejemplo: el usuario aprende a tocar el piano a través de la historia.
+8. PARA LOS TEMAS CON NARRATIVA DE APRENDIZAJE INFANTIL O ADOLESCENTE, la historia debe ADAPTARSE A LA EDAD DEL USUARIO, utilizando un lenguaje y situaciones apropiadas para su nivel de comprensión, fomentando la curiosidad y el descubrimiento de manera segura y educativa.
 
 REGLAS VISUALES Y DE COHERENCIA (CINEMÁTICA):
 Asigna una atmósfera visual para cada capítulo usando EXCLUSIVAMENTE la lista de etiquetas permitidas. 
