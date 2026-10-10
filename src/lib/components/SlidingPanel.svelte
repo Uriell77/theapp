@@ -119,7 +119,7 @@
 								{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
 								<div class="narrative-container">
 									<Visualizer effectConfig={defeatEffectConfig}>
-										<div class="p-2 mb-1 levelcontent" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
+										<div class="p-2 mb-1 levelcontent hud-container" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
 											<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedDefeatText, speed: 100 }}></p>
 										</div>
 									</Visualizer>
@@ -135,13 +135,13 @@
 												{@const formattedText = dotPos !== -1 ? `${currentRaw.slice(0, dotPos).trim()}\n\n${currentRaw.slice(dotPos + 1).trim()}` : currentRaw}
 												{#if level.cinematica && level.cinematica[taskData.status]}
 													<Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
-														<div class="p-2 mb-1 levelcontent" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
+														<div class="p-2 mb-1 levelcontent hud-container" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
 															<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
 														</div>
 													</Visualizer>
 												{:else}
 													<Visualizer>
-														<div class="p-2 mb-1 levelcontent" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
+														<div class="p-2 mb-1 levelcontent hud-container" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
 															<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
 														</div>
 													</Visualizer>
@@ -290,6 +290,26 @@
 		color: var(--accent-primary, #19d4a8);
 		font-weight: 700;
 	}
+
+
+    .hud-container {
+        /* Asegura contraste agresivo para que el texto siempre se lea */
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 50%, transparent 100%);
+        /* Permite scroll si la historia es muy larga */
+        max-height: 50vh; /* Ajusta según el tamaño de tu tarjeta */
+        overflow-y: auto;
+        padding: 1.5rem;
+        pointer-events: auto; /* Permite al usuario hacer scroll manual */
+    }
+    
+    /* Estilizar la barra de scroll para que no se vea fea */
+    .hud-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .hud-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+    }
 
 	@media (min-width: 1024px) {
 		.panel-content {

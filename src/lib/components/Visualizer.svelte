@@ -1,6 +1,29 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
 
+
+// Función auxiliar para traducir la etiqueta de color a valores RGB puros
+function getRgbString(colorTag: string): string {
+    const colorMap: Record<string, string> = {
+        'deep-space-blue': '20, 40, 150',
+        'ice-cyan': '120, 210, 255',
+        'cyberpunk-neon': '255, 50, 200',
+        'toxic-green': '40, 255, 140',
+        'infernal-orange': '255, 130, 40',
+        'apocalyptic-rust': '180, 70, 30',
+        'blood-red': '240, 40, 40',
+        'military-khaki': '140, 150, 110',
+        'fantasy-gold': '255, 215, 0',
+        'void-purple': '110, 30, 180',
+        'daylight-warm': '255, 245, 210',
+        'pure-white': '255, 255, 255'
+    };
+
+    // Si la IA manda un color raro que no existe, devolvemos un blanco/gris por defecto
+    return colorMap[colorTag] || '200, 200, 200';
+}
+
+
     interface Props {
         effectConfig?: string;
         children?: import('svelte').Snippet;
@@ -380,30 +403,60 @@
             // 2. Renderizado dinámico de partículas según el ambiente
             if (current.effect === 'fire-battle' || current.effect === 'volcano-embers') {
                 particles.forEach(p => {
-                    p.y -= p.speedY * speedMult;
-                    p.x += Math.sin(time * 3 + p.seed) * 1.4 * speedMult + p.speedX;
+    // Función auxiliar para obtener el color RGB en el contexto del bucle
+    let baseColor = getRgbString(current.color); // Asegúrate de tener una función que devuelva ej: "255, 130, 40"
 
-                    if (p.y < -10) {
-                        p.y = height + 10;
-                        p.x = Math.random() * width;
-                    }
+    // 1. Ausencia de partículas (Paz / Cielos Despejados)
+    if (current.effect === 'none' || current.effect === 'clear-sky') {
+        return; // Salta el dibujo de esta partícula
+    }
+    
+    // 2. Lluvia o Tormenta (Líneas rectas descendentes)
+    else if (current.effect === 'toxic-rain' || current.effect === 'rainstorm' || current.effect === 'electric-storm') {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x + (p.speedX * 2), p.y + (p.speedY * 15)); // Trazo largo hacia abajo
+        ctx.strokeStyle = `rgba(${baseColor}, ${p.alpha})`;
+        ctx.lineWidth = p.radius * 0.6;
+        ctx.stroke();
+    } 
+    
+    // 3. Humo, Niebla o Tormenta de Arena (Gradientes Radiales Difusos)
+    else if (current.effect === 'ash-storm' || current.effect === 'nebula-dust') {
+        let gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 6);
+        gradient.addColorStop(0, `rgba(${baseColor}, ${p.alpha * 0.4})`); 
+        gradient.addColorStop(1, `rgba(${baseColor}, 0)`); // Borde invisible
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius * 6, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+    }
 
-                    // Altura determina color del fuego (amarillo incandescente abajo -> naranja -> rojo/humo arriba)
-                    const heightFactor = Math.max(0, Math.min(1, p.y / height));
-                    const currentAlpha = p.alpha * heightFactor;
+    // 4. Matrix o Magia (Caracteres / Letras)
+    else if (current.effect === 'data-matrix' || current.effect === 'magic-runes') {
+        ctx.font = `${p.radius * 6}px monospace`;
+        ctx.fillStyle = `rgba(${baseColor}, ${p.alpha})`;
+        let char = current.effect === 'data-matrix' ? (Math.random() > 0.5 ? '0' : '1') : 'ᛟ'; 
+        ctx.fillText(char, p.x, p.y);
+    }
 
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius * (0.6 + 0.4 * heightFactor), 0, Math.PI * 2);
+    // 5. Por defecto: Puntos / Fuego / Espacio (Círculos con resplandor)
+    else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${baseColor}, ${p.alpha})`;
+        
+        ctx.shadowBlur = p.radius * 2;
+        ctx.shadowColor = ctx.fillStyle;
+        
+        ctx.fill();
+        ctx.shadowBlur = 0; // Importante resetear la sombra
+    }
 
-                    if (heightFactor > 0.6) {
-                        ctx.fillStyle = `rgba(255, 235, 120, ${currentAlpha})`;
-                    } else if (heightFactor > 0.3) {
-                        ctx.fillStyle = `rgba(255, 120, 20, ${currentAlpha})`;
-                    } else {
-                        ctx.fillStyle = `rgba(210, 40, 20, ${currentAlpha * 0.7})`;
-                    }
-                    ctx.fill();
-                });
+    // --- Física de Movimiento ---
+    // Aplica el movimiento aquí según current.speedMultiplier (tu lógica existente)
+});
             } else if (current.effect === 'electric-storm') {
                 // 2.1 Gotas de lluvia
                 ctx.lineWidth = 1.2;

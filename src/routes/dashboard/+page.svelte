@@ -8,6 +8,57 @@
 	import { supabase } from '$lib/supabaseClient';
 	import Estadistic from '$lib/components/Estadistic.svelte';
 
+
+// Define esto dentro de tu <script lang="ts"> o en un archivo de utilidades separado
+const tematicasAgrupadas = [
+    {
+        grupo: "Fantasía y Mitología",
+        opciones: [
+            { valor: "Magia y Fantasía", etiqueta: "Magia y Fantasía" },
+            { valor: "Cruzada Medieval", etiqueta: "Cruzada Medieval" },
+            { valor: "Odisea Mitológica Griega", etiqueta: "Odisea Mitológica Griega" },
+            { valor: "Dinastía Samurái", etiqueta: "Dinastía Samurái" },
+            { valor: "Alquimia y Magia Arcana", etiqueta: "Alquimia y Magia Arcana" }
+        ]
+    },
+    {
+        grupo: "Ciencia Ficción",
+        opciones: [
+            { valor: "Guerra Espacial", etiqueta: "Guerra Espacial" },
+            { valor: "Rebelión Cyberpunk", etiqueta: "Rebelión Cyberpunk" },
+            { valor: "Supervivencia Post-Apocalíptica", etiqueta: "Supervivencia Post-Apocalíptica" },
+            { valor: "Mundo Steampunk", etiqueta: "Mundo Steampunk" }
+        ]
+    },
+    {
+        grupo: "Terror y Supervivencia",
+        opciones: [
+            { valor: "Apocalipsis Zombi", etiqueta: "Apocalipsis Zombi" },
+            { valor: "Terror Lovecraftiano", etiqueta: "Terror Lovecraftiano" },
+            { valor: "Catastrofe Natural", etiqueta: "Catástrofe Natural" }
+        ]
+    },
+    {
+        grupo: "Acción y Aventura",
+        opciones: [
+            { valor: "Superheroes", etiqueta: "Superhéroes" },
+            { valor: "Guerra Mundial", etiqueta: "Guerra Mundial" },
+            { valor: "Vaqueros y Western", etiqueta: "Vaqueros y Western" }
+        ]
+    },
+    {
+        grupo: "Misterio, Thriller y Drama",
+        opciones: [
+            { valor: "Agente Secreto", etiqueta: "Agente Secreto" },
+            { valor: "Espionaje Internacional", etiqueta: "Espionaje Internacional" },
+            { valor: "Detective Noir", etiqueta: "Detective Noir (Años 20)" },
+            { valor: "El Gran Atraco", etiqueta: "El Gran Atraco (Heist)" },
+            { valor: "Romance Diurno", etiqueta: "Romance Diurno" }
+        ]
+    }
+];
+
+
 	let { data } = $props();
 
 	// Estado reactivo para las tareas
@@ -122,18 +173,25 @@
 				<div class="field mb-4">
 					<label class="label" for="taskTema" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Temática Narrativa</label>
 					<div class="control select is-fullwidth" style="width: 100%;">
-						<select name="tema" id="taskTema" bind:value={newTaskTema} disabled={isSubmitting} style="background: #142127; border: 1px solid var(--card-border); color: white; border-radius: 14px; padding: 2px 16px; width: 100%; font-family: inherit;">
-							<option value="Guerra Espacial">Guerra Espacial</option>
-							<option value="Cruzada Medieval">Cruzada Medieval</option>
-							<option value="Apocalipsis Zombi">Apocalipsis Zombi</option>
-							<option value="Superheroes">Superhéroes</option>
-							<option value="Agente Secreto">Agente Secreto</option>
-							<option value="Magia y Fantasía">Magia y Fantasía</option>
-							<option value="Guerra Mundial">Guerra Mundial</option>
-							<option value="Catastrofe Natural">Catástrofe Natural</option>
-							<option value="Vaqueros y Western">Vaqueros y Western</option>
-							<option value="Terror Lovecraftiano">Terror Lovecraftiano</option>
-						</select>
+<!-- Reemplaza tu <select> anterior por este bloque -->
+			<select 
+			name="tema" 
+			id="taskTema" 
+			bind:value={newTaskTema} 
+			disabled={isSubmitting} 
+			style="background: #142127; border: 1px solid var(--card-border); color: white; border-radius: 14px; padding: 2px 16px; width: 100%; font-family: inherit;"
+			>
+			<!-- Opción por defecto (Opcional, pero recomendada) -->
+			<option value="" disabled selected>Selecciona una temática...</option>
+
+			{#each tematicasAgrupadas as categoria}
+				<optgroup label={categoria.grupo}>
+					{#each categoria.opciones as opcion}
+					<option value={opcion.valor}>{opcion.etiqueta}</option>
+					{/each}
+				</optgroup>
+			{/each}
+			</select>
 					</div>
 				</div>
 

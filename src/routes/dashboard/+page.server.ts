@@ -190,58 +190,53 @@ export const actions: Actions = {
 		}
 
 		try {
-			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos. 
+			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos y experiencias inmersivas. 
 El usuario, llamado "${nombre_de_usuario}", tiene un desafío de productividad en el mundo real: "${title}".
 El tema estético y narrativo elegido es: "${tema}".
 
-Tu objetivo es construir una campaña narrativa inmersiva de pura acción, estrictamente secuencial y dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista y héroe absoluto.
+Tu objetivo es construir una campaña narrativa inmersiva, estrictamente secuencial y dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista absoluto.
 
-REGLAS NARRATIVAS (METÁFORA DE MISIÓN Y CONTINUIDAD PERFECTA):
-1. MISIÓN Y ENEMIGO CLARO: Desde el Capítulo 1, establece una AMENAZA inminente (un imperio, una horda, un cataclismo, un monstruo) y un OBJETIVO TANGIBLE que el protagonista debe lograr paso a paso (ej: cargar un arma gigante, reparar un escudo, forjar un artefacto, recorrer un territorio hostil). 
-2. CONTINUIDAD ABSOLUTA: La historia NO son viñetas aisladas. Es un solo arco argumental ininterrumpido. Cada capítulo debe retomar la acción exactamente donde la dejó el anterior y escalar la tensión, sintiéndose como fases consecutivas de una misma operación contrarreloj.
-3. INMERSIÓN DE VIDEOJUEGO: Utiliza un tono de urgencia. Puedes iniciar los capítulos simulando interfaces (ej: "Transmisión Entrante", "Alerta de Proximidad", "Reporte de Daños") para darle dinamismo a la historia.
-4. METÁFORA SUTIL: NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas. El progreso real se traduce 100% en avance de la misión ficticia.
-5. ESTRUCTURA DE LA CAMPAÑA: 
-   - Capítulo inicial: Presenta la crisis, el enemigo y la secuencia de inicio de la misión.
-   - Capítulos intermedios: El enemigo ataca, las defensas sufren, hay tensión y resistencia, pero el objetivo de ${nombre_de_usuario} (el arma, escudo o viaje) acumula poder gracias a su esfuerzo continuo.
-   - Capítulo final: El Clímax Épico. El enfrentamiento cara a cara contra el Jefe Final o la catástrofe, la ejecución de la misión al 100% y una victoria absoluta y explosiva.
-6. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo (debes hilar las ideas usando comas, punto y coma, o signos de exclamación).
-7. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración (sin decir que es motivacional) que empuje a ${nombre_de_usuario} a no rendirse y prepararse para el siguiente embate.
+REGLAS NARRATIVAS (METÁFORA Y CONTINUIDAD):
+1. MISIÓN, ENEMIGO Y ARQUETIPO CLAROS: Desde el Capítulo 1, establece una amenaza y un objetivo tangible que debe lograrse paso a paso. El TIPO de misión debe adaptarse lógicamente al tema:
+   - Guerra/Fantasía: Trama de CONQUISTA o COMBATE (derrotar a un enemigo o monstruo).
+   - Misterio/Espionaje/Romance: Trama de SIGILO, CONEXIÓN o INTELIGENCIA (descubrir secretos, infiltrarse, superar la distancia).
+   - Supervivencia/Catástrofe: Trama de RESISTENCIA (soportar el clima, escapar o construir refugio).
+2. CONTINUIDAD ABSOLUTA: Es un arco argumental ininterrumpido. Cada capítulo retoma la acción exactamente donde la dejó el anterior, escalando la tensión.
+3. INMERSIÓN DE VIDEOJUEGO: Usa un tono de urgencia o simula interfaces al inicio (ej: "Transmisión Entrante:", "Alerta de Proximidad:").
+4. METÁFORA SUTIL: NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas; el esfuerzo real equivale al progreso en la historia.
+5. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
+6. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración que empuje a ${nombre_de_usuario} a continuar.
 
-REGLAS VISUALES (CINEMÁTICA REALISTA Y ADAPTATIVA AL ENTORNO):
-Analiza detalladamente el entorno, clima, atmósfera y nivel de acción de CADA capítulo individual para que la atmósfera visual represente fielmente lo narrado:
-- Si el capítulo ocurre en llamas, fuego, explosiones o lava: usa effect: "fire-battle" o "volcano-embers", color: "infernal-orange" o "blood-red", lighting: "candle-flicker" o "strobe-alarm".
-- Si ocurre en una tormenta, cielo oscuro, lluvia o relámpagos: usa effect: "electric-storm", color: "deep-space-blue" o "ice-cyan", lighting: "lightning-flash", speed: "fast" o "chaotic".
-- Si ocurre en nieve, hielo, ventiscas o frío glacial: usa effect: "snow-blizzard", color: "ice-cyan", lighting: "vignette-dark".
-- Si ocurre en el océano, agua profunda o abismo submarino: usa effect: "underwater-bubbles", color: "deep-space-blue" o "ice-cyan", speed: "slow".
-- Si ocurre en pantanos, junglas alienígenas, radiación o veneno: usa effect: "toxic-rain" o "alien-forest", color: "toxic-green".
-- Si ocurre en el ciberespacio, terminales, hacking o redes: usa effect: "data-matrix", color: "cyberpunk-neon" o "toxic-green".
-- Si ocurre en el cosmos abierto, vuelo espacial o hipervelocidad: usa effect: "space-cockpit", "hyper-warp" o "nebula-dust", color: "deep-space-blue" o "void-purple", lighting: "lens-flare".
-- Si ocurre en templos arcanos, hechicería o magia ancestral: usa effect: "magic-runes", color: "fantasy-gold" o "void-purple", lighting: "eclipse-ring".
-- Si ocurre en combate cuerpo a cuerpo sangriento: usa effect: "blood-drip", color: "blood-red", lighting: "strobe-alarm".
-- Si ocurre en ruinas desérticas, cenizas o páramos desolados: usa effect: "ash-storm", color: "apocalyptic-rust" o "military-khaki".
+REGLAS VISUALES Y DE COHERENCIA (CINEMÁTICA):
+Asigna una atmósfera visual para cada capítulo usando EXCLUSIVAMENTE la lista de etiquetas permitidas. 
+¡CRÍTICO - REGLA DE MAPEO SEMÁNTICO UNIVERSAL!: Tienes estrictamente prohibido asignar etiquetas al azar. Analiza la física, el clima, la temperatura y el entorno del capítulo que acabas de escribir y deduce lógicamente las etiquetas exactas:
+- Polvo, arena, sequía o desierto: USA effect: "ash-storm" + color cálido. (NUNCA lluvia ni rayos).
+- Agua, tormentas, océanos o líquidos: USA effect: "toxic-rain" o "underwater-bubbles" + color azul/frío.
+- Frío extremo, hielo o invierno: USA effect: "snow-blizzard" + color hielo/blanco.
+- Calor, fuego, lava o combate intenso: USA effect: "fire-battle" o "volcano-embers" + color rojo/naranja.
+- Tecnología, cibernética o datos: USA effect: "data-matrix".
+- Naturaleza tranquila, paz, romance diurno: USA effect: "falling-leaves", "radiant-glow" o "none".
 
-Valores permitidos exactos:
-- effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust.
-- color: deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust.
+Etiquetas permitidas (Copia exactamente el texto):
+- effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust, falling-leaves, radiant-glow, mind-waves, clear-sky, none.
+- color: deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust, daylight-warm, pure-white.
 - speed: static, slow, normal, fast, chaotic, pulsing.
-- lighting: vignette-dark, lens-flare, strobe-alarm, candle-flicker, lightning-flash, eclipse-ring, none.
+- lighting: vignette-dark, lens-flare, strobe-alarm, candle-flicker, lightning-flash, eclipse-ring, sun-rays, none.
 - mood: intro, rising-tension, boss-fight, victory, defeat.
 
 FORMATO DE SALIDA:
-Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin formato Markdown adicional) con esta estructura exacta:
+Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown, sin texto extra) con esta estructura exacta:
 {
   "chapters": [
     "Capítulo 1: Título. [Narrativa continua sin usar más puntos...]",
-    "Capítulo 2: Título. [Continuación directa de la acción sin usar más puntos...]",
-    ... (debe haber exactamente ${cantidad_de_niveles} capítulos aquí)
+    ... (exactamente ${cantidad_de_niveles} capítulos)
   ],
   "cinematica": [
     { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." },
-    ... (debe haber exactamente ${cantidad_de_niveles} objetos aquí)
+    ... (exactamente ${cantidad_de_niveles} objetos)
   ],
-  "defeatChapter": "Final Alternativo: Retirada Táctica. [Narra de forma épica cómo ${nombre_de_usuario} debe ordenar la retirada ante fuerzas abrumadoras, dejando un mensaje profundamente humano sobre lamer las heridas, aprender de la derrota y prepararse para volver a luchar otro día, sin usar más puntos.]",
-  "defeatCinematica": { "effect": "ash-storm", "color": "apocalyptic-rust", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
+  "defeatChapter": "Final Alternativo: Retirada Táctica. [Narra de forma épica cómo ${nombre_de_usuario} debe retirarse temporalmente, dejando un mensaje humano sobre aprender de la derrota, sin usar más puntos.]",
+  "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
 }`;
 			const availableModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
 			let result;
