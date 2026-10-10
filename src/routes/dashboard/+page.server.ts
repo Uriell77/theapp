@@ -201,8 +201,8 @@ REGLAS NARRATIVAS (METÁFORA Y CONTINUIDAD):
    - Guerra/Fantasía: Trama de CONQUISTA o COMBATE (derrotar a un enemigo o monstruo).
    - Misterio/Espionaje/Romance: Trama de SIGILO, CONEXIÓN o INTELIGENCIA (descubrir secretos, infiltrarse, superar la distancia).
    - Supervivencia/Catástrofe: Trama de RESISTENCIA (soportar el clima, escapar o construir refugio).
-2. CONTINUIDAD ABSOLUTA: Es un arco argumental ininterrumpido. Cada capítulo retoma la acción exactamente donde la dejó el anterior, escalando la tensión.
-3. INMERSIÓN DE VIDEOJUEGO: Usa un tono de urgencia o simula interfaces al inicio (ej: "Transmisión Entrante:", "Alerta de Proximidad:").
+2. CONTINUIDAD DE PLANO SECUENCIA (IN MEDIA RES): La historia es una película de acción en plano secuencia sin cortes de cámara. A partir del Capítulo 2, TIENES ESTRICTAMENTE PROHIBIDO iniciar con resúmenes, reportes de estado (ej. "Infiltración confirmada") o saltos temporales. Debes empezar la primera palabra del capítulo exactamente en el mismo segundo de tensión física o emocional con el que terminó el capítulo anterior. 
+3. PROHIBIDO USAR PLANTILLAS: No repitas estructuras. No inicies cada capítulo dirigiéndote al protagonista por su nombre como si fuera un robot. Haz que la prosa fluya de manera visceral, conectando la urgencia del final del capítulo anterior directamente con el obstáculo del nuevo capítulo.
 4. METÁFORA SUTIL: NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas; el esfuerzo real equivale al progreso en la historia.
 5. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
 6. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración que empuje a ${nombre_de_usuario} a continuar.

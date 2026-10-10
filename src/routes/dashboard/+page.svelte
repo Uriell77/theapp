@@ -118,6 +118,16 @@ const tematicasAgrupadas = [
 	let activeTasksCount = $derived(
 		tasks.filter((t: any) => parseInt(t.status, 10) !== -1 && parseInt(t.status, 10) < t.cantidad_de_niveles - 1).length
 	);
+
+	// Funciones para el Spinner de Niveles
+function decrementarNiveles() {
+    if (newTaskNiveles > 1) newTaskNiveles--;
+}
+
+function incrementarNiveles() {
+    if (newTaskNiveles < 12) newTaskNiveles++;
+}
+
 </script>
 
 <svelte:head>
@@ -200,20 +210,50 @@ const tematicasAgrupadas = [
 						>Número de Capítulos / Niveles</label
 					>
 					<small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-bottom: 6px;">Fragmentos en los que se divide tu proyecto</small>
-					<div class="control">
-						<input
-							class="input"
-							type="number"
-							name="cantidad_de_niveles"
-							id="taskNiveles"
-							bind:value={newTaskNiveles}
-							min="1"
-							max="20"
-							required
-							disabled={isSubmitting}
-							style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); color: white; border-radius: 14px; padding: 12px 16px; font-family: inherit;"
-						/>
-					</div>
+					<div class="control flex justify-center">
+    <!-- Contenedor principal estilo píldora -->
+    <div class="number-spinner-pill" class:is-submitting={isSubmitting}>
+        
+        <!-- Botón Restar -->
+        <button 
+            type="button" 
+            class="spinner-btn" 
+            onclick={decrementarNiveles} 
+            disabled={newTaskNiveles <= 1 || isSubmitting}
+            aria-label="Disminuir niveles"
+        >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+
+        <!-- Input oculto/estilizado para guardar el valor en el formulario -->
+        <input
+            class="spinner-input"
+            type="number"
+            name="cantidad_de_niveles"
+            id="taskNiveles"
+            bind:value={newTaskNiveles}
+            min="1"
+            max="12"
+            required
+            readonly 
+        />
+
+        <!-- Botón Sumar -->
+        <button 
+            type="button" 
+            class="spinner-btn" 
+            onclick={incrementarNiveles} 
+            disabled={newTaskNiveles >= 12 || isSubmitting}
+            aria-label="Aumentar niveles"
+        >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+    </div>
+</div>
 				</div>
 				<input class="is-hidden" type="text" value="{data?.user?.nombre_de_usuario}" name="nombredeusuario"/>
 
@@ -222,15 +262,17 @@ const tematicasAgrupadas = [
 					whileTap={!isSubmitting ? { scale: 0.98 } : {}}
 					let:motion
 				>
+				<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2" >
 					<button
 						use:motion
 						class="btn-primary"
-						style="width: 100%; margin-top: 1.5rem;"
+						style="width: 70%; margin-top: 1.5rem;"
 						type="submit"
 						disabled={isSubmitting}
 					>
 						{isSubmitting ? 'Generando historia con IA...' : 'Guardar y Generar'}
 					</button>
+				</section>
 				</Motion>
 			</form>
 		{/if}
@@ -312,3 +354,161 @@ const tematicasAgrupadas = [
 		</div>
 	{/if}
 </main>
+
+
+
+<style>
+
+input[type="text"] {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--card-border);
+    color: white;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-family: inherit;
+    width: 100%;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #00e5ff; /* Color de borde al enfocar */
+    box-shadow: 0 0 5px rgba(0, 229, 255, 0.5); /* Sombra suave al enfocar */
+}
+
+input[type="text"]::placeholder {
+    color: #b0b0b0; /* Color del placeholder */
+    font-style: italic;
+}
+
+
+select {
+    background: #142127;
+    border: 1px solid var(--card-border);
+    color: white;
+    border-radius: 14px;
+    padding: 2px 16px;
+    width: 100%;
+    font-family: inherit;
+}
+
+select:focus {
+    outline: none;
+    border-color: #00e5ff; /* Color de borde al enfocar */
+    box-shadow: 0 0 5px rgba(0, 229, 255, 0.5); /* Sombra suave al enfocar */
+}
+
+select option {
+    background: #142127; /* Fondo de las opciones */
+    color: white; /* Color del texto de las opciones */
+}
+
+select optgroup {
+    font-weight: bold; /* Negrita para los grupos */
+    color: #00e5ff; /* Color celeste para los grupos */
+}
+
+select optgroup option {
+    font-weight: normal; /* Normal para las opciones */
+    color: white; /* Color del texto de las opciones */
+    font-style: normal; /* Estilo normal para las opciones */
+    font-size: 0.9rem; /* Tamaño de fuente más pequeño para las opciones */
+}
+
+select optgroup option:hover {
+    background: #1e2a33; /* Fondo al pasar el ratón por las opciones */
+    color: #00e5ff; /* Color del texto al pasar el ratón por las opciones */
+}
+
+select optgroup option:focus {
+    background: #1e2a33; /* Fondo al enfocar la opción */
+    color: #00e5ff; /* Color del texto al enfocar la opción */
+}
+
+select optgroup option:active {
+    background: #1e2a33; /* Fondo al hacer clic en la opción */
+    color: #00e5ff; /* Color del texto al hacer clic en la opción */
+}
+
+
+
+select:disabled {
+    background: #0d1317; /* Fondo más oscuro para el select deshabilitado */
+    color: #555; /* Color de texto más apagado para el select deshabilitado */
+    cursor: not-allowed; /* Cambia el cursor para indicar que está deshabilitado */
+}
+
+/* Contenedor estilo píldora */
+.number-spinner-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #0d1317; /* Fondo oscuro inspirado en la imagen */
+    border: 1px solid #ffffff; /* Borde blanco grueso */
+    border-radius: 9999px; /* Forma de píldora perfecta */
+    padding: 3px 2px;
+    width: 300px; /* Ancho ajustado para dar espacio */
+    margin: 0 auto;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4); /* Sombra para darle profundidad */
+    transition: opacity 0.3s ease;
+}
+
+/* Estado deshabilitado si se está enviando el formulario */
+.number-spinner-pill.is-submitting {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Botones de flechas */
+.spinner-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s;
+}
+
+/* Efecto al presionar o pasar el ratón */
+.spinner-btn:not(:disabled):hover {
+    transform: scale(1.2);
+    color: #00e5ff; /* Se iluminan un poco al tocarlas */
+}
+
+.spinner-btn:not(:disabled):active {
+    transform: scale(0.9);
+}
+
+/* Estilo para los botones cuando llegan al límite (ej: no puede bajar de 1) */
+.spinner-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+/* El número central */
+.spinner-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #00e5ff; /* Color celeste neón brillante de la imagen */
+    font-family: inherit;
+    font-size: 2.5rem; /* Tamaño masivo para que destaque */
+    font-weight: 800;
+    text-align: center;
+    width: 90px;
+    pointer-events: none; /* Hace que no sea seleccionable directamente */
+}
+
+/* Ocultar las flechitas nativas feas de los inputs tipo number en todos los navegadores */
+.spinner-input::-webkit-outer-spin-button,
+.spinner-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.spinner-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+</style>	
