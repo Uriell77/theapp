@@ -190,36 +190,33 @@ export const actions: Actions = {
 		}
 
 		try {
-			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos y experiencias inmersivas. 
-El usuario, llamado "${nombre_de_usuario}", tiene un desafío de productividad en el mundo real: "${title}".
+			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos, experiencias inmersivas y tutorías gamificadas. 
+El usuario, llamado "${nombre_de_usuario}", tiene un desafío de aprendizaje o productividad en el mundo real: "${title}".
 El tema estético y narrativo elegido es: "${tema}".
 
-Tu objetivo es construir una campaña narrativa inmersiva, estrictamente secuencial y dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista absoluto.
+Tu objetivo es construir una campaña narrativa, estrictamente secuencial y dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista absoluto.
 
-REGLAS NARRATIVAS (METÁFORA Y CONTINUIDAD):
-1. MISIÓN, ENEMIGO Y ARQUETIPO CLAROS: Desde el Capítulo 1, establece una amenaza y un objetivo tangible que debe lograrse paso a paso. El TIPO de misión debe adaptarse lógicamente al tema:
-   - Guerra/Fantasía: Trama de CONQUISTA o COMBATE (derrotar a un enemigo o monstruo).
-   - Misterio/Espionaje/Romance: Trama de SIGILO, CONEXIÓN o INTELIGENCIA (descubrir secretos, infiltrarse, superar la distancia).
-   - Supervivencia/Catástrofe: Trama de RESISTENCIA (soportar el clima, escapar o construir refugio).
-2. CONTINUIDAD DE PLANO SECUENCIA (IN MEDIA RES): La historia es una película de acción en plano secuencia sin cortes de cámara. A partir del Capítulo 2, TIENES ESTRICTAMENTE PROHIBIDO iniciar con resúmenes, reportes de estado (ej. "Infiltración confirmada") o saltos temporales. Debes empezar la primera palabra del capítulo exactamente en el mismo segundo de tensión física o emocional con el que terminó el capítulo anterior. 
-3. PROHIBIDO USAR PLANTILLAS: No repitas estructuras. No inicies cada capítulo dirigiéndote al protagonista por su nombre como si fuera un robot. Haz que la prosa fluya de manera visceral, conectando la urgencia del final del capítulo anterior directamente con el obstáculo del nuevo capítulo.
-4. METÁFORA SUTIL: NUNCA menciones explícitamente la tarea técnica ni la aplicación. No hagas analogías baratas; el esfuerzo real equivale al progreso en la historia.
-5. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
-6. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase de urgencia e inspiración que empuje a ${nombre_de_usuario} a continuar.
-7. LOS TEMAS DE APRENDIZAJE Y CONOCIMIENTO DEBES TOMAR EN CUANTA EL DESAFIO DEL MUNDO REAL  PARA QUE LITERALMENTE LA HISTORIA SIRVA COMO TUTORIAL O GUIA DE APRENDIZAJE, es decir, la historia debe enseñar al usuario a realizar la tarea real que tiene que completar, de manera que el usuario aprenda a hacer la tarea mientras avanza en la historia.
-8. PARA LOS TEMAS NARRATIVOS DE APRENDIZAJE Y CONOCIMIENTO, la historia debe girar en torno a la exploración de un mundo desconocido, la resolución de acertijos y la adquisición de habilidades únicas que reflejen el aprendizaje progresivo del usuario, es decir la historia tiene que enseñar al usuario la habilidad elegida. ejemplo: el usuario aprende a tocar el piano a través de la historia.
-9. PARA LOS TEMAS CON NARRATIVA DE APRENDIZAJE INFANTIL O ADOLESCENTE, la historia debe ADAPTARSE A LA EDAD DEL USUARIO, utilizando un lenguaje y situaciones apropiadas para su nivel de comprensión, fomentando la curiosidad y el descubrimiento de manera segura y educativa.
-10. PARA EL APRENDIZAJE INFANTIL LAS HISTORIAS DEBEN SER CUENTOS O NARRATIVAS INFANTILES, con personajes y escenarios acorde on edades de 0 a 10 años, fomentando la imaginación y la creatividad, mientras se enseñan conceptos básicos de manera divertida y accesible.
+REGLAS NARRATIVAS (METÁFORA, APRENDIZAJE Y CONTINUIDAD):
+1. MISIÓN Y ARQUETIPO CLAROS: El TIPO de misión debe adaptarse lógicamente al tema:
+   - Guerra/Fantasía/Acción: Trama de CONQUISTA, COMBATE o RESISTENCIA.
+   - Misterio/Espionaje/Romance: Trama de SIGILO, CONEXIÓN o INTELIGENCIA.
+   - Aprendizaje y Conocimiento: Trama de TUTORIAL NARRATIVO. El desafío real del usuario ("${title}") debe dividirse en ${cantidad_de_niveles} lecciones progresivas. Transforma la teoría real en mecánicas del mundo (ej. si aprende a leer, las letras son "runas sonoras" que debe pronunciar; si es programación, el código son "conjuros lógicos"). Debes ENSEÑAR el concepto real paso a paso dentro de la ficción.
+2. ADAPTACIÓN DE EDAD Y TONO: Si el tema es "Aprendizaje Infantil", usa un tono de cuento de hadas, cálido, seguro y divertido (0-10 años). Si es "Adolescente", usa un tono de descubrimiento juvenil. Para el resto, usa un tono épico y urgente de videojuego.
+3. CONTINUIDAD DE PLANO SECUENCIA: La historia es ininterrumpida. A partir del Capítulo 2, TIENES ESTRICTAMENTE PROHIBIDO iniciar con resúmenes o saltos temporales. Debes empezar la primera palabra exactamente en el mismo segundo de acción o descubrimiento con el que terminó el capítulo anterior. 
+4. PROHIBIDO USAR PLANTILLAS: No repitas estructuras de inicio. Haz que la prosa fluya de manera visceral y conectada.
+5. METÁFORA CONDICIONADA: Para productividad, no menciones la tarea real explícitamente. PARA APRENDIZAJE, sí debes integrar los pasos técnicos reales como herramientas o poderes que el protagonista debe aplicar en la historia.
+6. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
+7. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase que empuje a ${nombre_de_usuario} a continuar y aplicar lo aprendido.
 
 REGLAS VISUALES Y DE COHERENCIA (CINEMÁTICA):
-Asigna una atmósfera visual para cada capítulo usando EXCLUSIVAMENTE la lista de etiquetas permitidas. 
-¡CRÍTICO - REGLA DE MAPEO SEMÁNTICO UNIVERSAL!: Tienes estrictamente prohibido asignar etiquetas al azar. Analiza la física, el clima, la temperatura y el entorno del capítulo que acabas de escribir y deduce lógicamente las etiquetas exactas:
-- Polvo, arena, sequía o desierto: USA effect: "ash-storm" + color cálido. (NUNCA lluvia ni rayos).
-- Agua, tormentas, océanos o líquidos: USA effect: "toxic-rain" o "underwater-bubbles" + color azul/frío.
-- Frío extremo, hielo o invierno: USA effect: "snow-blizzard" + color hielo/blanco.
-- Calor, fuego, lava o combate intenso: USA effect: "fire-battle" o "volcano-embers" + color rojo/naranja.
-- Tecnología, cibernética o datos: USA effect: "data-matrix".
-- Naturaleza tranquila, paz, romance diurno: USA effect: "falling-leaves", "radiant-glow" o "none".
+Asigna una atmósfera visual usando EXCLUSIVAMENTE la lista de etiquetas permitidas. 
+¡CRÍTICO - REGLA DE MAPEO SEMÁNTICO UNIVERSAL!: Analiza el clima, edad y entorno del capítulo y deduce lógicamente:
+- Polvo, arena o desierto: USA effect: "ash-storm" + color cálido. (NUNCA lluvia ni rayos).
+- Agua, tormentas o líquidos: USA effect: "toxic-rain" o "underwater-bubbles" + color azul/frío.
+- Frío extremo, hielo: USA effect: "snow-blizzard" + color hielo/blanco.
+- Calor, fuego, combate: USA effect: "fire-battle" o "volcano-embers" + color rojo/naranja.
+- Tecnología o datos: USA effect: "data-matrix".
+- Aprendizaje Infantil, Cuentos, Paz o Naturaleza: USA effect: "falling-leaves", "radiant-glow" o "none" + color "daylight-warm" o "pure-white".
 
 Etiquetas permitidas (Copia exactamente el texto):
 - effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust, falling-leaves, radiant-glow, mind-waves, clear-sky, none.
@@ -229,7 +226,7 @@ Etiquetas permitidas (Copia exactamente el texto):
 - mood: intro, rising-tension, boss-fight, victory, defeat.
 
 FORMATO DE SALIDA:
-Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown, sin texto extra) con esta estructura exacta:
+Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 {
   "chapters": [
     "Capítulo 1: Título. [Narrativa continua sin usar más puntos...]",
@@ -237,10 +234,10 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin bloques de código Markdown,
   ],
   "cinematica": [
     { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." },
-    ... (exactamente ${cantidad_de_niveles} objetos)
+    ...
   ],
-  "defeatChapter": "Final Alternativo: Retirada Táctica. [Narra de forma épica cómo ${nombre_de_usuario} debe retirarse temporalmente, dejando un mensaje humano sobre aprender de la derrota, sin usar más puntos.]",
-  "defeatCinematica": { "effect": "ash-storm", "color": "deep-space-blue", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
+  "defeatChapter": "Final Alternativo: El Descanso del Héroe. [Narra cómo ${nombre_de_usuario} debe descansar para asimilar lo aprendido, dejando un mensaje humano sobre que el aprendizaje toma tiempo, sin usar más puntos.]",
+  "defeatCinematica": { "effect": "falling-leaves", "color": "daylight-warm", "speed": "slow", "lighting": "sun-rays", "mood": "defeat" }
 }`;
 			const availableModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
 			let result;
