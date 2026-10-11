@@ -204,7 +204,7 @@ REGLAS NARRATIVAS (METÁFORA, APRENDIZAJE Y CONTINUIDAD):
 2. ADAPTACIÓN DE EDAD Y TONO: Si el tema es "Aprendizaje Infantil", usa un tono de cuento de hadas, cálido, seguro y divertido (0-10 años). Si es "Adolescente", usa un tono de descubrimiento juvenil. Para el resto, usa un tono épico y urgente de videojuego.
 3. CONTINUIDAD DE PLANO SECUENCIA: La historia es ininterrumpida. A partir del Capítulo 2, TIENES ESTRICTAMENTE PROHIBIDO iniciar con resúmenes o saltos temporales. Debes empezar la primera palabra exactamente en el mismo segundo de acción o descubrimiento con el que terminó el capítulo anterior. 
 4. PROHIBIDO USAR PLANTILLAS: No repitas estructuras de inicio. Haz que la prosa fluya de manera visceral y conectada.
-5. METÁFORA CONDICIONADA: Para productividad, no menciones la tarea real explícitamente. PARA APRENDIZAJE, sí debes integrar los pasos técnicos reales como herramientas o poderes que el protagonista debe aplicar en la historia.
+5. METÁFORA CONDICIONADA: Para productividad, no menciones la tarea real explícitamente. PARA LOS DESAFIOS QUE TIENEN LAS PALABRAS "APRENDIZAJE" O "CONOCIMIENTO", sí debes integrar los pasos técnicos reales como herramientas o poderes que el protagonista debe aplicar en la historia.
 6. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
 7. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase que empuje a ${nombre_de_usuario} a continuar y aplicar lo aprendido.
 
