@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../Styles/theme.css';
-	import favicon from '$lib/assets/MG_Logo.webp';
+	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/Navbar.svelte';
 
 	let { children } = $props();
