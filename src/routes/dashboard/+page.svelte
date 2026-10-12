@@ -271,7 +271,7 @@ function incrementarNiveles() {
 					whileTap={!isSubmitting ? { scale: 0.98 } : {}}
 					let:motion
 				>
-				<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2" >
+				<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2 mb-4" >
 					<button
 						use:motion
 						class="btn-primary"
