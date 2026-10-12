@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(303, '/auth');
 	}
 
-	// Consulta relacional directa con Drizzle (sin fetch HTTP en SSR)
+	// Consulta relacional directa con Drizzle
 	const userRecord = await db.query.users.findFirst({
 		where: eq(users.id, locals.user.id),
 		columns: {
@@ -61,185 +61,143 @@ export const actions: Actions = {
 			});
 		}
 
-		// 1. Generar narrativa con Gemini (modelo gemini-2.5-flash)
+		// --- MOTORES DE PROMPTS ---
+		function generarPromptProductividad(nombre_de_usuario: string, title: string, tema: string, cantidad_de_niveles: number) {
+			return `Eres un director de cine épico. El usuario "${nombre_de_usuario}" tiene el desafío real: "${title}". Tema: "${tema}".
+Objetivo: Crea una campaña de acción inmersiva de exactamente ${cantidad_de_niveles} capítulos.
+
+REGLAS NARRATIVAS (METÁFORA Y CONTINUIDAD):
+1. MISIÓN: Adapta el objetivo al tema (Combate, Sigilo, o Supervivencia).
+2. PLANO SECUENCIA (IN MEDIA RES): A partir del Cap 2, PROHIBIDO usar resúmenes. Inicia la acción en el milisegundo donde terminó el capítulo anterior. 
+3. SENSORIALIDAD: Describe olores, texturas y desgaste físico.
+4. METÁFORA INQUEBRANTABLE: NUNCA menciones la tarea real ("${title}"). Todo debe estar disfrazado bajo la temática.
+5. PUNTUACIÓN: El título del capítulo DEBE terminar con un punto (.). PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos. Usa solo comas y punto y coma para separar ideas.
+
+REGLAS VISUALES:
+Analiza el clima de tu texto y asigna:
+- Polvo/Desierto: effect: "ash-storm" + color cálido.
+- Agua/Tormentas: effect: "toxic-rain" o "underwater-bubbles" + azul/frío.
+- Frío/Hielo: effect: "snow-blizzard" + hielo/blanco.
+- Calor/Fuego: effect: "fire-battle" o "volcano-embers" + rojo/naranja.
+- Tecnología/Datos: effect: "data-matrix".
+- Paz/Romance/Naturaleza: effect: "falling-leaves", "radiant-glow" o "none".
+
+Etiquetas permitidas: effect (space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust, falling-leaves, radiant-glow, mind-waves, clear-sky, none), color (deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust, daylight-warm, pure-white), speed (static, slow, normal, fast, chaotic, pulsing), lighting (vignette-dark, lens-flare, strobe-alarm, candle-flicker, lightning-flash, eclipse-ring, sun-rays, none), mood (intro, rising-tension, boss-fight, victory, defeat).
+
+FORMATO JSON OBLIGATORIO:
+{
+  "chapters": [
+    "Título del Capítulo 1. Cuerpo del texto del capítulo sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas",
+    "Título del Capítulo 2. Cuerpo del texto continuando la acción directamente sin usar puntos adicionales"
+  ],
+  "cinematica": [
+    { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." }
+  ],
+  "defeatChapter": "Final Alternativo: Retirada Táctica. Narra épicamente cómo debe retirarse",
+  "defeatCinematica": { "effect": "ash-storm", "color": "apocalyptic-rust", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
+}`;
+		}
+
+		function generarPromptTutor(nombre_de_usuario: string, title: string, tema: string, cantidad_de_niveles: number) {
+			return `Eres un pedagogo gamificador. El usuario "${nombre_de_usuario}" quiere APRENDER esto en la vida real: "${title}". Enfoque: "${tema}".
+Objetivo: Crea un TUTORIAL SECUENCIAL de exactamente ${cantidad_de_niveles} lecciones/capítulos.
+
+REGLAS PEDAGÓGICAS (TUTOR GAMIFICADO):
+1. ENSEÑANZA REAL: AQUÍ SÍ DEBES ENSEÑAR EL CONCEPTO REAL ("${title}"). Explica la teoría y cómo aplicarla en ${cantidad_de_niveles} pasos lógicos de menor a mayor dificultad.
+2. ENVOLTORIO NARRATIVO: Disfraza la lección dentro del mundo ficticio, pero manteniendo los términos técnicos de lo que aprende.
+3. ADAPTACIÓN DE EDAD: Si el tema es "Aprendizaje Infantil", usa un tono cálido de cuento de hadas (0-10 años). Adolescente = Misterio dinámico. Universal = Maestro sabio.
+4. PLANO SECUENCIA: Inicia cada capítulo exactamente donde terminó la lección anterior.
+5. PUNTUACIÓN: El título del capítulo DEBE terminar con un punto (.). PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos. Usa solo comas y punto y coma para separar ideas.
+
+REGLAS VISUALES:
+- Aprendizaje Infantil/Paz: effect: "falling-leaves", "radiant-glow" o "none" + color cálido.
+- Matemáticas/Lógica: effect: "data-matrix" + color neón/cyan.
+- Concentración: effect: "mind-waves" o "nebula-dust".
+- Acción: effect: "ash-storm", "toxic-rain", etc.
+(Usa la misma lista de etiquetas permitidas de la configuración general).
+
+FORMATO JSON OBLIGATORIO:
+{
+  "chapters": [
+    "Título de la Lección 1. Cuerpo del texto explicando el primer paso sin usar más puntos, solo comas y punto y coma para separar ideas",
+    "Título de la Lección 2. Cuerpo del texto continuando el aprendizaje sin usar puntos adicionales"
+  ],
+  "cinematica": [
+    { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." }
+  ],
+  "defeatChapter": "Final Alternativo: El Descanso. Narra que el aprendizaje toma tiempo",
+  "defeatCinematica": { "effect": "falling-leaves", "color": "daylight-warm", "speed": "slow", "lighting": "sun-rays", "mood": "defeat" }
+}`;
+		}
+
+		// --- ENRUTAMIENTO Y SELECCIÓN DEL PROMPT ---
+		const temasDeAprendizaje = [
+			"Aprendizaje Infantil",
+			"Aprendizaje Adolescente",
+			"Aprendizaje de Habilidades",
+			"Conocimiento Universal"
+		];
+
+		const esModoAprendizaje = temasDeAprendizaje.includes(tema);
+		const promptFinal = esModoAprendizaje
+			? generarPromptTutor(nombre_de_usuario, title, tema, cantidad_de_niveles)
+			: generarPromptProductividad(nombre_de_usuario, title, tema, cantidad_de_niveles);
+
+
+		// --- SISTEMA DE ETIQUETAS DE RESERVA ---
+		function detectCinematicaForText(text: string, defaultMood: string = 'rising-tension') {
+			const lower = (text || '').toLowerCase();
+
+			if (/(fuego|llama|ardient|infernal|volc[aá]n|lava|magma|incendio|combusti[oó]n|ceniza|explosi[oó]n|abrasad|calor|ascuas)/.test(lower)) {
+				return { effect: lower.includes('volc') || lower.includes('ceniza') ? 'volcano-embers' : 'fire-battle', color: 'infernal-orange', speed: 'normal', lighting: 'candle-flicker', mood: defaultMood === 'defeat' ? 'defeat' : 'boss-fight' };
+			}
+			if (/(tormenta|rayo|rel[aá]mpago|trueno|tempestad|el[eé]ctric|hurac[aá]n|cicl[oó]n|lluvia)/.test(lower)) {
+				return { effect: 'electric-storm', color: 'deep-space-blue', speed: 'fast', lighting: 'lightning-flash', mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension' };
+			}
+			if (/(nieve|hielo|ventisca|glaci|polar|congelad|helad|fr[ií]o|escarcha)/.test(lower)) {
+				return { effect: 'snow-blizzard', color: 'ice-cyan', speed: 'normal', lighting: 'vignette-dark', mood: defaultMood };
+			}
+			if (/(mar\b|oc[eé]ano|agua|submarin|abismo|profundidad|acu[aá]tic|olas)/.test(lower)) {
+				return { effect: 'underwater-bubbles', color: 'deep-space-blue', speed: 'slow', lighting: 'none', mood: defaultMood };
+			}
+			if (/(t[oó]xic|veneno|pantano|selva|alien|mutaci[oó]n|espora|qu[ií]mic|[aá]cido|radiaci[oó]n)/.test(lower)) {
+				return { effect: lower.includes('selva') || lower.includes('espora') ? 'alien-forest' : 'toxic-rain', color: 'toxic-green', speed: 'normal', lighting: 'none', mood: defaultMood };
+			}
+			if (/(ciber|matriz|matrix|c[oó]digo|hacker|digital|servidor|terminal|red\b|protocolo|ia\b|algoritmo)/.test(lower)) {
+				return { effect: 'data-matrix', color: 'cyberpunk-neon', speed: 'normal', lighting: 'none', mood: defaultMood };
+			}
+			if (/(magi|arcano|runa|hechizo|m[ií]stic|reliquia|portal|ancestral)/.test(lower)) {
+				return { effect: 'magic-runes', color: 'fantasy-gold', speed: 'slow', lighting: 'eclipse-ring', mood: defaultMood };
+			}
+			if (/(sangre|carmes[ií]|masacre|herida|desgarr|carnicer[ií]a)/.test(lower)) {
+				return { effect: 'blood-drip', color: 'blood-red', speed: 'normal', lighting: 'strobe-alarm', mood: defaultMood };
+			}
+			if (/(ceniza|desierto|p[aá]ramo|ruinas|apocal[ií]pt|polvo|destrucci[oó]n|retirada)/.test(lower)) {
+				return { effect: 'ash-storm', color: 'apocalyptic-rust', speed: 'slow', lighting: 'vignette-dark', mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension' };
+			}
+			if (/(espaci|galaxi|nave|estelar|hiperespacio|cosmos|estrellas|warp)/.test(lower)) {
+				return { effect: lower.includes('warp') || lower.includes('hiper') ? 'hyper-warp' : 'space-cockpit', color: 'deep-space-blue', speed: 'normal', lighting: 'lens-flare', mood: defaultMood };
+			}
+			return { effect: defaultMood === 'defeat' ? 'ash-storm' : 'space-cockpit', color: defaultMood === 'defeat' ? 'apocalyptic-rust' : 'deep-space-blue', speed: 'normal', lighting: defaultMood === 'defeat' ? 'vignette-dark' : 'none', mood: defaultMood };
+		}
+
 		let chapters: string[] = [];
 		let cinematicaTags: any[] = [];
 		let defeatChapter = '';
 		let defeatCinematica: any = null;
 
-		function detectCinematicaForText(text: string, defaultMood: string = 'rising-tension') {
-			const lower = (text || '').toLowerCase();
-
-			// Fuego / Volcán / Batalla Ígnea / Magma / Explosiones
-			if (/(fuego|llama|ardient|infernal|volc[aá]n|lava|magma|incendio|combusti[oó]n|ceniza|explosi[oó]n|abrasad|calor|ascuas|antorcha)/.test(lower)) {
-				return {
-					effect: lower.includes('volc') || lower.includes('ceniza') ? 'volcano-embers' : 'fire-battle',
-					color: 'infernal-orange',
-					speed: 'normal',
-					lighting: 'candle-flicker',
-					mood: defaultMood === 'defeat' ? 'defeat' : 'boss-fight'
-				};
-			}
-
-			// Tormenta Eléctrica / Rayos / Truenos / Tempestad / Relámpagos
-			if (/(tormenta|rayo|rel[aá]mpago|trueno|tempestad|el[eé]ctric|cielo oscuro|hurac[aá]n|cicl[oó]n|lluvia|truenos)/.test(lower)) {
-				return {
-					effect: 'electric-storm',
-					color: 'deep-space-blue',
-					speed: 'fast',
-					lighting: 'lightning-flash',
-					mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension'
-				};
-			}
-
-			// Nieve / Ventisca / Hielo / Glaciar / Congelación
-			if (/(nieve|hielo|ventisca|glaci|polar|congelad|helad|fr[ií]o|escarcha|tundra|avalancha)/.test(lower)) {
-				return {
-					effect: 'snow-blizzard',
-					color: 'ice-cyan',
-					speed: 'normal',
-					lighting: 'vignette-dark',
-					mood: defaultMood
-				};
-			}
-
-			// Submarino / Océano / Agua / Abismo Marino
-			if (/(mar\b|oc[eé]ano|agua|submarin|abismo|profundidad|acu[aá]tic|olas|inmersi[oó]n|naufragio)/.test(lower)) {
-				return {
-					effect: 'underwater-bubbles',
-					color: 'deep-space-blue',
-					speed: 'slow',
-					lighting: 'none',
-					mood: defaultMood
-				};
-			}
-
-			// Tóxico / Veneno / Selva Alienígena / Ácido / Radiación / Pantano
-			if (/(t[oó]xic|veneno|pantano|selva|alien|alien[ií]gena|mutaci[oó]n|espora|qu[ií]mic|[aá]cido|radiaci[oó]n)/.test(lower)) {
-				return {
-					effect: lower.includes('selva') || lower.includes('espora') ? 'alien-forest' : 'toxic-rain',
-					color: 'toxic-green',
-					speed: 'normal',
-					lighting: 'none',
-					mood: defaultMood
-				};
-			}
-
-			// Ciberespacio / Matriz / Código / Hack / Digital / Red / IA
-			if (/(ciber|matriz|matrix|c[oó]digo|hacker|digital|servidor|terminal|red\b|protocolo|ia\b|algoritmo|interfaz|firewall)/.test(lower)) {
-				return {
-					effect: 'data-matrix',
-					color: 'cyberpunk-neon',
-					speed: 'normal',
-					lighting: 'none',
-					mood: defaultMood
-				};
-			}
-
-			// Magia Arcana / Runas / Hechicería / Reliquias
-			if (/(magi|arcano|runa|hechizo|m[ií]stic|reliquia|portal|energ[ií]a ancestral|templo|ancestral)/.test(lower)) {
-				return {
-					effect: 'magic-runes',
-					color: 'fantasy-gold',
-					speed: 'slow',
-					lighting: 'eclipse-ring',
-					mood: defaultMood
-				};
-			}
-
-			// Sangre / Masacre / Violencia Cruda / Carmesí
-			if (/(sangre|carmes[ií]|masacre|herida|desgarr|carnicer[ií]a|degoll)/.test(lower)) {
-				return {
-					effect: 'blood-drip',
-					color: 'blood-red',
-					speed: 'normal',
-					lighting: 'strobe-alarm',
-					mood: defaultMood
-				};
-			}
-
-			// Cenizas / Páramo / Desierto / Polvo / Apocalipsis / Retirada
-			if (/(ceniza|desierto|p[aá]ramo|ruinas|apocal[ií]pt|polvo|destrucci[oó]n|desolaci[oó]n|retirada)/.test(lower)) {
-				return {
-					effect: 'ash-storm',
-					color: 'apocalyptic-rust',
-					speed: 'slow',
-					lighting: 'vignette-dark',
-					mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension'
-				};
-			}
-
-			// Espacio / Galaxia / Estelar / Naves / Hiperespacio
-			if (/(espaci|galaxi|nave|estelar|hiperespacio|cosmos|estrellas|astral|orbital|warp)/.test(lower)) {
-				return {
-					effect: lower.includes('warp') || lower.includes('hiper') ? 'hyper-warp' : 'space-cockpit',
-					color: 'deep-space-blue',
-					speed: 'normal',
-					lighting: 'lens-flare',
-					mood: defaultMood
-				};
-			}
-
-			return {
-				effect: defaultMood === 'defeat' ? 'ash-storm' : 'space-cockpit',
-				color: defaultMood === 'defeat' ? 'apocalyptic-rust' : 'deep-space-blue',
-				speed: 'normal',
-				lighting: defaultMood === 'defeat' ? 'vignette-dark' : 'none',
-				mood: defaultMood
-			};
-		}
-
 		try {
-			const prompt = `Eres un diseñador narrativo de campañas épicas de videojuegos, experiencias inmersivas y tutorías gamificadas. 
-El usuario, llamado "${nombre_de_usuario}", tiene un desafío de aprendizaje o productividad en el mundo real: "${title}".
-El tema estético y narrativo elegido es: "${tema}".
-
-Tu objetivo es construir una campaña narrativa, estrictamente secuencial y dividida exactamente en ${cantidad_de_niveles} capítulos, poniendo a ${nombre_de_usuario} como el protagonista absoluto.
-
-REGLAS NARRATIVAS (METÁFORA, APRENDIZAJE Y CONTINUIDAD):
-1. MISIÓN Y ARQUETIPO CLAROS: El TIPO de misión debe adaptarse lógicamente al tema:
-   - Guerra/Fantasía/Acción: Trama de CONQUISTA, COMBATE o RESISTENCIA.
-   - Misterio/Espionaje/Romance: Trama de SIGILO, CONEXIÓN o INTELIGENCIA.
-   - Aprendizaje y Conocimiento: Trama de TUTORIAL NARRATIVO. El desafío real del usuario ("${title}") debe dividirse en ${cantidad_de_niveles} lecciones progresivas. Transforma la teoría real en mecánicas del mundo (ej. si aprende a leer, las letras son "runas sonoras" que debe pronunciar; si es programación, el código son "conjuros lógicos"). Debes ENSEÑAR el concepto real paso a paso dentro de la ficción.
-2. ADAPTACIÓN DE EDAD Y TONO: Si el tema es "Aprendizaje Infantil", usa un tono de cuento de hadas, cálido, seguro y divertido (0-10 años). Si es "Adolescente", usa un tono de descubrimiento juvenil. Para el resto, usa un tono épico y urgente de videojuego.
-3. CONTINUIDAD DE PLANO SECUENCIA: La historia es ininterrumpida. A partir del Capítulo 2, TIENES ESTRICTAMENTE PROHIBIDO iniciar con resúmenes o saltos temporales. Debes empezar la primera palabra exactamente en el mismo segundo de acción o descubrimiento con el que terminó el capítulo anterior. 
-4. PROHIBIDO USAR PLANTILLAS: No repitas estructuras de inicio. Haz que la prosa fluya de manera visceral y conectada.
-5. METÁFORA CONDICIONADA: Para productividad, no menciones la tarea real explícitamente. PARA LOS DESAFIOS QUE TIENEN LAS PALABRAS "APRENDIZAJE" O "CONOCIMIENTO", sí debes integrar los pasos técnicos reales como herramientas o poderes que el protagonista debe aplicar en la historia.
-6. REGLA ESTRICTA DE PUNTUACIÓN: Cada capítulo debe iniciar con un Título evocador seguido de un único punto (.). Después de ese primer punto, está ESTRICTAMENTE PROHIBIDO usar más puntos (.) en todo el texto restante del capítulo. Utiliza exclusivamente comas, punto y coma, o signos de exclamación/interrogación.
-7. MOTIVACIÓN ENCUBIERTA: Al final de cada capítulo, cierra con una frase que empuje a ${nombre_de_usuario} a continuar y aplicar lo aprendido.
-
-REGLAS VISUALES Y DE COHERENCIA (CINEMÁTICA):
-Asigna una atmósfera visual usando EXCLUSIVAMENTE la lista de etiquetas permitidas. 
-¡CRÍTICO - REGLA DE MAPEO SEMÁNTICO UNIVERSAL!: Analiza el clima, edad y entorno del capítulo y deduce lógicamente:
-- Polvo, arena o desierto: USA effect: "ash-storm" + color cálido. (NUNCA lluvia ni rayos).
-- Agua, tormentas o líquidos: USA effect: "toxic-rain" o "underwater-bubbles" + color azul/frío.
-- Frío extremo, hielo: USA effect: "snow-blizzard" + color hielo/blanco.
-- Calor, fuego, combate: USA effect: "fire-battle" o "volcano-embers" + color rojo/naranja.
-- Tecnología o datos: USA effect: "data-matrix".
-- Aprendizaje Infantil, Cuentos, Paz o Naturaleza: USA effect: "falling-leaves", "radiant-glow" o "none" + color "daylight-warm" o "pure-white".
-
-Etiquetas permitidas (Copia exactamente el texto):
-- effect: space-cockpit, hyper-warp, alien-forest, fire-battle, volcano-embers, ash-storm, toxic-rain, data-matrix, magic-runes, blood-drip, electric-storm, snow-blizzard, underwater-bubbles, nebula-dust, falling-leaves, radiant-glow, mind-waves, clear-sky, none.
-- color: deep-space-blue, cyberpunk-neon, toxic-green, infernal-orange, blood-red, military-khaki, fantasy-gold, void-purple, ice-cyan, apocalyptic-rust, daylight-warm, pure-white.
-- speed: static, slow, normal, fast, chaotic, pulsing.
-- lighting: vignette-dark, lens-flare, strobe-alarm, candle-flicker, lightning-flash, eclipse-ring, sun-rays, none.
-- mood: intro, rising-tension, boss-fight, victory, defeat.
-
-FORMATO DE SALIDA:
-Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
-{
-  "chapters": [
-    "Capítulo 1: Título. [Narrativa continua sin usar más puntos...]",
-    ... (exactamente ${cantidad_de_niveles} capítulos)
-  ],
-  "cinematica": [
-    { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." },
-    ...
-  ],
-  "defeatChapter": "Final Alternativo: El Descanso del Héroe. [Narra cómo ${nombre_de_usuario} debe descansar para asimilar lo aprendido, dejando un mensaje humano sobre que el aprendizaje toma tiempo, sin usar más puntos.]",
-  "defeatCinematica": { "effect": "falling-leaves", "color": "daylight-warm", "speed": "slow", "lighting": "sun-rays", "mood": "defeat" }
-}`;
-			const availableModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
+			const prompt = promptFinal;
+			
+// --- INICIO DE REEMPLAZO ---
+			// Priorizamos los modelos que confirmamos tienen cuota disponible actualmente.
+			const availableModels = [
+				'gemini-3.5-flash',
+				'gemini-3.5-flash-lite',
+				'gemini-flash-latest',
+				'gemini-3.8-flash',
+				'gemini-1.5-flash'
+			];
 			let result;
 			let lastError: any = null;
 
@@ -247,6 +205,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 				let retries = 2;
 				while (retries > 0) {
 					try {
+						console.log(`Intentando generar narrativa con el modelo: ${modelName}...`);
 						result = await ai.models.generateContent({
 							model: modelName,
 							contents: prompt,
@@ -254,25 +213,39 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 								responseMimeType: 'application/json'
 							}
 						});
-						break;
+						
+						if (result?.text) {
+							console.log(`¡Éxito usando ${modelName}!`);
+							break;
+						}
 					} catch (aiError: any) {
 						lastError = aiError;
+						console.warn(`[Aviso] El modelo ${modelName} falló:`, aiError.message);
+						
+						// Si es un error 404 (Not Found), pasamos al siguiente modelo inmediatamente
+						if (aiError.status === 404) {
+							break;
+						}
+
+						// Solo reintentar si el servidor de Google está saturado (429 o 503)
 						if ((aiError.status === 503 || aiError.status === 429) && retries > 1) {
 							retries--;
-							await new Promise((resolve) => setTimeout(resolve, 1500));
+							const delay = 2000 * (3 - retries); // Exponencial simple
+							console.log(`Reintentando ${modelName} en ${delay}ms... (${retries} intentos restantes)`);
+							await new Promise((resolve) => setTimeout(resolve, delay));
 							continue;
 						}
-						break;
+						break; 
 					}
 				}
-				if (result?.text) {
-					break;
-				}
+				if (result?.text) break;
 			}
 
 			if (!result?.text) {
+				console.error('Error final: No se pudo obtener respuesta de ningún modelo configurado.');
 				throw lastError || new Error('Respuesta vacía del modelo de IA');
 			}
+			// --- FIN DE REEMPLAZO ---
 
 			let rawText = result.text.trim();
 			if (rawText.startsWith('```json')) {
@@ -282,7 +255,21 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 			}
 
 			const parsed = JSON.parse(rawText);
-			chapters = Array.isArray(parsed.chapters) ? parsed.chapters : [];
+			
+			// --- CORRECCIÓN DE PUNTUACIÓN (Evita que el frontend falle) ---
+			chapters = Array.isArray(parsed.chapters) ? parsed.chapters.map((cap: string) => {
+				// 1. Si la IA usó ":" o "-" en vez de un punto para el título, lo reparamos
+				let fixedCap = cap.replace(/^([^:\.\-]+)(:|-)\s*/, "$1. ");
+				// 2. Asegurar que solo exista el primer punto y cambiar los demás por comas
+				let parts = fixedCap.split('.');
+				if (parts.length > 2) {
+					let titulo = parts.shift();
+					let cuerpo = parts.join(',').replace(/\./g, ','); 
+					return `${titulo}. ${cuerpo.trim()}`;
+				}
+				return fixedCap;
+			}) : [];
+
 			cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
 			defeatChapter = parsed.defeatChapter || '';
 			defeatCinematica = parsed.defeatCinematica || detectCinematicaForText(defeatChapter, 'defeat');
@@ -308,7 +295,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 			});
 		}
 
-		// Validar y rellenar cinematicaTags para cada capítulo asegurando coincidencia temática y ambiental
+		// Validar y rellenar cinematicaTags para cada capítulo
 		if (cinematicaTags.length !== chapters.length) {
 			cinematicaTags = chapters.map((cap, idx) => {
 				if (cinematicaTags[idx] && cinematicaTags[idx].effect) {
@@ -323,7 +310,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 			defeatCinematica = detectCinematicaForText(defeatChapter || 'retirada', 'defeat');
 		}
 
-		// 2. Insertar tarea y niveles con Drizzle ORM
+		// --- INSERCIÓN EN BASE DE DATOS ---
 		try {
 			const [newTask] = await db
 				.insert(tasks)
@@ -366,7 +353,6 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 			return fail(400, { message: 'ID de tarea inválido' });
 		}
 
-		// Protección IDOR: Verificar que la tarea pertenece al usuario actual
 		const [task] = await db
 			.select()
 			.from(tasks)
@@ -394,52 +380,53 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
 
 		return { success: true };
 	},
-  abandonTask: async ({ request, locals }) => {
-    if (!locals.user) {
-      return fail(401, { message: 'No autenticado' });
-    }
-    const formData = await request.formData();
-    const taskId = parseInt(formData.get('taskId') as string, 10);
-    if (isNaN(taskId)) {
-      return fail(400, { message: 'ID de tarea inválido' });
-    }
-    const [task] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
-      .limit(1);
-    if (!task) {
-      return fail(404, { message: 'Tarea no encontrada' });
-    }
-    const statusVal = (formData.get('status') as string) || '-1';
-    await db
-      .update(tasks)
-      .set({ status: statusVal })
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
-    return { success: true };
-  },
+	
+	abandonTask: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const taskId = parseInt(formData.get('taskId') as string, 10);
+		if (isNaN(taskId)) {
+			return fail(400, { message: 'ID de tarea inválido' });
+		}
+		const [task] = await db
+			.select()
+			.from(tasks)
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+			.limit(1);
+		if (!task) {
+			return fail(404, { message: 'Tarea no encontrada' });
+		}
+		const statusVal = (formData.get('status') as string) || '-1';
+		await db
+			.update(tasks)
+			.set({ status: statusVal })
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+		return { success: true };
+	},
 
-  resetTask: async ({ request, locals }) => {
-    if (!locals.user) {
-      return fail(401, { message: 'No autenticado' });
-    }
-    const formData = await request.formData();
-    const taskId = parseInt(formData.get('taskId') as string, 10);
-    if (isNaN(taskId)) {
-      return fail(400, { message: 'ID de tarea inválido' });
-    }
-    const [task] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
-      .limit(1);
-    if (!task) {
-      return fail(404, { message: 'Tarea no encontrada' });
-    }
-    await db
-      .update(tasks)
-      .set({ status: '0' })
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
-    return { success: true };
-  }
+	resetTask: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const taskId = parseInt(formData.get('taskId') as string, 10);
+		if (isNaN(taskId)) {
+			return fail(400, { message: 'ID de tarea inválido' });
+		}
+		const [task] = await db
+			.select()
+			.from(tasks)
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+			.limit(1);
+		if (!task) {
+			return fail(404, { message: 'Tarea no encontrada' });
+		}
+		await db
+			.update(tasks)
+			.set({ status: '0' })
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+		return { success: true };
+	}
 };
