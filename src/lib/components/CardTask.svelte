@@ -89,12 +89,13 @@
 				{task.title}
 			</h3>
 
-			<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 4px;">
+			
+<!-- 			<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 4px;">
 				Temática: <span style="color: white;">{task.tema}</span>
 			</div>
 			<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">
 		   	<span style="color: white;" class="has-text-weight-bold">{chapterTitle}</span>
-			</div>
+			</div> -->
 
 			<!-- Progress Timeline -->
 			<div class="progress-timeline">
