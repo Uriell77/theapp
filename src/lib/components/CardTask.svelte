@@ -147,7 +147,9 @@
 				</div>
 			</div>
 
-			<div style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+
+			<!-- SECCION DE DETALLES DE TAREA (DESACTIVADA) -->
+<!-- 			<div style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
 				<span>Temática:</span>
 				<span class="{isKids ? 'font-kids' : ''}" style="color: {isKids ? '#ffd166' : 'white'}; font-weight: 500; text-transform: capitalize;">
 					{displayTema}
@@ -164,7 +166,7 @@
 				>
 					{displayChapterTitle}
 				</span>
-			</div>
+			</div> -->
 
 			<!-- Progress Timeline -->
 			<div class="progress-timeline">
