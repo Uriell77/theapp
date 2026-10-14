@@ -92,9 +92,6 @@
 			id={`task-${task.id}`}
 			style="position: relative;"
 		>
-			<!-- Leve reflejo de luz glassmorfismo -->
-			<div class="glass-reflection" aria-hidden="true"></div>
-
 			<!-- Botón transparente para abrir panel de detalles -->
 			<button
 				type="button"
