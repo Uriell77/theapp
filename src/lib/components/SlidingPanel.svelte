@@ -4,6 +4,7 @@
 	import { fly, fade } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { Motion } from 'svelte-motion';
+	import { parseChapter, isKidsTheme } from '$lib/chapterUtils';
 
 	let {
 		isOpen = $bindable(),
@@ -11,6 +12,8 @@
 		taskData,
 		children
 	}: { isOpen: boolean; mode: 'form' | 'details'; taskData?: any; children?: Snippet } = $props();
+
+	let isKids = $derived(isKidsTheme(taskData?.tema));
 
 
 
@@ -98,12 +101,12 @@
 						</div>
 					{:else if mode === 'details' && taskData}
 						<div>
-							<h2 class="panel-title is-capitalized">{taskData.title}</h2>
+							<h2 class="panel-title is-capitalized {isKids ? 'font-kids' : ''}">{taskData.title}</h2>
 							<div class="meta-tags mb-4">
-								<span class="meta-tag">
-									Temática: <strong>{taskData.tema}</strong>
+								<span class="meta-tag {isKids ? 'font-kids' : ''}">
+									Temática: <strong style="color: {isKids ? '#ffd166' : 'var(--accent-primary)'};">{taskData.tema}</strong>
 								</span>
-								<span class="meta-tag">
+								<span class="meta-tag {isKids ? 'font-kids' : ''}">
 									Progreso: <strong>
 										{taskData.status === '-1' ? 'Abandonada' : `${Number(taskData.status) + 1} / ${taskData.cantidad_de_niveles}`}
 									</strong>
@@ -112,15 +115,21 @@
 
 							{#if taskData.status === '-1'}
 								{@const defeatRaw = String(taskData.levels?.[0]?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.')}
-								{@const dotPos = defeatRaw.indexOf('.')}
-								{@const formattedDefeatText = dotPos !== -1 ? `${defeatRaw.slice(0, dotPos).trim()}\n\n${defeatRaw.slice(dotPos + 1).trim()}` : defeatRaw}
+								{@const parsedDefeat = parseChapter(defeatRaw)}
 								{@const defeatCinematicaRaw = taskData.levels?.[0]?.vista?.[1]}
 								{@const defeatCinematicaParsed = defeatCinematicaRaw ? (() => { try { return JSON.parse(defeatCinematicaRaw); } catch { return null; } })() : null}
 								{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
 								<div class="narrative-container">
 									<Visualizer effectConfig={defeatEffectConfig}>
-										<div class="p-2 mb-1 levelcontent hud-container" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
-											<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedDefeatText, speed: 100 }}></p>
+										<div class="p-3 mb-1 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+											{#if parsedDefeat.title}
+												<div class="chapter-badge-wrapper mb-2">
+													<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
+														{parsedDefeat.title.endsWith('.') ? parsedDefeat.title : `${parsedDefeat.title}.`}
+													</h4>
+												</div>
+											{/if}
+											<p class="is-italic has-text-weight-bold is-size-7-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsedDefeat.body || parsedDefeat.title, speed: 45 }}></p>
 										</div>
 									</Visualizer>
 								</div>
@@ -131,24 +140,41 @@
 											<!-- Narrativa Actual -->
 											{#if level.content && level.content[taskData.status] !== undefined}
 												{@const currentRaw = String(level.content[taskData.status] || '')}
-												{@const dotPos = currentRaw.indexOf('.')}
-												{@const formattedText = dotPos !== -1 ? `${currentRaw.slice(0, dotPos).trim()}\n\n${currentRaw.slice(dotPos + 1).trim()}` : currentRaw}
+												{@const parsed = parseChapter(currentRaw)}
 												{#if level.cinematica && level.cinematica[taskData.status]}
 													<Visualizer effectConfig={`effect:${JSON.parse(level.cinematica[taskData.status]).effect};color:${JSON.parse(level.cinematica[taskData.status]).color};speed:${JSON.parse(level.cinematica[taskData.status]).speed};lighting:${JSON.parse(level.cinematica[taskData.status]).lighting};mood:${JSON.parse(level.cinematica[taskData.status]).mood}`}>
-														<div class="p-2 mb-1 levelcontent hud-container" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
-															<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
+														<div class="p-3 mb-1 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+															{#if parsed.title}
+																<div class="chapter-badge-wrapper mb-2">
+																	<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
+																		{parsed.title.endsWith('.') ? parsed.title : `${parsed.title}.`}
+																	</h4>
+																</div>
+															{/if}
+															<p class="is-italic has-text-weight-bold is-size-7-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsed.body || parsed.title, speed: 45 }}></p>
 														</div>
 													</Visualizer>
 												{:else}
 													<Visualizer>
-														<div class="p-2 mb-1 levelcontent hud-container" style="border-left: 4px solid var(--accent-primary, #19d4a8);">
-															<p class="is-italic has-text-weight-bold is-size-7-mobile" style="color: #f0f0f0; line-height: 1.7; white-space: pre-wrap;" use:typewriter={{ text: formattedText, speed: 100 }}></p>
+														<div class="p-3 mb-1 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+															{#if parsed.title}
+																<div class="chapter-badge-wrapper mb-2">
+																	<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
+																		{parsed.title.endsWith('.') ? parsed.title : `${parsed.title}.`}
+																	</h4>
+																</div>
+															{/if}
+															<p class="is-italic has-text-weight-bold is-size-7-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsed.body || parsed.title, speed: 45 }}></p>
 														</div>
 													</Visualizer>
 												{/if}
 											{:else if level.content && level.content[0] !== undefined}
-												<div class="notification is-light p-3 mb-3" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
-													<p class="is-italic has-text-dark" use:typewriter={{ text: level.content[0], speed: 100 }}></p>
+												{@const parsed0 = parseChapter(level.content[0])}
+												<div class="notification is-light p-3 mb-3 {isKids ? 'font-kids' : ''}" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
+													{#if parsed0.title}
+														<h5 class="{isKids ? 'font-kids' : 'font-modern-chapter'}" style="font-weight: 700; margin-bottom: 6px;">{parsed0.title.endsWith('.') ? parsed0.title : `${parsed0.title}.`}</h5>
+													{/if}
+													<p class="is-italic has-text-dark {isKids ? 'font-kids' : ''}" use:typewriter={{ text: parsed0.body || parsed0.title, speed: 45 }}></p>
 												</div>
 											{/if}
 										</div>
@@ -317,5 +343,44 @@
 			max-width: 680px;
 			border-radius: 28px 28px 0 0;
 		}
+	}
+
+	/* Estilos tipográficos para el título de capítulos e historias infantiles */
+	.chapter-title-display {
+		font-size: 1.15rem;
+		margin: 0;
+		line-height: 1.35;
+	}
+
+	.chapter-title-modern {
+		font-family: var(--font-modern-title);
+		font-weight: 700;
+		color: #ffffff;
+		letter-spacing: 0.02em;
+	}
+
+	.chapter-title-kids {
+		font-family: var(--font-kids);
+		font-weight: 600;
+		color: #ffd166;
+		letter-spacing: 0.02em;
+		font-size: 1.25rem;
+	}
+
+	.text-kids {
+		font-family: var(--font-kids) !important;
+		font-size: 1.05rem;
+		line-height: 1.8 !important;
+		letter-spacing: 0.015em;
+	}
+
+	.text-standard {
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		font-size: 0.95rem;
+		line-height: 1.7;
+	}
+
+	.kids-narrative {
+		border-left-color: #ffd166 !important;
 	}
 </style>

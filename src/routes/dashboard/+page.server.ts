@@ -4,6 +4,7 @@ import { eq, and } from 'drizzle-orm';
 import { fail, redirect } from '@sveltejs/kit';
 import { GoogleGenAI } from '@google/genai';
 import { GEMINI_API_KEY } from '$env/static/private';
+import { formatChapterForStorage } from '$lib/chapterUtils';
 import type { PageServerLoad, Actions } from './$types';
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -24,6 +25,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		},
 		with: {
 			tasks: {
+				orderBy: (tasks, { desc }) => [desc(tasks.id)],
 				with: {
 					levels: true
 				}
@@ -66,12 +68,12 @@ export const actions: Actions = {
 			return `Eres un director de cine épico. El usuario "${nombre_de_usuario}" tiene el desafío real: "${title}". Tema: "${tema}".
 Objetivo: Crea una campaña de acción inmersiva de exactamente ${cantidad_de_niveles} capítulos.
 
-REGLAS NARRATIVAS (METÁFORA Y CONTINUIDAD):
-1. MISIÓN: Adapta el objetivo al tema (Combate, Sigilo, o Supervivencia).
-2. PLANO SECUENCIA (IN MEDIA RES): A partir del Cap 2, PROHIBIDO usar resúmenes. Inicia la acción en el milisegundo donde terminó el capítulo anterior. 
-3. SENSORIALIDAD: Describe olores, texturas y desgaste físico.
-4. METÁFORA INQUEBRANTABLE: NUNCA menciones la tarea real ("${title}"). Todo debe estar disfrazado bajo la temática.
-5. PUNTUACIÓN: El título del capítulo DEBE terminar con un punto (.). PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos. Usa solo comas y punto y coma para separar ideas.
+REGLAS NARRATIVAS (METÁFORA, CONTEXTO Y CONTINUIDAD):
+1. CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO): El Capítulo 1 DEBE explicar rápida y vívidamente el contexto de lo que está sucediendo: quién es el protagonista ("${nombre_de_usuario}"), dónde se encuentra exactamente, y cuál es la gran meta, cruzada, fortaleza o villano supremo al que se enfrenta (ejemplo para temática de Cruzada Medieval: "El ejército se encuentra a los pies de las imponentes murallas del castillo, ${nombre_de_usuario} avanza entre los soldados apretando su escudo, deben romper las defensas para conquistar la fortaleza y derrotar al tirano..."). Toda historia debe tener una meta épica, una cruzada clara o una batalla contra un villano.
+2. PLANO SECUENCIA (IN MEDIA RES A PARTIR DEL CAPÍTULO 2): A partir del Capítulo 2, PROHIBIDO usar resúmenes o pausas. Inicia la acción exactamente en el milisegundo donde terminó el capítulo anterior, manteniendo la continuidad sin saltos.
+3. SENSORIALIDAD: Describe olores, texturas, sonido del acero o la tecnología, fatiga y desgaste físico.
+4. METÁFORA INQUEBRANTABLE: NUNCA menciones la tarea real ("${title}"). Todo debe estar completamente dramatizado dentro de la temática de ficción "${tema}".
+5. PUNTUACIÓN Y TÍTULOS: Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas y punto y coma para separar ideas.
 
 REGLAS VISUALES:
 Analiza el clima de tu texto y asigna:
@@ -87,8 +89,8 @@ Etiquetas permitidas: effect (space-cockpit, hyper-warp, alien-forest, fire-batt
 FORMATO JSON OBLIGATORIO:
 {
   "chapters": [
-    "Título del Capítulo 1. Cuerpo del texto del capítulo sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas",
-    "Título del Capítulo 2. Cuerpo del texto continuando la acción directamente sin usar puntos adicionales"
+    "Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto del capítulo sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas",
+    "Capítulo 2, [Nombre descriptivo del capítulo 2]. Cuerpo del texto continuando la acción directamente sin usar puntos adicionales"
   ],
   "cinematica": [
     { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." }
@@ -105,9 +107,9 @@ Objetivo: Crea un TUTORIAL SECUENCIAL de exactamente ${cantidad_de_niveles} lecc
 REGLAS PEDAGÓGICAS (TUTOR GAMIFICADO):
 1. ENSEÑANZA REAL: AQUÍ SÍ DEBES ENSEÑAR EL CONCEPTO REAL ("${title}"). Explica la teoría y cómo aplicarla en ${cantidad_de_niveles} pasos lógicos de menor a mayor dificultad.
 2. ENVOLTORIO NARRATIVO: Disfraza la lección dentro del mundo ficticio, pero manteniendo los términos técnicos de lo que aprende.
-3. ADAPTACIÓN DE EDAD: Si el tema es "Aprendizaje Infantil", usa un tono cálido de cuento de hadas (0-10 años). Adolescente = Misterio dinámico. Universal = Maestro sabio.
+3. ADAPTACIÓN DE EDAD: Si el tema es "Aprendizaje Infantil", usa un tono cálido de cuento de hadas (0-10 años) con personajes entrañables y lenguaje alegre. Adolescente = Misterio dinámico. Universal = Maestro sabio.
 4. PLANO SECUENCIA: Inicia cada capítulo exactamente donde terminó la lección anterior.
-5. PUNTUACIÓN: El título del capítulo DEBE terminar con un punto (.). PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos. Usa solo comas y punto y coma para separar ideas.
+5. PUNTUACIÓN Y TÍTULOS: Cada capítulo DEBE comenzar con el título completo descriptivo (ejemplo obligatorio: "Capítulo 1, el despertar de las vocales." o "Capítulo 1, El Mapa del Gran Mercado."). El punto (.) de separación DEBE ir justo después del título del capítulo y NUNCA inmediatamente después del número del capítulo (PROHIBIDO terminantemente escribir "Capítulo 1." o "Lección 1."). Si incluyes número y nombre, usa una coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas y punto y coma para separar ideas.
 
 REGLAS VISUALES:
 - Aprendizaje Infantil/Paz: effect: "falling-leaves", "radiant-glow" o "none" + color cálido.
@@ -119,8 +121,8 @@ REGLAS VISUALES:
 FORMATO JSON OBLIGATORIO:
 {
   "chapters": [
-    "Título de la Lección 1. Cuerpo del texto explicando el primer paso sin usar más puntos, solo comas y punto y coma para separar ideas",
-    "Título de la Lección 2. Cuerpo del texto continuando el aprendizaje sin usar puntos adicionales"
+    "Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto explicando el primer paso sin usar más puntos, solo comas y punto y coma para separar ideas",
+    "Capítulo 2, [Nombre descriptivo del capítulo 2]. Cuerpo del texto continuando el aprendizaje sin usar puntos adicionales"
   ],
   "cinematica": [
     { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." }
@@ -256,22 +258,13 @@ FORMATO JSON OBLIGATORIO:
 
 			const parsed = JSON.parse(rawText);
 			
-			// --- CORRECCIÓN DE PUNTUACIÓN (Evita que el frontend falle) ---
-			chapters = Array.isArray(parsed.chapters) ? parsed.chapters.map((cap: string) => {
-				// 1. Si la IA usó ":" o "-" en vez de un punto para el título, lo reparamos
-				let fixedCap = cap.replace(/^([^:\.\-]+)(:|-)\s*/, "$1. ");
-				// 2. Asegurar que solo exista el primer punto y cambiar los demás por comas
-				let parts = fixedCap.split('.');
-				if (parts.length > 2) {
-					let titulo = parts.shift();
-					let cuerpo = parts.join(',').replace(/\./g, ','); 
-					return `${titulo}. ${cuerpo.trim()}`;
-				}
-				return fixedCap;
-			}) : [];
+			// --- CORRECCIÓN DE FORMATO Y PUNTUACIÓN (Garantiza título antes del punto y cuerpo después) ---
+			chapters = Array.isArray(parsed.chapters)
+				? parsed.chapters.map((cap: string) => formatChapterForStorage(cap))
+				: [];
 
 			cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
-			defeatChapter = parsed.defeatChapter || '';
+			defeatChapter = parsed.defeatChapter ? formatChapterForStorage(parsed.defeatChapter) : '';
 			defeatCinematica = parsed.defeatCinematica || detectCinematicaForText(defeatChapter, 'defeat');
 
 			if (chapters.length === 0) {
@@ -426,6 +419,78 @@ FORMATO JSON OBLIGATORIO:
 		await db
 			.update(tasks)
 			.set({ status: '0' })
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+		return { success: true };
+	},
+
+	archiveTask: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const taskId = parseInt(formData.get('taskId') as string, 10);
+		if (isNaN(taskId)) {
+			return fail(400, { message: 'ID de tarea inválido' });
+		}
+		const [task] = await db
+			.select()
+			.from(tasks)
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+			.limit(1);
+		if (!task) {
+			return fail(404, { message: 'Tarea no encontrada' });
+		}
+		await db
+			.update(tasks)
+			.set({ isArchived: true })
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+		return { success: true };
+	},
+
+	unarchiveTask: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const taskId = parseInt(formData.get('taskId') as string, 10);
+		if (isNaN(taskId)) {
+			return fail(400, { message: 'ID de tarea inválido' });
+		}
+		const [task] = await db
+			.select()
+			.from(tasks)
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+			.limit(1);
+		if (!task) {
+			return fail(404, { message: 'Tarea no encontrada' });
+		}
+		await db
+			.update(tasks)
+			.set({ isArchived: false })
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
+		return { success: true };
+	},
+
+	deleteTask: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const taskId = parseInt(formData.get('taskId') as string, 10);
+		if (isNaN(taskId)) {
+			return fail(400, { message: 'ID de tarea inválido' });
+		}
+		const [task] = await db
+			.select()
+			.from(tasks)
+			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)))
+			.limit(1);
+		if (!task) {
+			return fail(404, { message: 'Tarea no encontrada' });
+		}
+		// Supabase / Postgres cascade eliminara automaticamente los registros en 'levels'
+		await db
+			.delete(tasks)
 			.where(and(eq(tasks.id, taskId), eq(tasks.userId, locals.user.id)));
 		return { success: true };
 	}

@@ -19,6 +19,7 @@ export const tasks = pgTable('tasks', {
 	cantidad_de_niveles: integer('cantidad_de_niveles').notNull(),
 	ilustracion: text('ilustracion'),
 	status: text('status').default('0').notNull(),
+	isArchived: boolean('is_archived').default(false).notNull(),
 	userId: text('user_id')
 		.references(() => users.id, { onDelete: 'cascade' })
 		.notNull(),

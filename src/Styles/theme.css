@@ -1,4 +1,5 @@
 /* Tema UI Oscuro (Glassmorphism) + Bento Grid */
+@import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
   --bg-color: #12191d;
@@ -9,6 +10,8 @@
   --text-main: #ffffff;
   --text-muted: #9aa6ad;
   --bg-gradient: linear-gradient(180deg, #10181c 0%, #1a2a30 100%);
+  --font-modern-title: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-kids: 'Fredoka', 'Bubblegum Sans', 'Comic Neue', cursive, sans-serif;
 }
 
 body {
@@ -311,3 +314,24 @@ body {
   cursor: pointer;
   border: 4px solid var(--bg-color);
 }
+
+/* Tipografías especiales para títulos de capítulos y temáticas infantiles */
+.font-modern-chapter {
+  font-family: var(--font-modern-title) !important;
+  letter-spacing: 0.02em;
+}
+
+.font-kids {
+  font-family: var(--font-kids) !important;
+  letter-spacing: 0.015em;
+}
+
+.is-kids-theme {
+  border-color: rgba(255, 209, 102, 0.28) !important;
+}
+
+.is-kids-theme .project-card-title,
+.is-kids-theme h3 {
+  font-family: var(--font-kids) !important;
+}
+
