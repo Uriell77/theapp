@@ -70,7 +70,7 @@
 	</div>
 
 	<!-- Search Bar -->
-	<div class="search-bar">
+	<div class="search-bar is-hidden">
 		<input type="text" placeholder="Buscador" />
 		<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
 			<circle cx="11" cy="11" r="8"></circle>

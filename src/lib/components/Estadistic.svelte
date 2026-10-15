@@ -90,7 +90,7 @@
 
 			<div class="is-flex is-align-items-center is-justify-content-space-between my-2">
 				<div>
-					<div style="font-size: 2.2rem; font-weight: bold; color: var(--accent-primary); line-height: 1;">
+					<div class="is-size-3-desktop is-size-4-tablet is-size-5-mobile" style="font-weight: bold; color: var(--accent-primary); line-height: 1;">
 						{activeTasksCount}
 					</div>
 					<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
@@ -139,7 +139,7 @@
 					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
 				</svg>
 			</div>
-			<div style="font-size: 2.2rem; font-weight: bold; color: var(--accent-primary); line-height: 1; margin: 4px 0;">
+			<div class="is-size-3-desktop is-size-4-tablet is-size-5-mobile" style="font-weight: bold; color: var(--accent-primary); line-height: 1; margin: 4px 0;">
 				{tasks.length}
 			</div>
 			<div style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
@@ -148,7 +148,7 @@
 						<span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent-primary); display: inline-block; margin-right: 6px;"></span>
 						<span style="color: var(--text-muted);">En curso / Activas</span>
 					</span>
-					<span style="color: white; font-weight: bold;">{activeTasksCount}</span>
+					<span style="color: white; font-weight: bold;">{activeTasksCount - completedTasks}</span>
 				</div>
 				<div class="is-flex is-justify-content-space-between is-align-items-center">
 					<span class="is-flex is-align-items-center">

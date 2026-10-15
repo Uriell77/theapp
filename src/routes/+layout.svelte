@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../Styles/theme.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import Navbar from '$lib/components/Navbar.svelte';
 
 	let { children } = $props();
 </script>
@@ -30,7 +29,6 @@
 </svelte:head>
 
 <div class="principal p-0 m-0">
-	<Navbar />
 	{@render children()}
 </div>
 

@@ -7,6 +7,7 @@
 	import SlidingPanel from '$lib/components/SlidingPanel.svelte';
 	import { supabase } from '$lib/supabaseClient';
 	import Estadistic from '$lib/components/Estadistic.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
 
 	const tematicasAgrupadas = [
 		{
@@ -146,6 +147,12 @@
 </svelte:head>
 
 <main class="app-container pt-0 pb-6">
+
+
+	<Navbar />
+
+
+
 	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
 		{#if panelMode === 'form'}
 			<form
