@@ -18,6 +18,34 @@ export function isKidsTheme(tema?: string | null): boolean {
 }
 
 /**
+ * Determina si la temática corresponde a aprendizaje (adolescente, habilidades, conocimiento universal)
+ */
+export function isLearningTheme(tema?: string | null): boolean {
+	if (!tema) return false;
+	if (isKidsTheme(tema)) return false;
+	const lower = tema.toLowerCase();
+	return (
+		lower.includes('adolescente') ||
+		lower.includes('habilidades') ||
+		lower.includes('habilidad') ||
+		lower.includes('conocimiento universal') ||
+		lower.includes('conocimiento') ||
+		lower.includes('aprendizaje')
+	);
+}
+
+export type ProjectCategoryKey = 'general' | 'kids' | 'learning';
+
+/**
+ * Categoriza el proyecto en: 'general', 'kids' (infantil) o 'learning' (aprendizaje)
+ */
+export function getProjectCategory(tema?: string | null): ProjectCategoryKey {
+	if (isKidsTheme(tema)) return 'kids';
+	if (isLearningTheme(tema)) return 'learning';
+	return 'general';
+}
+
+/**
  * Capitaliza cada palabra de un texto (Title Case) para que todas las palabras inicien con mayúscula
  * Ej: "terminar metaphorgoal" -> "Terminar Metaphorgoal"
  */
