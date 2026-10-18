@@ -308,7 +308,7 @@
 					<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2 mb-4">
 						<button
 							use:motion
-							class="btn-primary"
+							class="btn-primary mb-6-is-desktop"
 							style="width: 70%; margin-top: 1.5rem;"
 							type="submit"
 							disabled={isSubmitting}
@@ -396,7 +396,7 @@
 		{/if}
 
 		<!-- ===== BOTTOM NAV ===== -->
-		<nav class="bottom-nav">
+		<nav class="bottom-nav ">
 			<!-- Dashboard -->
 			<button
 				class="nav-item {activeTab === 'dashboard' ? 'active' : ''}"
@@ -656,4 +656,29 @@ select:disabled {
 :global(.bottom-nav button.nav-item.active) {
 	color: var(--accent-primary);
 }
+
+
+
+@media (min-width: 768px) {
+
+	.bottom-nav {
+
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		position: fixed;
+		bottom: 0;
+		left: 25%;
+		width: 50%;
+		background-color: rgba(20, 33, 39, 0.95);
+		backdrop-filter: blur(10px);
+		padding: 8px 0;
+		border-top: 1px solid var(--card-border);
+		z-index: 1000;
+	}
+
+}
+
+
+
 </style>

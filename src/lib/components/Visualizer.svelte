@@ -760,7 +760,7 @@ function getRgbString(colorTag: string): string {
     .canvas-container {
         position: relative;
         width: 100%;
-        min-height: 40vh;
+        min-height: 55vh;
         border-radius: 16px;
         overflow: hidden;
     }

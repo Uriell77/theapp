@@ -238,8 +238,8 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-bottom: none;
 		width: 100vw;
-		max-height: 85vh;
-		min-height: 48vh;
+		max-height: 90vh;
+		min-height: 90vh;
 		border-radius: 28px 28px 0 0;
 		box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 		padding: 1.2rem 1.4rem 2rem 1.4rem;
@@ -322,7 +322,7 @@
         /* Asegura contraste agresivo para que el texto siempre se lea */
         background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 50%, transparent 100%);
         /* Permite scroll si la historia es muy larga */
-        max-height: 50vh; /* Ajusta según el tamaño de tu tarjeta */
+        max-height: 55vh; /* Ajusta según el tamaño de tu tarjeta */
         overflow-y: auto;
         padding: 1.5rem;
         pointer-events: auto; /* Permite al usuario hacer scroll manual */
