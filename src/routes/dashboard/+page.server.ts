@@ -221,21 +221,32 @@ export const actions: Actions = {
 		};
 
 		function obtenerSugerenciasTema(t: string): string[] {
-			if (sugerenciasNarrativasPorTema[t]) {
-				return sugerenciasNarrativasPorTema[t];
-			}
-			const temaLower = (t || '').toLowerCase();
-			for (const [key, list] of Object.entries(sugerenciasNarrativasPorTema)) {
-				if (key.toLowerCase().includes(temaLower) || temaLower.includes(key.toLowerCase())) {
-					return list;
+			let lista = sugerenciasNarrativasPorTema[t];
+			if (!lista) {
+				const temaLower = (t || '').toLowerCase();
+				for (const [key, l] of Object.entries(sugerenciasNarrativasPorTema)) {
+					if (key.toLowerCase().includes(temaLower) || temaLower.includes(key.toLowerCase())) {
+						lista = l;
+						break;
+					}
 				}
 			}
-			return [
-				'misión de alto riesgo con aliados leales',
-				'carrera contra el tiempo frente a un obstáculo formidable',
-				'infiltración en territorio hostil coordinando esfuerzos',
-				'rescate o protección de un aliado clave'
-			];
+			if (!lista || lista.length === 0) {
+				lista = [
+					'misión de alto riesgo con aliados leales',
+					'carrera contra el tiempo frente a un obstáculo formidable',
+					'infiltración en territorio hostil coordinando esfuerzos',
+					'rescate o protección de un aliado clave'
+				];
+			}
+			// Mezclar y seleccionar aleatoriamente un subconjunto de sugerencias para dar variedad a cada historia
+			const copia = [...lista];
+			for (let i = copia.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[copia[i], copia[j]] = [copia[j], copia[i]];
+			}
+			const cantidadAElegir = Math.min(copia.length, Math.max(2, Math.floor(Math.random() * 2) + 3));
+			return copia.slice(0, cantidadAElegir);
 		}
 
 		// En ambos prompts la cantidad de capítulos/niveles es el valor ingresado más 1
