@@ -146,7 +146,7 @@
 		effectConfig = '',
 		cinematica = null,
 		active = true,
-		volume = 0.2,
+		volume = $bindable(0.2),
 		bucket = DEFAULT_BUCKET,
 		customTrackMap,
 		loop = true,
@@ -196,6 +196,7 @@
 	let audioElement: HTMLAudioElement | null = null;
 	let isPlaying = $state(false);
 	let isMuted = $state(false);
+	let showVolume = $state(false);
 	let hasError = $state(false);
 	let fadeInterval: ReturnType<typeof setInterval> | null = null;
 	let activePlayingFileName: string | null = null;
@@ -206,6 +207,10 @@
 			const savedMute = localStorage.getItem('mgsounds_ambient_muted');
 			if (savedMute !== null) {
 				isMuted = savedMute === 'true';
+			}
+			const savedVol = localStorage.getItem('mgsounds_ambient_volume');
+			if (savedVol !== null) {
+				volume = parseFloat(savedVol);
 			}
 		}
 	});
@@ -353,6 +358,9 @@
 		if (audioElement && isPlaying && !isMuted) {
 			audioElement.volume = Math.max(0, Math.min(1, volume));
 		}
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('mgsounds_ambient_volume', String(volume));
+		}
 	});
 
 	function toggleMute() {
@@ -391,35 +399,50 @@
 	{@render children?.()}
 
 	<!-- Control HUD sutil de atmósfera sonora -->
-	<div class="sound-engine-hud" class:is-hidden-error={hasError}>
-		<button
-			type="button"
-			class="sound-hud-badge"
-			class:muted={isMuted}
-			class:playing={isPlaying && !isMuted}
-			onclick={toggleMute}
-			title={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
-			aria-label={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
-		>
-			{#if isMuted}
-				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<line x1="1" y1="1" x2="23" y2="23"></line>
-					<path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
-					<path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
-					<line x1="12" y1="19" x2="12" y2="23"></line>
-					<line x1="8" y1="23" x2="16" y2="23"></line>
-				</svg>
-			{:else}
-				<div class="sound-waves">
-					<span class="bar bar-1"></span>
-					<span class="bar bar-2"></span>
-					<span class="bar bar-3"></span>
+	<div class="sound-engine-hud" class:is-hidden-error={hasError} onmouseenter={() => showVolume = true} onmouseleave={() => showVolume = false} role="region" aria-label="Controles de audio">
+		<div class="sound-controls-group" class:expanded={showVolume}>
+			{#if showVolume}
+				<div class="volume-slider-container">
+					<input 
+						type="range" 
+						min="0" 
+						max="1" 
+						step="0.01" 
+						bind:value={volume} 
+						class="volume-slider"
+						aria-label="Volumen"
+					/>
 				</div>
 			{/if}
-			<span class="hud-label">
-				{isMuted ? 'MUTE' : 'AUDIO HUD'}
-			</span>
-		</button>
+			<button
+				type="button"
+				class="sound-hud-badge"
+				class:muted={isMuted}
+				class:playing={isPlaying && !isMuted}
+				onclick={toggleMute}
+				title={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
+				aria-label={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
+			>
+				{#if isMuted}
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="1" y1="1" x2="23" y2="23"></line>
+						<path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+						<path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+						<line x1="12" y1="19" x2="12" y2="23"></line>
+						<line x1="8" y1="23" x2="16" y2="23"></line>
+					</svg>
+				{:else}
+					<div class="sound-waves">
+						<span class="bar bar-1"></span>
+						<span class="bar bar-2"></span>
+						<span class="bar bar-3"></span>
+					</div>
+				{/if}
+				<span class="hud-label">
+					{isMuted ? 'MUTE' : (showVolume ? Math.round(volume * 100) + '%' : 'AUDIO')}
+				</span>
+			</button>
+		</div>
 	</div>
 </div>
 
@@ -443,14 +466,64 @@
 		opacity: 0.3;
 	}
 
-	.sound-hud-badge {
+	.sound-controls-group {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		background: rgba(10, 18, 25, 0.7);
 		border: 1px solid rgba(255, 255, 255, 0.15);
 		backdrop-filter: blur(8px);
 		-webkit-backdrop-filter: blur(8px);
-		color: #e0f2fe;
-		padding: 5px 10px;
+		padding: 4px;
 		border-radius: 9999px;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	}
+
+	.sound-controls-group.expanded {
+		padding-left: 12px;
+		background: rgba(10, 18, 25, 0.85);
+		border-color: rgba(25, 212, 168, 0.3);
+	}
+
+	.volume-slider-container {
+		width: 80px;
+		display: flex;
+		align-items: center;
+		animation: slide-in 0.2s ease-out;
+	}
+
+	@keyframes slide-in {
+		from { width: 0; opacity: 0; }
+		to { width: 80px; opacity: 1; }
+	}
+
+	.volume-slider {
+		-webkit-appearance: none;
+		width: 100%;
+		height: 4px;
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 2px;
+		outline: none;
+		cursor: pointer;
+	}
+
+	.volume-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 10px;
+		height: 10px;
+		background: var(--accent-primary, #19d4a8);
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 0 0 10px rgba(25, 212, 168, 0.5);
+	}
+
+	.sound-hud-badge {
+		background: transparent;
+		border: none;
+		color: #e0f2fe;
+		padding: 2px 8px;
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -460,25 +533,22 @@
 		letter-spacing: 0.05em;
 		cursor: pointer;
 		transition: all 0.25s ease;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 	}
 
 	.sound-hud-badge:hover {
-		background: rgba(20, 35, 48, 0.85);
-		border-color: rgba(25, 212, 168, 0.4);
-		transform: scale(1.04);
+		color: var(--accent-primary, #19d4a8);
 	}
 
 	.sound-hud-badge.muted {
 		color: #94a3b8;
-		border-color: rgba(255, 255, 255, 0.08);
-		background: rgba(15, 23, 42, 0.6);
 	}
 
 	.hud-label {
 		text-transform: uppercase;
 		font-size: 0.62rem;
 		opacity: 0.85;
+		min-width: 35px;
+		text-align: left;
 	}
 
 	/* Animación de barras de audio estilo ecualizador futurista */

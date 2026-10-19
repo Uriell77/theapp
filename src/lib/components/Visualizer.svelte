@@ -760,13 +760,15 @@ function getRgbString(colorTag: string): string {
     .canvas-container {
         position: relative;
         width: 100%;
-        min-height: 55vh;
-        border-radius: 16px;
+        min-height: 450px;
+        flex: 1;
+        border-radius: 24px;
         overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
     canvas {
         display: block;
-        width: 100%;
+        width: 110%;
         height: 100%;
     }
     
@@ -811,6 +813,7 @@ function getRgbString(colorTag: string): string {
 
     .hud-overlay {
         position: absolute;
+        top: 0;
         inset: 0;
         pointer-events: auto;
         display: flex;

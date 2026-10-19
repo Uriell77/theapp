@@ -94,24 +94,26 @@
 			</Motion>
 
 			<section class="section p-0">
-				<div class="container">
+				<div class="container is-fluid h-full flex flex-col px-0">
 					{#if mode === 'form'}
-						<div>
+						<div class="p-4">
 							<h2 class="panel-title">Nueva Tarea</h2>
 							{@render children?.()}
 						</div>
 					{:else if mode === 'details' && taskData}
-						<div>
-							<h2 class="panel-title is-capitalized {isKids ? 'font-kids' : ''}">{taskData.title}</h2>
-							<div class="meta-tags mb-4">
-								<span class="meta-tag {isKids ? 'font-kids' : ''}">
-									Temática: <strong style="color: {isKids ? '#ffd166' : 'var(--accent-primary)'};">{taskData.tema}</strong>
-								</span>
-								<span class="meta-tag {isKids ? 'font-kids' : ''}">
-									Progreso: <strong>
-										{taskData.status === '-1' ? 'Abandonada' : `${Number(taskData.status) + 1} / ${taskData.cantidad_de_niveles}`}
-									</strong>
-								</span>
+						<div class="flex flex-col h-full overflow-hidden">
+							<div class="p-1 pb-2">
+								<h2 class="panel-title is-capitalized {isKids ? 'font-kids' : ''}">{taskData.title}</h2>
+								<div class="meta-tags">
+									<span class="meta-tag {isKids ? 'font-kids' : ''}">
+										Temática: <strong style="color: {isKids ? '#ffd166' : 'var(--accent-primary)'};">{taskData.tema}</strong>
+									</span>
+									<span class="meta-tag {isKids ? 'font-kids' : ''}">
+										Progreso: <strong>
+											{taskData.status === '-1' ? 'Abandonada' : `${Number(taskData.status) + 1} / ${taskData.cantidad_de_niveles}`}
+										</strong>
+									</span>
+								</div>
 							</div>
 
 							{#if taskData.status === '-1'}
@@ -120,10 +122,10 @@
 								{@const defeatCinematicaRaw = taskData.levels?.[0]?.vista?.[1]}
 								{@const defeatCinematicaParsed = defeatCinematicaRaw ? (() => { try { return JSON.parse(defeatCinematicaRaw); } catch { return null; } })() : null}
 								{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
-								<div class="narrative-container">
+								<div class="narrative-container flex-grow overflow-hidden px-2 pb-2">
 									<SoundEngine effect={defeatCinematicaParsed?.effect || 'ash-storm'} mood={defeatCinematicaParsed?.mood || 'defeat'} active={isOpen}>
 										<Visualizer effectConfig={defeatEffectConfig}>
-											<div class="p-3 mb-1 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+											<div class="levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
 												{#if parsedDefeat.title}
 													<div class="chapter-badge-wrapper mb-2">
 														<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
@@ -139,7 +141,7 @@
 							{:else}
 								{#if taskData.levels && taskData.levels.length > 0}
 									{#each taskData.levels as level (level.id)}
-										<div class="narrative-container">
+										<div class="narrative-container flex-grow overflow-hidden px-2 pb-2">
 											<!-- Narrativa Actual -->
 											{#if level.content && level.content[taskData.status] !== undefined}
 												{@const currentRaw = String(level.content[taskData.status] || '')}
@@ -148,7 +150,7 @@
 													{@const parsedCinematica = (() => { try { return JSON.parse(level.cinematica[taskData.status]); } catch { return {}; } })()}
 													<SoundEngine effect={parsedCinematica.effect} mood={parsedCinematica.mood} active={isOpen}>
 														<Visualizer effectConfig={`effect:${parsedCinematica.effect};color:${parsedCinematica.color};speed:${parsedCinematica.speed};lighting:${parsedCinematica.lighting};mood:${parsedCinematica.mood}`}>
-															<div class="p-3 mb-1 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+															<div class="levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
 																{#if parsed.title}
 																	<div class="chapter-badge-wrapper mb-2">
 																		<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
@@ -163,7 +165,7 @@
 												{:else}
 													<SoundEngine effect="space-cockpit" mood="intro" active={isOpen}>
 														<Visualizer>
-															<div class="p-3 mb-1 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+															<div class="levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
 																{#if parsed.title}
 																	<div class="chapter-badge-wrapper mb-2">
 																		<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
@@ -178,7 +180,7 @@
 												{/if}
 											{:else if level.content && level.content[0] !== undefined}
 												{@const parsed0 = parseChapter(level.content[0])}
-												<div class="notification is-light p-3 mb-3 {isKids ? 'font-kids' : ''}" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
+												<div class="notification is-light p-4 {isKids ? 'font-kids' : ''}" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
 													{#if parsed0.title}
 														<h5 class="{isKids ? 'font-kids' : 'font-modern-chapter'}" style="font-weight: 700; margin-bottom: 6px;">{parsed0.title.endsWith('.') ? parsed0.title : `${parsed0.title}.`}</h5>
 													{/if}
@@ -188,7 +190,9 @@
 										</div>
 									{/each}
 								{:else}
-									<p style="color: var(--text-muted, #9aa6ad);">No hay narrativa asociada a esta tarea.</p>
+									<div class="p-4">
+										<p style="color: var(--text-muted, #9aa6ad);">No hay narrativa asociada a esta tarea.</p>
+									</div>
 								{/if}
 							{/if}
 						</div>
@@ -201,12 +205,8 @@
 
 <style>
 	.levelcontent {
-		min-height: 10%;
-		max-height: 120%;
-		overflow-y: auto;
-		scroll-behavior: smooth;
-		top: 1px;
-		position: absolute;
+		width: 100%;
+		height: 100%;
 	}
 
 	.panel-overlay {
@@ -246,11 +246,11 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-bottom: none;
 		width: 100vw;
-		max-height: 90vh;
-		min-height: 90vh;
+		max-height: 95vh;
+		min-height: 95vh;
 		border-radius: 28px 28px 0 0;
 		box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-		padding: 1.2rem 1.4rem 2rem 1.4rem;
+		padding: 1.2rem 0.5rem 0 0.5rem;
 		color: var(--text-main, #ffffff);
 		display: flex;
 		flex-direction: column;
@@ -260,9 +260,15 @@
 
 	.section {
 		flex: 1;
-		overflow-y: auto;
-		scrollbar-width: thin;
-		scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.container {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 	}
 
 	.drag-handle-bar {
@@ -270,12 +276,13 @@
 		height: 4px;
 		background: rgba(255, 255, 255, 0.25);
 		border-radius: 4px;
-		margin: 0 auto 1.2rem auto;
+		margin: 0 auto 0.8rem auto;
+		flex-shrink: 0;
 	}
 
 	.close-btn {
 		position: absolute;
-		top: 1.2rem;
+		top: 1rem;
 		right: 1.2rem;
 		width: 32px;
 		height: 32px;
@@ -287,7 +294,7 @@
 		justify-content: center;
 		align-items: center;
 		cursor: pointer;
-		z-index: 10;
+		z-index: 1010;
 		transition: all 0.2s ease;
 	}
 
@@ -300,7 +307,7 @@
 		font-size: 1.35rem;
 		font-weight: 700;
 		color: #ffffff;
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.5rem;
 		letter-spacing: -0.01em;
 	}
 
@@ -314,8 +321,8 @@
 		background: rgba(0, 0, 0, 0.25);
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 12px;
-		padding: 6px 12px;
-		font-size: 0.8rem;
+		padding: 4px 10px;
+		font-size: 0.75rem;
 		color: var(--text-muted, #9aa6ad);
 		font-weight: 500;
 	}
@@ -325,37 +332,53 @@
 		font-weight: 700;
 	}
 
+	.narrative-container {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		width: 100%;
+	}
+
 
     .hud-container {
         /* Asegura contraste agresivo para que el texto siempre se lea */
-        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 50%, transparent 100%);
-        /* Permite scroll si la historia es muy larga */
-        max-height: 55vh; /* Ajusta según el tamaño de tu tarjeta */
-        overflow-y: auto;
-        padding: 1.5rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 100%);
+        padding: 1.2rem;
         pointer-events: auto; /* Permite al usuario hacer scroll manual */
+		border-radius: 0 0 24px 24px;
     }
     
-    /* Estilizar la barra de scroll para que no se vea fea */
-    .hud-container::-webkit-scrollbar {
-        width: 6px;
-    }
-    .hud-container::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-    }
+	.flex-grow {
+		flex-grow: 1;
+	}
+
+	.h-full {
+		height: 100%;
+	}
+
+	.flex {
+		display: flex;
+	}
+
+	.flex-col {
+		flex-direction: column;
+	}
+
+	.overflow-hidden {
+		overflow: hidden;
+	}
 
 	@media (min-width: 1024px) {
 		.panel-content {
-			width: 50vw;
-			max-width: 680px;
+			width: 60vw;
+			max-width: 900px;
 			border-radius: 28px 28px 0 0;
 		}
 	}
 
 	/* Estilos tipográficos para el título de capítulos e historias infantiles */
 	.chapter-title-display {
-		font-size: 1.15rem;
+		font-size: 1.25rem;
 		margin: 0;
 		line-height: 1.35;
 	}
@@ -372,19 +395,19 @@
 		font-weight: 600;
 		color: #ffd166;
 		letter-spacing: 0.02em;
-		font-size: 1.25rem;
+		font-size: 1.4rem;
 	}
 
 	.text-kids {
 		font-family: var(--font-kids) !important;
-		font-size: 1.05rem;
+		font-size: 1.15rem;
 		line-height: 1.8 !important;
 		letter-spacing: 0.015em;
 	}
 
 	.text-standard {
 		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		font-size: 0.95rem;
+		font-size: 1.05rem;
 		line-height: 1.7;
 	}
 
