@@ -257,7 +257,7 @@ export const actions: Actions = {
 Objetivo: Crea una campaña de acción inmersiva de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIAS NARRATIVAS Y FRASES DE CONTEXTO POR TEMA:
-Inspírate activamente en el siguiente listado de situaciones y frases de contexto para la temática "${tema}":
+Inspírate activamente y aleatoriamente en el siguiente listado de situaciones y frases de contexto para la temática "${tema}":
 ${sugerenciasFormatted}
 Utiliza estas frases y situaciones como combustible para tejer tramas complejas, ricas, variadas y con giros dramáticos inesperados a lo largo de los capítulos.
 
@@ -266,7 +266,7 @@ ESTRUCTURA Y REGLAS NARRATIVAS:
 El Capítulo 1 DEBE ser la introducción a la gran tarea/desafío. Presenta con fuerza y detalle al protagonista ("${nombre_de_usuario}"), a sus personajes de soporte o aliados, y explica vívidamente el universo de la historia: las reglas del mundo, el contexto de la narrativa, qué está en juego y cuál es la gran amenaza, fortaleza o villano supremo al que se enfrentan. Establece las bases épicas antes de que comience el avance.
 
 2. PERSONAJES DE SOPORTE:
-Es OBLIGATORIO incluir a 1 o más personajes de soporte secundarios (aliados leales, escuderos, inteligencias artificiales tácticas, guerreros veteranos, pilotos o exploradores). Deben tener nombres o roles distintivos, dialogar activamente con "${nombre_de_usuario}", aportar habilidades únicas, advertir peligros y luchar hombro a hombro, enriqueciendo la historia con dinámicas colaborativas.
+Puedes aleatoriamente incluir a 1 o más personajes de soporte secundarios (aliados leales, escuderos, inteligencias artificiales tácticas, guerreros veteranos, pilotos, mascotas o exploradores). Deben tener nombres o roles distintivos, dialogar activamente con "${nombre_de_usuario}", aportar habilidades únicas, advertir peligros y luchar hombro a hombro, enriqueciendo la historia con dinámicas colaborativas.
 
 3. CONTINUIDAD EN PLANO SECUENCIA (CAPÍTULO 2 HASTA EL PENÚLTIMO):
 A partir del Capítulo 2, PROHIBIDO usar resúmenes o pausas temporales. Inicia la acción exactamente en el milisegundo donde terminó el capítulo anterior, manteniendo la adrenalina y la continuidad directa sin saltos.
@@ -279,6 +279,8 @@ El desenlace de la historia SIEMPRE DEBE ser en el último capítulo (Capítulo 
 
 6. METÁFORA INQUEBRANTABLE:
 NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}".
+La tarea real debe ser representada progresivamente a través de metáforas, desafíos, acertijos, pruebas y obstáculos que el protagonista y sus aliados deben superar, sin revelar nunca la tarea real pero haciendo alucion metaforica de la misma.
+representar los pasos progresivos de la tarea real en cada capitulo.
 
 7. PUNTUACIÓN Y TÍTULOS:
 Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas y punto y coma para separar ideas.
@@ -330,7 +332,7 @@ REGLAS PEDAGÓGICAS (TUTOR GAMIFICADO):
 El Capítulo 1 DEBE ser la introducción a la aventura de aprendizaje. Presenta al aprendiz ("${nombre_de_usuario}"), a sus personajes de soporte o mentor, y explica el universo y el contexto de por qué aprender "${title}" es una habilidad crucial y transformadora en este mundo. Establece las metas de la aventura.
 
 2. PERSONAJES DE SOPORTE:
-Es OBLIGATORIO incluir a 1 o más personajes de soporte (un mentor sabio y paciente, una criatura guía carismática, un autómata asistente o compañeros de estudio curiosos). Deben dialogar activamente con "${nombre_de_usuario}", hacer preguntas interesantes, demostrar ejemplos prácticos y brindar aliento durante los momentos de dificultad.
+Puedes de forma aleatoria incluir a 1 o más personajes de soporte (un mentor sabio y paciente, una criatura guía carismática, una mascota, un autómata asistente o compañeros de estudio curiosos). Deben dialogar activamente con "${nombre_de_usuario}", hacer preguntas interesantes, demostrar ejemplos prácticos y brindar aliento durante los momentos de dificultad.
 
 3. ENSEÑANZA REAL SECUENCIAL:
 AQUÍ SÍ DEBES ENSEÑAR EL CONCEPTO REAL ("${title}"). Explica la teoría y cómo aplicarla en pasos lógicos de menor a mayor dificultad a lo largo de los capítulos, disfrazando la lección en la narrativa pero manteniendo los términos técnicos y prácticos necesarios.
