@@ -73,7 +73,7 @@
 
 		<!-- Panel deslizante con transición fly suave desde el fondo -->
 		<div
-			class="panel-content px-4"
+			class="panel-content px-1"
 			transition:fly={{ y: 600, duration: 350, easing: cubicOut }}
 		>
 			<!-- Manija de arrastre / indicador visual estético -->
