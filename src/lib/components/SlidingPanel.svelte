@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Visualizer from './Visualizer.svelte';
 	import SoundEngine from './SoundEngine.svelte';
+	import Narrador from './Narrador.svelte';
 	import type { Snippet } from 'svelte';
 	import { fly, fade } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -126,6 +127,7 @@
 									<SoundEngine effect={defeatCinematicaParsed?.effect || 'ash-storm'} mood={defeatCinematicaParsed?.mood || 'defeat'} active={isOpen}>
 										<Visualizer effectConfig={defeatEffectConfig}>
 											<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+												<Narrador text={`${parsedDefeat.title || ''}. ${parsedDefeat.body || ''}`} active={isOpen} />
 												{#if parsedDefeat.title}
 													<div class="chapter-badge-wrapper mb-2">
 														<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
@@ -151,6 +153,7 @@
 													<SoundEngine effect={parsedCinematica.effect} mood={parsedCinematica.mood} active={isOpen}>
 														<Visualizer effectConfig={`effect:${parsedCinematica.effect};color:${parsedCinematica.color};speed:${parsedCinematica.speed};lighting:${parsedCinematica.lighting};mood:${parsedCinematica.mood}`}>
 															<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+																<Narrador text={`${parsed.title || ''}. ${parsed.body || ''}`} active={isOpen} />
 																{#if parsed.title}
 																	<div class="chapter-badge-wrapper mb-2">
 																		<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
@@ -166,6 +169,7 @@
 													<SoundEngine effect="space-cockpit" mood="intro" active={isOpen}>
 														<Visualizer>
 															<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+																<Narrador text={`${parsed.title || ''}. ${parsed.body || ''}`} active={isOpen} />
 																{#if parsed.title}
 																	<div class="chapter-badge-wrapper mb-2">
 																		<h4 class="chapter-title-display {isKids ? 'font-kids chapter-title-kids' : 'font-modern-chapter chapter-title-modern'}">
@@ -181,6 +185,7 @@
 											{:else if level.content && level.content[0] !== undefined}
 												{@const parsed0 = parseChapter(level.content[0])}
 												<div class="notification is-light p-4 {isKids ? 'font-kids' : ''}" style="border-left: 4px solid #ccc; background-color: #f9fafb;">
+													<Narrador text={`${parsed0.title || ''}. ${parsed0.body || ''}`} active={isOpen} />
 													{#if parsed0.title}
 														<h5 class="{isKids ? 'font-kids' : 'font-modern-chapter'}" style="font-weight: 700; margin-bottom: 6px;">{parsed0.title.endsWith('.') ? parsed0.title : `${parsed0.title}.`}</h5>
 													{/if}

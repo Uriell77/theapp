@@ -14,12 +14,14 @@
 	let isPaused = $state(false);
 	let voices = $state<SpeechSynthesisVoice[]>([]);
 	let selectedVoiceIndex = $state(0);
+	
+	let currentUtterance: SpeechSynthesisUtterance | null = null;
 
 	onMount(() => {
 		if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 			const updateVoices = () => {
 				voices = window.speechSynthesis.getVoices();
-				const esVoiceIndex = voices.findIndex(v => v.lang.startsWith('es'));
+				const esVoiceIndex = voices.findIndex(v => v.lang.toLowerCase().includes('es'));
 				if (esVoiceIndex !== -1) {
 					selectedVoiceIndex = esVoiceIndex;
 				}
@@ -34,6 +36,7 @@
 			window.speechSynthesis.cancel();
 			isSpeaking = false;
 			isPaused = false;
+			currentUtterance = null;
 		}
 	}
 
@@ -43,29 +46,38 @@
 
 		stopSpeech();
 
-		const utterance = new SpeechSynthesisUtterance(text);
-		if (voices[selectedVoiceIndex]) {
-			utterance.voice = voices[selectedVoiceIndex];
-		}
-		utterance.rate = 1.0;
-		utterance.pitch = 1.0;
+		const cleanText = text.replace(/[*_#`]/g, '').trim();
+		if (!cleanText) return;
 
-		utterance.onstart = () => {
+		currentUtterance = new SpeechSynthesisUtterance(cleanText);
+		currentUtterance.lang = 'es-ES';
+		
+		if (voices[selectedVoiceIndex]) {
+			currentUtterance.voice = voices[selectedVoiceIndex];
+		}
+		currentUtterance.rate = 1.0;
+		currentUtterance.pitch = 1.0;
+
+		currentUtterance.onstart = () => {
 			isSpeaking = true;
 			isPaused = false;
 		};
 
-		utterance.onend = () => {
+		currentUtterance.onend = () => {
 			isSpeaking = false;
 			isPaused = false;
+			currentUtterance = null;
 		};
 
-		utterance.onerror = () => {
+		currentUtterance.onerror = (event) => {
+			console.error('Error en síntesis de voz (TTS):', event);
 			isSpeaking = false;
 			isPaused = false;
+			currentUtterance = null;
 		};
 
-		window.speechSynthesis.speak(utterance);
+		window.speechSynthesis.cancel();
+		window.speechSynthesis.speak(currentUtterance);
 	}
 
 	function toggleSpeech() {
@@ -87,8 +99,11 @@
 		if (active && autoPlay && text) {
 			const timer = setTimeout(() => {
 				speakText();
-			}, 300);
-			return () => clearTimeout(timer);
+			}, 400);
+			return () => {
+				clearTimeout(timer);
+				stopSpeech();
+			};
 		} else if (!active) {
 			stopSpeech();
 		}
@@ -110,25 +125,25 @@
 				aria-label="Narrador de voz"
 			>
 				{#if isSpeaking && !isPaused}
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 						<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
 						<path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
 						<path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
 					</svg>
 					<span class="pulsing-dot"></span>
 				{:else if isPaused}
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 						<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
 						<path d="M15 9l5 3-5 3V9z"></path>
 					</svg>
 				{:else}
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 						<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
 						<path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
 						<path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
 					</svg>
 				{/if}
-				<span class="narrator-label">{isSpeaking ? (isPaused ? 'Continuar' : 'Narrando...') : 'Escuchar'}</span>
+				<span class="narrator-label">{isSpeaking ? (isPaused ? 'Continuar' : 'Narrando...') : 'VOZ'}</span>
 			</button>
 		</Motion>
 	</div>
@@ -138,39 +153,43 @@
 	.narrator-widget {
 		display: inline-flex;
 		align-items: center;
-		margin-top: 0.5rem;
-		margin-bottom: 0.5rem;
 	}
 
 	.narrator-btn {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		background: rgba(25, 212, 168, 0.12);
-		border: 1px solid rgba(25, 212, 168, 0.3);
+		background: rgba(10, 18, 25, 0.75);
+		border: 1px solid rgba(25, 212, 168, 0.35);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		color: #19d4a8;
-		padding: 6px 12px;
-		border-radius: 20px;
-		font-size: 0.8rem;
-		font-weight: 600;
+		padding: 4px 12px;
+		border-radius: 9999px;
+		font-family: inherit;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
 		cursor: pointer;
-		transition: all 0.2s ease;
+		transition: all 0.25s ease;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 	}
 
 	.narrator-btn:hover {
-		background: rgba(25, 212, 168, 0.25);
-		border-color: rgba(25, 212, 168, 0.5);
+		background: rgba(10, 18, 25, 0.9);
+		border-color: rgba(25, 212, 168, 0.6);
+		color: #2ee6b8;
 	}
 
 	.narrator-btn.is-speaking {
-		background: rgba(25, 212, 168, 0.3);
+		background: rgba(25, 212, 168, 0.2);
 		border-color: #19d4a8;
 		animation: pulse-glow 1.5s infinite;
 	}
 
 	.pulsing-dot {
-		width: 6px;
-		height: 6px;
+		width: 5px;
+		height: 5px;
 		background-color: #19d4a8;
 		border-radius: 50%;
 		box-shadow: 0 0 6px #19d4a8;

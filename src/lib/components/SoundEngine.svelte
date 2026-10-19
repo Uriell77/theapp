@@ -150,6 +150,8 @@
 		bucket = DEFAULT_BUCKET,
 		customTrackMap,
 		loop = true,
+		showHud = true,
+		inline = false,
 		children
 	}: Props = $props();
 
@@ -399,51 +401,53 @@
 	{@render children?.()}
 
 	<!-- Control HUD sutil de atmósfera sonora -->
-	<div class="sound-engine-hud" class:is-hidden-error={hasError} onmouseenter={() => showVolume = true} onmouseleave={() => showVolume = false} role="region" aria-label="Controles de audio">
-		<div class="sound-controls-group" class:expanded={showVolume}>
-			{#if showVolume}
-				<div class="volume-slider-container">
-					<input 
-						type="range" 
-						min="0" 
-						max="1" 
-						step="0.01" 
-						bind:value={volume} 
-						class="volume-slider"
-						aria-label="Volumen"
-					/>
-				</div>
-			{/if}
-			<button
-				type="button"
-				class="sound-hud-badge"
-				class:muted={isMuted}
-				class:playing={isPlaying && !isMuted}
-				onclick={toggleMute}
-				title={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
-				aria-label={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
-			>
-				{#if isMuted}
-					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<line x1="1" y1="1" x2="23" y2="23"></line>
-						<path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
-						<path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
-						<line x1="12" y1="19" x2="12" y2="23"></line>
-						<line x1="8" y1="23" x2="16" y2="23"></line>
-					</svg>
-				{:else}
-					<div class="sound-waves">
-						<span class="bar bar-1"></span>
-						<span class="bar bar-2"></span>
-						<span class="bar bar-3"></span>
+	{#if showHud}
+		<div class="sound-engine-hud" class:inline-hud={inline} class:is-hidden-error={hasError} onmouseenter={() => showVolume = true} onmouseleave={() => showVolume = false} role="region" aria-label="Controles de audio">
+			<div class="sound-controls-group" class:expanded={showVolume}>
+				{#if showVolume}
+					<div class="volume-slider-container">
+						<input 
+							type="range" 
+							min="0" 
+							max="1" 
+							step="0.01" 
+							bind:value={volume} 
+							class="volume-slider"
+							aria-label="Volumen"
+						/>
 					</div>
 				{/if}
-				<span class="hud-label">
-					{isMuted ? 'MUTE' : (showVolume ? Math.round(volume * 100) + '%' : 'AUDIO')}
-				</span>
-			</button>
+				<button
+					type="button"
+					class="sound-hud-badge"
+					class:muted={isMuted}
+					class:playing={isPlaying && !isMuted}
+					onclick={toggleMute}
+					title={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
+					aria-label={isMuted ? 'Activar atmósfera sonora' : 'Silenciar atmósfera sonora'}
+				>
+					{#if isMuted}
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="1" y1="1" x2="23" y2="23"></line>
+							<path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+							<path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+							<line x1="12" y1="19" x2="12" y2="23"></line>
+							<line x1="8" y1="23" x2="16" y2="23"></line>
+						</svg>
+					{:else}
+						<div class="sound-waves">
+							<span class="bar bar-1"></span>
+							<span class="bar bar-2"></span>
+							<span class="bar bar-3"></span>
+						</div>
+					{/if}
+					<span class="hud-label">
+						{isMuted ? 'MUTE' : (showVolume ? Math.round(volume * 100) + '%' : 'AUDIO')}
+					</span>
+				</button>
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>
 
 <style>
@@ -460,6 +464,12 @@
 		z-index: 20;
 		pointer-events: auto;
 		user-select: none;
+	}
+
+	.sound-engine-hud.inline-hud {
+		position: static;
+		top: auto;
+		right: auto;
 	}
 
 	.sound-engine-hud.is-hidden-error {
