@@ -55,8 +55,8 @@
 		if (voices[selectedVoiceIndex]) {
 			currentUtterance.voice = voices[selectedVoiceIndex];
 		}
-		currentUtterance.rate = 0.9;
-		currentUtterance.pitch = 1.0;
+		currentUtterance.rate = 0.7;
+		currentUtterance.pitch = 0.7;
 
 		currentUtterance.onstart = () => {
 			isSpeaking = true;
