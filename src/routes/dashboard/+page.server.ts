@@ -105,7 +105,21 @@ export const actions: Actions = {
 				'navegación a través de un cinturón de asteroides hostil bajo fuego de cazas',
 				'defensa desesperada del hangar principal de la estación orbital',
 				'infiltración en la base lunar fortificada para desactivar el escudo planetario',
-				'salto hiperespacial crítico evadiendo una flota de cruceros estelares'
+				'salto hiperespacial crítico evadiendo una flota de cruceros estelares',
+				'rescate de un piloto capturado en la superficie de un planeta helado bajo tormenta de plasma',
+				'persecución a través de un campo de minas gravitacionales en la órbita de un agujero negro',
+				'persecucion en naves espaciales',
+				'juegos de guerra interplanetaria',
+				'deportes extraterrestres',
+				'carrera de vehiculos levitantes en otro planeta',
+				'combate de flota espacial contra extraterrestres',
+				'exploración de un planeta desconocido con condiciones extremas',
+				'evacuación de un grupo de colonos en un asentamiento en el espacio',
+				'politica de emergencia en un entorno espacial',
+				'proteccion de instalaciones críticas',
+				'terraformacion de planeta distante',
+				'destrucción de una base enemiga en el espacio',
+				'ataque a instalaciones enemigas espaciales en cazas espaciales'
 			],
 			'Rebelión Cyberpunk': [
 				'hackeo en tiempo real de la megatorre corporativa de telecomunicaciones',
@@ -119,7 +133,12 @@ export const actions: Actions = {
 				'cruce a pie a través de una tormenta de arena radiactiva implacable',
 				'saqueo de suministros vitales en un hospital en ruinas vigilado por bestias',
 				'emboscada y neutralización de una banda de saqueadores en el desfiladero',
-				'reparación contrarreloj de un transporte blindado para escapar de una horda mutante'
+				'reparación contrarreloj de un transporte blindado para escapar de una horda mutante',
+				'rescate de un grupo de supervivientes atrapados en un edificio colapsado tras un terremoto nuclear',
+				'escape de bandidos armados en un convoy improvisado a través de un desierto post-apocalíptico',
+				'búsqueda de un refugio seguro en un bosque contaminado por radiación mientras se evitan criaturas mutantes',
+				'defensa de un asentamiento improvisado contra un ataque coordinado de saqueadores y mutantes',
+				'destrucción de mounstruos mutantes en un laboratorio abandonado mientras se busca una cura para la radiación'
 			],
 			'Mundo Steampunk': [
 				'abordaje aéreo entre dirigibles de vapor y engranajes en plena tormenta',
@@ -132,7 +151,25 @@ export const actions: Actions = {
 				'rescate acuático en bote en medio de un diluvio torrencial que inunda la ciudad',
 				'búsqueda y rescate de supervivientes entre los escombros tras un terremoto devastador',
 				'huida frenética del deslave masivo de lodo y roca que desciende por la montaña',
-				'rescate de un náufrago atrapado en un arrecife azotado por olas gigantes'
+				'rescate de un náufrago atrapado en un arrecife azotado por olas gigantes',
+				'evacuación de un pueblo costero ante la inminente llegada de un tsunami colosal',
+				'rescate de un equipo de científicos atrapados en un laboratorio subterráneo durante un terremoto',
+				'evacuación de un tren atrapado en un puente colapsado durante una tormenta eléctrica',
+				'rescate de un grupo de excursionistas atrapados en un cañón durante una avalancha de nieve',
+				'evacuación de un hospital en una ciudad costera ante la amenaza de un huracán categoría 5',
+				'rescate de un equipo de espeleólogos atrapados en una cueva inundada por lluvias torrenciales',
+				'evacuación de un pueblo montañoso ante la amenaza de un alud de rocas y lodo',
+				'rescate de un grupo de escaladores atrapados en un acantilado durante una tormenta de granizo',
+				'evacuación de un aeropuerto internacional ante la llegada de un tornado devastador',
+				'rescate de un equipo de buzos atrapados en una caverna submarina durante un huracán',
+				'evacuación de un centro comercial ante la amenaza de un incendio forestal que se aproxima',
+				'rescate de un grupo de turistas atrapados en un teleférico durante una tormenta eléctrica',
+				'evacuación de un barrio residencial ante la amenaza de un desbordamiento de río tras lluvias intensas',
+				'transporte de suministros de emergencia a una aldea aislada tras un deslizamiento de tierra',
+				'rescate de un grupo de pescadores atrapados en alta mar durante una tormenta de viento y olas gigantes',
+				'mantenimiento de la calma y coordinación de rescate durante un apagón masivo en una ciudad afectada por un huracán',
+				'evacuación de un hospital infantil ante la amenaza de un tornado que se aproxima rápidamente',
+				'rescate de un grupo de montañistas atrapados en un glaciar durante una tormenta de nieve'
 			],
 			'Apocalipsis Zombi': [
 				'defensa desesperada de una barricada improvisada contra una turba de infectados',
@@ -151,12 +188,31 @@ export const actions: Actions = {
 				'rescate masivo de civiles en un monorriel subterráneo a punto de caer al vacío',
 				'batalla aérea a máxima potencia contra el supervillano sobre los rascacielos',
 				'infiltración en el búnker subterráneo del sindicato criminal intergaláctico'
+				'carrera de velocistas a través de la ciudad para detener un ataque nuclear inminente',
+				'rescate de un grupo de rehenes en un tren de alta velocidad controlado por un villano telequinético',
+				'desactivación de un dron de vigilancia masivo que amenaza con revelar la identidad secreta del héroe',
+				'batalla final en la azotea de un rascacielos mientras el villano intenta escapar en un jet propulsado por energía oscura',
+				'infiltración en la base submarina del villano para recuperar un dispositivo de control mental que amenaza a la ciudad',
+				'carrera contrarreloj para salvar a un grupo de científicos atrapados en un laboratorio que está a punto de explotar debido a un experimento fallido',
+				'protección de la ciudad de un ataque coordinado de supervillanos que buscan robar un artefacto de energía inestable',
+				'aventura de viaje en el tiempo para evitar que un villano cambie la historia y cree un futuro distópico',
+				'aventura de viaje interdimensional para detener a un villano que busca fusionar dos realidades y causar caos en ambas'
 			],
 			'Guerra Mundial': [
 				'desembarco en la playa fortificada bajo fuego cruzado de ametralladoras y morteros',
 				'infiltración nocturna tras las líneas enemigas para dinamitar un radar estratégico',
 				'defensa heroica de una trinchera clave soportando el bombardeo incesante',
-				'rescate y evacuación de un escuadrón de reconocimiento cercado en la aldea'
+				'rescate y evacuación de un escuadrón de reconocimiento cercado en la aldea',
+				'persecución en vehículos blindados a través de un desierto minado para interceptar un convoy enemigo',
+				'asalto a un búnker fortificado para recuperar información vital sobre el plan de ataque enemigo',
+				'desactivación de un campo de minas en un paso montañoso para permitir el avance de las tropas aliadas',
+				'protección de un puente estratégico mientras se enfrenta a un ataque aéreo coordinado del enemigo',
+				'rescate de prisioneros de guerra atrapados en un tren blindado bajo fuego enemigo',
+				'evacuación de un hospital de campaña mientras se enfrenta a un bombardeo aéreo y artillería enemiga',
+				'defensa de un puesto avanzado en la frontera mientras se enfrenta a un ataque sorpresa de fuerzas enemigas',
+				'persecución en motocicletas a través de un bosque denso para interceptar un mensajero enemigo con información crítica',
+				'infiltración en un depósito de armas enemigo para sabotear su suministro antes de un ataque masivo',
+				'rescate de un grupo de civiles atrapados en una ciudad sitiada mientras se enfrenta a francotiradores enemigos'
 			],
 			'Vaqueros y Western': [
 				'duelo al mediodía bajo el sol abrasador en la calle principal del pueblo',
@@ -168,7 +224,12 @@ export const actions: Actions = {
 				'infiltración en la fiesta de gala de la embajada internacional con identidad falsa',
 				'burlar sistemas biométricos de alta seguridad y cámaras térmicas en el búnker',
 				'persecución automovilística frenética por carreteras de montaña evadiendo francotiradores',
-				'extracción encubierta del maletín que contiene la lista de agentes dobles'
+				'extracción encubierta del maletín que contiene la lista de agentes dobles',
+				'desactivación de un dispositivo explosivo en un tren de alta velocidad antes de que llegue a la ciudad',
+				'interrogatorio psicológico de un informante clave en un sótano oscuro y aislado',
+				'rescate de un compañero capturado en un almacén abandonado mientras se enfrenta a mercenarios armados',
+				'infiltración en un laboratorio secreto para recuperar un prototipo de arma experimental antes de que caiga en manos enemigas',
+				'intercepción de un mensaje de texto cifrado en un servidor de comunicaciones enemigas'
 			],
 			'Espionaje Internacional': [
 				'intercambio confidencial de microfilmes en una estación ferroviaria bajo la niebla',
