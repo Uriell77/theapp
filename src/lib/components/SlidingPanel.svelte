@@ -98,7 +98,7 @@
 				<div class="container is-fluid h-full flex flex-col px-0">
 					{#if mode === 'form'}
 						<div class="p-4">
-							<h2 class="panel-title">Nueva Tarea</h2>
+							<h2 class="panel-title mb-4">Nueva Tarea</h2>
 							{@render children?.()}
 						</div>
 					{:else if mode === 'details' && taskData}

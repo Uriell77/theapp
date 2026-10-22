@@ -49,16 +49,24 @@ self.addEventListener('activate', (event) => {
 	);
 });
 
+// ── Mensajes desde el cliente ─────────────────────────────────────────────────
+self.addEventListener('message', (event) => {
+	if (event.data && event.data.type === 'SKIP_WAITING') {
+		self.skipWaiting();
+	}
+});
+
 // ── Estrategia de fetch ───────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
 	if (event.request.method !== 'GET') return;
 
 	const url = new URL(event.request.url);
 
-	// Excluir peticiones de API, autenticación y supabase del caché
+	// Excluir peticiones de API, autenticación, supabase y verificación de versión del caché
 	if (
 		url.pathname.startsWith('/api/') ||
 		url.pathname.startsWith('/auth/') ||
+		url.pathname.includes('/_app/version.json') ||
 		url.hostname.includes('supabase') ||
 		url.hostname.includes('googleapis') ||
 		url.hostname.includes('gstatic')
@@ -70,8 +78,10 @@ self.addEventListener('fetch', (event) => {
 		(async () => {
 			const cache = await caches.open(CACHE_NAME);
 
-			// Íconos y assets estáticos: Cache First (prioridad caché para offline/splash)
-			const isStaticAsset =
+			// Activos inmutables del build y archivos estáticos: Cache First
+			const isCacheFirstAsset =
+				ASSETS.includes(url.pathname) ||
+				url.pathname.startsWith('/_app/immutable/') ||
 				ICON_ASSETS.includes(url.pathname) ||
 				url.pathname.startsWith('/favicon_io/') ||
 				url.pathname.endsWith('.png') ||
@@ -80,12 +90,12 @@ self.addEventListener('fetch', (event) => {
 				url.pathname.endsWith('.webp') ||
 				url.pathname === '/manifest.json';
 
-			if (isStaticAsset) {
+			if (isCacheFirstAsset) {
 				const cached = await cache.match(event.request);
 				if (cached) return cached;
 			}
 
-			// Para el resto: Network First con fallback a caché
+			// Para el resto (HTML, datos, navegación): Network First con fallback a caché
 			try {
 				const response = await fetch(event.request);
 				if (response.status === 200) {

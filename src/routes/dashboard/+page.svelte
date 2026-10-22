@@ -181,7 +181,7 @@
 					</div>
 				{/if}
 
-				<div class="field mb-4">
+				<div class="field mb-5">
 					<label
 						class="label"
 						for="taskTitle"
@@ -203,7 +203,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-4">
+				<div class="field mb-5">
 					<label
 						class="label"
 						for="taskTema"
@@ -230,7 +230,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-4">
+				<div class="field mb-5">
 					<label
 						class="label mb-0 pb-0"
 						for="taskNiveles"
@@ -305,10 +305,10 @@
 					whileTap={!isSubmitting ? { scale: 0.98 } : {}}
 					let:motion
 				>
-					<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2 mb-4">
+					<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2 mb-5">
 						<button
 							use:motion
-							class="btn-primary mb-6-is-desktop"
+							class="btn-primary mb-6-is-desktom"
 							style="width: 70%; margin-top: 1.5rem;"
 							type="submit"
 							disabled={isSubmitting}

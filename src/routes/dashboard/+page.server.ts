@@ -293,7 +293,7 @@ NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100%
 
 7. PUNTUACIÓN Y TÍTULOS:
 Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas y punto y coma para separar ideas.
-utiliza inteligentemente los signos de puntuacion como coma (,) guion (-), punto y coma (;) y puntos suspensivos (...) dentro del contenido de la historia para generar sensorialidad y tensión dramática, evitando el uso de puntos (.) dentro del cuerpo del texto de los capitulos.
+utiliza signos de puntuacion como la coma (,) guion (-), punto y coma (;) y puntos suspensivos (...) dentro del cuerpo del texto de la historia para generar sensorialidad y tensión dramática.
 
 REGLAS VISUALES:
 Analiza el clima de tu texto y asigna:
