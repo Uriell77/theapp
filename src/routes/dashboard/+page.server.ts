@@ -284,6 +284,7 @@ A partir del Capítulo 2, PROHIBIDO usar resúmenes o pausas temporales. Inicia 
 
 4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
 Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
+utiliza inteligentemente los signos de puntuacion como coma (,) guion (-), punto y coma (;) y puntos suspensivos (...) para generar sensorialidad y tensión dramática, evitando el uso de puntos (.) dentro del cuerpo del texto de los capitulos.
 
 5. DESENLACE ÉPICO EN EL ÚLTIMO CAPÍTULO (CAPÍTULO ${cantidad_de_niveles} OBLIGATORIO):
 El desenlace de la historia SIEMPRE DEBE ser en el último capítulo (Capítulo ${cantidad_de_niveles}). Este capítulo culminante DEBE narrar el clímax cumbre y la resolución definitiva: la confrontación final, la derrota épica del villano supremo, enemigo formidable o monstruo titánico, la conquista de la fortaleza o la salvación del reino/mundo. NUNCA dejes la historia inconclusa ni en suspenso: la victoria debe ser total, catártica y celebrada.
