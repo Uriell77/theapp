@@ -187,7 +187,7 @@ export const actions: Actions = {
 				'desactivación de un artefacto de disrupción cuántica en la cima de un rascacielos',
 				'rescate masivo de civiles en un monorriel subterráneo a punto de caer al vacío',
 				'batalla aérea a máxima potencia contra el supervillano sobre los rascacielos',
-				'infiltración en el búnker subterráneo del sindicato criminal intergaláctico'
+				'infiltración en el búnker subterráneo del sindicato criminal intergaláctico',
 				'carrera de velocistas a través de la ciudad para detener un ataque nuclear inminente',
 				'rescate de un grupo de rehenes en un tren de alta velocidad controlado por un villano telequinético',
 				'desactivación de un dron de vigilancia masivo que amenaza con revelar la identidad secreta del héroe',
