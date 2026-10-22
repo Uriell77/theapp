@@ -281,7 +281,7 @@ export const actions: Actions = {
 			]
 		};
 
-		function obtenerSugerenciasTema(t: string): string[] {
+		function obtenerSugerenciasTema(t: string): string {
 			let lista = sugerenciasNarrativasPorTema[t];
 			if (!lista) {
 				const temaLower = (t || '').toLowerCase();
@@ -300,20 +300,15 @@ export const actions: Actions = {
 					'rescate o protección de un aliado clave'
 				];
 			}
-			// Mezclar y seleccionar aleatoriamente un subconjunto de sugerencias para dar variedad a cada historia
-			const copia = [...lista];
-			for (let i = copia.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[copia[i], copia[j]] = [copia[j], copia[i]];
-			}
-			const cantidadAElegir = Math.min(copia.length, Math.max(2, Math.floor(Math.random() * 2) + 3));
-			return copia.slice(0, cantidadAElegir);
+			// Seleccionar aleatoriamente una sola sugerencia para centrar la historia en una única misión o trama
+			const indice = Math.floor(Math.random() * lista.length);
+			return lista[indice];
 		}
 
 		// En ambos prompts la cantidad de capítulos/niveles es el valor ingresado más 1
 		// para que el primer capítulo sea la introducción a la tarea, personajes y universo
 		const cantidad_de_niveles = cantidad_de_niveles_raw + 1;
-		const sugerenciasContexto = obtenerSugerenciasTema(tema);
+		const sugerenciaContexto = obtenerSugerenciasTema(tema);
 
 		// --- MOTORES DE PROMPTS ---
 		function generarPromptProductividad(
@@ -321,17 +316,15 @@ export const actions: Actions = {
 			title: string,
 			tema: string,
 			cantidad_de_niveles: number,
-			sugerencias: string[]
+			sugerencia: string
 		) {
-			const sugerenciasFormatted = sugerencias.map((s) => `  - "${s}"`).join('\n');
-
 			return `Eres un director de cine épico y maestro narrador. El usuario "${nombre_de_usuario}" tiene el desafío real: "${title}". Tema de la historia: "${tema}".
 Objetivo: Crea una campaña de acción inmersiva de exactamente ${cantidad_de_niveles} capítulos.
 
-SUGERENCIAS NARRATIVAS Y FRASES DE CONTEXTO POR TEMA:
-Inspírate activamente en el siguiente listado de situaciones y frases de contexto para la temática "${tema}":
-${sugerenciasFormatted}
-Utiliza estas frases y situaciones como combustible para tejer tramas complejas, ricas, variadas y con giros dramáticos inesperados a lo largo de los capítulos.
+SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
+Inspírate activamente en la siguiente misión o trama central para la temática "${tema}":
+  - "${sugerencia}"
+La historia DEBE centrarse exclusivamente en torno a esta única misión o trama principal a lo largo de los capítulos, utilizándola como eje central del conflicto con giros dramáticos inesperados.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
@@ -353,8 +346,7 @@ El desenlace de la historia SIEMPRE DEBE ser en el último capítulo (Capítulo 
 NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}".
 
 7. PUNTUACIÓN Y TÍTULOS:
-Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas y punto y coma para separar ideas.
-utiliza signos de puntuacion con espacion a los lados como la coma ( , ) guion ( - ), punto y coma ( ; ) y puntos suspensivos ( . . . ) dentro del cuerpo del texto de la historia para generar sensorialidad y tensión dramática.
+Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas ( , ) y punto y coma ( ; ) para separar ideas y generar pausas dramaticas considerando la lectura por voz.
 
 REGLAS VISUALES:
 Analiza el clima de tu texto y asigna:
@@ -386,17 +378,15 @@ FORMATO JSON OBLIGATORIO:
 			title: string,
 			tema: string,
 			cantidad_de_niveles: number,
-			sugerencias: string[]
+			sugerencia: string
 		) {
-			const sugerenciasFormatted = sugerencias.map((s) => `  - "${s}"`).join('\n');
-
 			return `Eres un pedagogo gamificador y maestro de aventuras formativas. El usuario "${nombre_de_usuario}" quiere APRENDER esto en la vida real: "${title}". Enfoque/Tema: "${tema}".
 Objetivo: Crea un TUTORIAL SECUENCIAL de exactamente ${cantidad_de_niveles} lecciones/capítulos.
 
-SUGERENCIAS NARRATIVAS Y FRASES DE CONTEXTO POR TEMA:
-Inspírate en este listado de frases y situaciones de contexto para la temática "${tema}":
-${sugerenciasFormatted}
-Aprovecha estas situaciones para enriquecer el contexto, las pruebas y los retos pedagógicos dentro de la ambientación.
+SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
+Inspírate en la siguiente situación o misión de aprendizaje central para la temática "${tema}":
+  - "${sugerencia}"
+La aventura DEBE centrarse en torno a esta única misión o trama de aprendizaje principal a lo largo de las lecciones, utilizándola para enriquecer el contexto, las pruebas y los retos pedagógicos dentro de la ambientación.
 
 REGLAS PEDAGÓGICAS (TUTOR GAMIFICADO):
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
@@ -451,8 +441,8 @@ FORMATO JSON OBLIGATORIO:
 
 		const esModoAprendizaje = temasDeAprendizaje.includes(tema);
 		const promptFinal = esModoAprendizaje
-			? generarPromptTutor(nombre_de_usuario, title, tema, cantidad_de_niveles, sugerenciasContexto)
-			: generarPromptProductividad(nombre_de_usuario, title, tema, cantidad_de_niveles, sugerenciasContexto);
+			? generarPromptTutor(nombre_de_usuario, title, tema, cantidad_de_niveles, sugerenciaContexto)
+			: generarPromptProductividad(nombre_de_usuario, title, tema, cantidad_de_niveles, sugerenciaContexto);
 
 
 		// --- SISTEMA DE ETIQUETAS DE RESERVA ---
