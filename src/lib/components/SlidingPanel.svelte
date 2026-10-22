@@ -126,7 +126,7 @@
 								<div class="narrative-container flex-grow overflow-hidden px-2 pb-2">
 									<SoundEngine effect={defeatCinematicaParsed?.effect || 'ash-storm'} mood={defeatCinematicaParsed?.mood || 'defeat'} active={isOpen}>
 										<Visualizer effectConfig={defeatEffectConfig}>
-											<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+											<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 0px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
 												<Narrador text={`${parsedDefeat.title || ''}. ${parsedDefeat.body || ''}`} active={isOpen} />
 												{#if parsedDefeat.title}
 													<div class="chapter-badge-wrapper mb-2">
@@ -152,7 +152,7 @@
 													{@const parsedCinematica = (() => { try { return JSON.parse(level.cinematica[taskData.status]); } catch { return {}; } })()}
 													<SoundEngine effect={parsedCinematica.effect} mood={parsedCinematica.mood} active={isOpen}>
 														<Visualizer effectConfig={`effect:${parsedCinematica.effect};color:${parsedCinematica.color};speed:${parsedCinematica.speed};lighting:${parsedCinematica.lighting};mood:${parsedCinematica.mood}`}>
-															<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+															<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 0px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
 																<Narrador text={`${parsed.title || ''}. ${parsed.body || ''}`} active={isOpen} />
 																{#if parsed.title}
 																	<div class="chapter-badge-wrapper mb-2">
@@ -168,7 +168,7 @@
 												{:else}
 													<SoundEngine effect="space-cockpit" mood="intro" active={isOpen}>
 														<Visualizer>
-															<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 4px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
+															<div class="mb-3 pb-3 levelcontent hud-container {isKids ? 'kids-narrative' : 'modern-narrative'}" style="border-left: 0px solid {isKids ? '#ffd166' : 'var(--accent-primary, #19d4a8)'};">
 																<Narrador text={`${parsed.title || ''}. ${parsed.body || ''}`} active={isOpen} />
 																{#if parsed.title}
 																	<div class="chapter-badge-wrapper mb-2">
@@ -349,9 +349,16 @@
         /* Asegura contraste agresivo para que el texto siempre se lea */
         background: linear-gradient(to top, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.2) 100%);
         padding: 1.2rem;
-	  border-left: 4px solid var(--accent-primary, #19d4a8);
         pointer-events: auto; /* Permite al usuario hacer scroll manual */
 		border-radius: 0 0 0px 0px;
+    }
+
+    .narrative-container .narrative-body-text {
+	  /* Asegura que el texto se lea bien en cualquier fondo */
+	  color: var(--text-main, #ffffff);
+	  border-left: 4px solid var(--accent-primary, #19d4a8);
+	  padding-left: 0.75rem;
+	  margin-top: 2rem;
     }
     
 	.flex-grow {
