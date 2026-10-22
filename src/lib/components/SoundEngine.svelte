@@ -459,7 +459,7 @@
 
 	.sound-engine-hud {
 		position: absolute;
-		top: 30px;
+		top: 20px;
 		right: 14px;
 		z-index: 20;
 		pointer-events: auto;
