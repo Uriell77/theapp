@@ -90,34 +90,5 @@
 
 
 <style>
-	.profile-bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.5rem 1rem;
-		background-color: var(--background-secondary);
-		border-radius: 0.5rem;
-	}
 
-	.profile-btn {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		background-color: var(--background-accent);
-		color: var(--text-primary);
-		border: none;
-		padding: 0.4rem 0.8rem;
-		border-radius: 0.5rem;
-		cursor: pointer;
-		font-size: 0.9rem;
-		font-weight: bold;
-	}
-
-	.nav-pills {
-		display: flex;
-		gap: 1rem;
-		margin-top: 1rem;
-		width: 100%;
-	}
-
-	</style>
+</style>
