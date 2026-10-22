@@ -79,7 +79,7 @@
 	</div>
 
 	<!-- Nav Pills -->
-	<div class="nav-pills">
+	<div class="nav-pills ">
 		<a href="/" class="nav-pill {isHome ? 'active' : ''}" onclick={playClick}>Inicio</a>
 		<a href="/dashboard" class="nav-pill {isDashboard ? 'active' : ''}" onclick={playClick}>Dashboard</a>
 		<a href="/dashboard" class="nav-pill" onclick={playClick}>Proyectos</a>
@@ -87,3 +87,37 @@
 
 	{@render children?.()}
 </header>
+
+
+<style>
+	.profile-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.5rem 1rem;
+		background-color: var(--background-secondary);
+		border-radius: 0.5rem;
+	}
+
+	.profile-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background-color: var(--background-accent);
+		color: var(--text-primary);
+		border: none;
+		padding: 0.4rem 0.8rem;
+		border-radius: 0.5rem;
+		cursor: pointer;
+		font-size: 0.9rem;
+		font-weight: bold;
+	}
+
+	.nav-pills {
+		display: flex;
+		gap: 1rem;
+		margin-top: 1rem;
+		width: 100%;
+	}
+
+	</style>
