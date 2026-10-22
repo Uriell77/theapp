@@ -349,6 +349,7 @@
         /* Asegura contraste agresivo para que el texto siempre se lea */
         background: linear-gradient(to top, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.2) 100%);
         padding: 1.2rem;
+	  border-left: 4px solid var(--accent-primary, #19d4a8);
         pointer-events: auto; /* Permite al usuario hacer scroll manual */
 		border-radius: 0 0 0px 0px;
     }
