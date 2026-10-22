@@ -819,8 +819,8 @@ function getRgbString(colorTag: string): string {
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        padding: 1.5rem;
-        background: linear-gradient(to top, rgba(3, 3, 6, 0.95) 0%, rgba(3, 3, 6, 0.45) 55%, transparent 100%);
+        padding: 0.5rem;
+        background: linear-gradient(to top, rgba(3, 3, 6, 0.8) 0%, rgba(3, 3, 6, 0.25) 55%, transparent 100%);
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: rgba(255, 255, 255, 0.3) transparent;

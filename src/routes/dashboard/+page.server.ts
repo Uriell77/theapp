@@ -284,7 +284,6 @@ A partir del Capítulo 2, PROHIBIDO usar resúmenes o pausas temporales. Inicia 
 
 4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
 Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
-utiliza inteligentemente los signos de puntuacion como coma (,) guion (-), punto y coma (;) y puntos suspensivos (...) para generar sensorialidad y tensión dramática, evitando el uso de puntos (.) dentro del cuerpo del texto de los capitulos.
 
 5. DESENLACE ÉPICO EN EL ÚLTIMO CAPÍTULO (CAPÍTULO ${cantidad_de_niveles} OBLIGATORIO):
 El desenlace de la historia SIEMPRE DEBE ser en el último capítulo (Capítulo ${cantidad_de_niveles}). Este capítulo culminante DEBE narrar el clímax cumbre y la resolución definitiva: la confrontación final, la derrota épica del villano supremo, enemigo formidable o monstruo titánico, la conquista de la fortaleza o la salvación del reino/mundo. NUNCA dejes la historia inconclusa ni en suspenso: la victoria debe ser total, catártica y celebrada.
@@ -294,6 +293,7 @@ NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100%
 
 7. PUNTUACIÓN Y TÍTULOS:
 Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas y punto y coma para separar ideas.
+utiliza inteligentemente los signos de puntuacion como coma (,) guion (-), punto y coma (;) y puntos suspensivos (...) para generar sensorialidad y tensión dramática, evitando el uso de puntos (.) dentro del cuerpo del texto de los capitulos.
 
 REGLAS VISUALES:
 Analiza el clima de tu texto y asigna:
