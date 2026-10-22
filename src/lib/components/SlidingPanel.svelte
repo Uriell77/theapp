@@ -359,6 +359,7 @@
 	  border-left: 4px solid var(--accent-primary, #19d4a8);
 	  padding-left: 0.75rem;
 	  margin-top: 2rem;
+	  margin-bottom: 4rem;
     }
     
 	.flex-grow {
