@@ -181,7 +181,7 @@
 					</div>
 				{/if}
 
-				<div class="field mb-6">
+				<div class="field mb-6-mobile mb-3-desktop">
 					<label
 						class="label"
 						for="taskTitle"
@@ -203,7 +203,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-6">
+				<div class="field mb-6-mobile mb-3-desktop">
 					<label
 						class="label"
 						for="taskTema"
@@ -230,7 +230,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-6">
+				<div class="field mb-6-mobile mb-3-desktop">
 					<label
 						class="label mb-0 pb-0"
 						for="taskNiveles"
