@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Tabla de usuarios
@@ -24,7 +24,7 @@ export const tasks = pgTable('tasks', {
 		.references(() => users.id, { onDelete: 'cascade' })
 		.notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull()
-});
+}, (table) => [index('tasks_user_id_idx').on(table.userId)]);
 
 // Tabla de niveles
 export const levels = pgTable('levels', {
