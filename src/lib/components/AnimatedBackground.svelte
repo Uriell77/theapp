@@ -1,7 +1,7 @@
 <script lang="ts">
 	let { variant = 'hero' }: { variant?: 'hero' | 'auth' } = $props();
 
-	const orbs =
+	let orbs = $derived(
 		variant === 'hero'
 			? [
 					{ size: 420, x: '8%', y: '12%', color: 'rgba(25, 212, 168, 0.14)', dur: 14, delay: 0 },
@@ -11,19 +11,22 @@
 			: [
 					{ size: 380, x: '18%', y: '20%', color: 'rgba(25, 212, 168, 0.16)', dur: 15, delay: 0 },
 					{ size: 260, x: '70%', y: '58%', color: 'rgba(25, 212, 168, 0.10)', dur: 19, delay: 4 }
-				];
+				]
+	);
 
-	const particles = Array.from({ length: variant === 'hero' ? 18 : 12 }, (_, i) => ({
-		left: (i * 53) % 100,
-		top: (i * 37) % 100,
-		size: 2 + (i % 3),
-		dur: 8 + (i % 5) * 2,
-		delay: (i % 7) * 1.3
-	}));
+	let particles = $derived(
+		Array.from({ length: variant === 'hero' ? 18 : 12 }, (_, i) => ({
+			left: (i * 53) % 100,
+			top: (i * 37) % 100,
+			size: 2 + (i % 3),
+			dur: 8 + (i % 5) * 2,
+			delay: (i % 7) * 1.3
+		}))
+	);
 </script>
 
 <div class="bg-layer {variant}" aria-hidden="true">
-	{#each orbs as orb}
+	{#each orbs as orb, i (i)}
 		<span
 			class="orb"
 			style="width: {orb.size}px; height: {orb.size}px; left: {orb.x}; top: {orb.y};
@@ -31,7 +34,7 @@
 				animation-duration: {orb.dur}s; animation-delay: -{orb.delay}s;"
 		></span>
 	{/each}
-	{#each particles as p}
+	{#each particles as p, i (i)}
 		<span
 			class="particle"
 			style="left: {p.left}%; top: {p.top}%; width: {p.size}px; height: {p.size}px;

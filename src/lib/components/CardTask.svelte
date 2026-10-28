@@ -162,26 +162,6 @@
 			</div>
 
 
-			<!-- SECCION DE DETALLES DE TAREA (DESACTIVADA) -->
-<!-- 			<div style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-				<span>Temática:</span>
-				<span class="{isKids ? 'font-kids' : ''}" style="color: {isKids ? '#ffd166' : 'white'}; font-weight: 500; text-transform: capitalize;">
-					{displayTema}
-				</span>
-			</div>
-
-			<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
-				<span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-					{isKids ? 'Cuento:' : 'Capítulo:'}
-				</span>
-				<span
-					class="{isKids ? 'font-kids chapter-kids-title' : 'font-modern-chapter chapter-modern-title'}"
-					style="color: {isKids ? '#ffeaa7' : '#ffffff'}; font-size: 0.95rem; font-weight: {isKids ? '600' : '700'}; text-transform: capitalize;"
-				>
-					{displayChapterTitle}
-				</span>
-			</div> -->
-
 			<!-- Progress Timeline -->
 			<div class="progress-timeline">
 				<div
@@ -327,26 +307,6 @@
 		z-index: 10;
 	}
 
-	/* Reflejo sutil de glassmorfismo */
-	.glass-reflection {
-		position: absolute;
-		top: -45%;
-		left: -20%;
-		width: 140%;
-		height: 90%;
-		background: linear-gradient(
-			115deg,
-			transparent 0%,
-			rgba(255, 255, 255, 0.02) 28%,
-			rgba(255, 255, 255, 0.08) 36%,
-			rgba(255, 255, 255, 0.02) 44%,
-			transparent 55%
-		);
-		transform: rotate(-14deg);
-		pointer-events: none;
-		z-index: 2;
-	}
-
 	:global(.project-card) {
 		position: relative;
 		overflow: hidden;
@@ -379,20 +339,6 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-
-	.chapter-modern-title {
-		font-family: var(--font-modern-title);
-		font-weight: 700;
-		color: #ffffff;
-		letter-spacing: 0.02em;
-	}
-
-	.chapter-kids-title {
-		font-family: var(--font-kids);
-		font-weight: 600;
-		color: #ffeaa7;
-		letter-spacing: 0.015em;
 	}
 
 	.badge-kids {

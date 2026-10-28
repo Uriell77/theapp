@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { Motion } from 'svelte-motion';
-	import { getProjectCategory, type ProjectCategoryKey } from '$lib/chapterUtils';
+	import { capitalizeWords } from '$lib/chapterUtils';
 
 	interface Props {
 		children?: Snippet;
@@ -22,42 +22,57 @@
 
 	let totalProjectsCount = $derived(validProjects.length);
 
-	// Categorías de Proyectos:
-	// 1. Proyectos generales
-	// 2. Infantil
-	// 3. Aprendizaje (adolescente, habilidades, conocimiento universal)
-	let projectCategories = $derived.by(() => {
-		const counts: Record<ProjectCategoryKey, { count: number; color: string; label: string; tooltip: string }> = {
-			general: {
-				count: 0,
-				color: '#19d4a8',
-				label: 'Proyectos Generales',
-				tooltip: 'Fantasía, ciencia ficción, aventura, terror, misterio, etc.'
-			},
-			kids: {
-				count: 0,
-				color: '#ffd166',
-				label: 'Infantil',
-				tooltip: 'Aprendizaje infantil'
-			},
-			learning: {
-				count: 0,
-				color: '#818cf8',
-				label: 'Aprendizaje',
-				tooltip: 'Aprendizaje adolescente, de habilidades y conocimiento universal'
-			}
-		};
+	// Mapa de colores predefinidos para temas conocidos
+	const themeColors: Record<string, string> = {
+		'guerra espacial': '#3b82f6',
+		'apocalipsis zombi': '#ef4444',
+		'espionaje': '#10b981',
+		'fantasía': '#8b5cf6',
+		'ciencia ficción': '#06b6d4',
+		'aventura': '#f59e0b',
+		'terror': '#4b5563',
+		'misterio': '#ec4899',
+		'infantil': '#ffd166',
+		'aprendizaje': '#818cf8',
+		'desarrollo personal': '#19d4a8',
+		'historia': '#d97706',
+		'romance': '#f472b6',
+		'acción': '#dc2626',
+		'comedia': '#fbbf24'
+	};
 
+	// Paleta de colores para temas sin color predefinido
+	const defaultColors = [
+		'#19d4a8', '#ffd166', '#818cf8', '#60a5fa', 
+		'#e76666', '#a78bfa', '#fb7185', '#f472b6', 
+		'#34d399', '#fbbf24', '#38bdf8', '#f87171'
+	];
+
+	// Estadísticas por Tema (Dinámico)
+	let projectCategories = $derived.by(() => {
+		const themeCounts: Record<string, number> = {};
+		
 		validProjects.forEach((t) => {
-			const cat = getProjectCategory(t?.tema);
-			counts[cat].count += 1;
+			const theme = t?.tema?.trim();
+			if (theme && theme.toLowerCase() !== 'sin tema') {
+				const themeKey = theme.toLowerCase();
+				themeCounts[themeKey] = (themeCounts[themeKey] || 0) + 1;
+			}
 		});
 
-		return [
-			{ key: 'general' as const, ...counts.general },
-			{ key: 'kids' as const, ...counts.kids },
-			{ key: 'learning' as const, ...counts.learning }
-		];
+		return Object.entries(themeCounts)
+			.map(([themeKey, count], index) => {
+				const originalTheme = validProjects.find(t => t?.tema?.toLowerCase().trim() === themeKey)?.tema || themeKey;
+				const color = themeColors[themeKey] || defaultColors[index % defaultColors.length];
+				return {
+					key: themeKey,
+					label: capitalizeWords(originalTheme),
+					count,
+					color,
+					tooltip: `Total de proyectos sobre ${capitalizeWords(originalTheme)}: ${count}`
+				};
+			})
+			.sort((a, b) => b.count - a.count); // Ordenar de mayor a menor
 	});
 
 	// Conic-gradient para el ring chart de categorías de proyectos
@@ -366,6 +381,21 @@
 		flex-direction: column;
 		gap: 4px;
 		width: 100%;
+		max-height: 110px;
+		overflow-y: auto;
+		padding-right: 4px;
+		box-sizing: border-box;
+		min-width: 0;
+	}
+
+	/* Estilo para el scrollbar fino */
+	.stats-list::-webkit-scrollbar {
+		width: 3px;
+	}
+
+	.stats-list::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 3px;
 	}
 
 	.stat-row {
@@ -374,6 +404,7 @@
 		align-items: center;
 		width: 100%;
 		line-height: 1.25;
+		min-width: 0;
 	}
 
 	.stat-indicator {
@@ -391,6 +422,8 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		min-width: 0;
+		flex: 1;
 	}
 
 	@media (max-width: 400px) {
