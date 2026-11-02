@@ -15,6 +15,13 @@
       "when": 1786840554782,
       "tag": "0001_update_users_table",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793569399813,
+      "tag": "0002_fuzzy_logan",
+      "breakpoints": true
     }
   ]
 }

@@ -7,24 +7,29 @@ export const users = pgTable('users', {
 	nombre_de_usuario: text('nombre_de_usuario').notNull(),
 	email: text('email').unique().notNull(),
 	password: text('password').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull()
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	aliado: text('aliado')
 });
 
 // Tabla de Tareas
-export const tasks = pgTable('tasks', {
-	id: serial('id').primaryKey(),
-	title: text('title').notNull(),
-	description: text('description'),
-	tema: text('tema').notNull(),
-	cantidad_de_niveles: integer('cantidad_de_niveles').notNull(),
-	ilustracion: text('ilustracion'),
-	status: text('status').default('0').notNull(),
-	isArchived: boolean('is_archived').default(false).notNull(),
-	userId: text('user_id')
-		.references(() => users.id, { onDelete: 'cascade' })
-		.notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull()
-}, (table) => [index('tasks_user_id_idx').on(table.userId)]);
+export const tasks = pgTable(
+	'tasks',
+	{
+		id: serial('id').primaryKey(),
+		title: text('title').notNull(),
+		description: text('description'),
+		tema: text('tema').notNull(),
+		cantidad_de_niveles: integer('cantidad_de_niveles').notNull(),
+		ilustracion: text('ilustracion'),
+		status: text('status').default('0').notNull(),
+		isArchived: boolean('is_archived').default(false).notNull(),
+		userId: text('user_id')
+			.references(() => users.id, { onDelete: 'cascade' })
+			.notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => [index('tasks_user_id_idx').on(table.userId)]
+);
 
 // Tabla de niveles
 export const levels = pgTable('levels', {
