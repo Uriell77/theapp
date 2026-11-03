@@ -24,6 +24,8 @@ export interface SafeUser {
 	nombre_de_usuario: string;
 	email: string;
 	createdAt: Date;
+	aliados?: string | null;
+	avatarUrl?: string | null;
 }
 
 /**
@@ -108,7 +110,8 @@ export async function authenticateUser(cookies: Cookies): Promise<SafeUser | nul
 				id: users.id,
 				nombre_de_usuario: users.nombre_de_usuario,
 				email: users.email,
-				createdAt: users.createdAt
+				createdAt: users.createdAt,
+				aliados: users.aliados
 			})
 			.from(users)
 			.where(eq(users.id, userId))

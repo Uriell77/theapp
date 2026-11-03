@@ -8,6 +8,9 @@
 	import { supabase } from '$lib/supabaseClient';
 	import Estadistic from '$lib/components/Estadistic.svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import SeccionAjustes from '$lib/components/SeccionAjustes.svelte';
+	import { page } from '$app/state';
+	import { playClick } from '$lib/audio';
 
 	const tematicasAgrupadas = [
 		{
@@ -80,8 +83,14 @@
 	let tasks = $derived(allTasks.filter((t: any) => !t.isArchived));
 	let archivedTasks = $derived(allTasks.filter((t: any) => t.isArchived));
 
-	// Pestaña activa del nav
-	let activeTab = $state<'dashboard' | 'archivo'>('dashboard');
+	// Pestaña activa del nav: 'dashboard' | 'archivo' | 'ajustes'
+	let activeTab = $state<'dashboard' | 'archivo' | 'ajustes'>(
+		page.url.searchParams.get('tab') === 'ajustes'
+			? 'ajustes'
+			: page.url.searchParams.get('tab') === 'archivo'
+				? 'archivo'
+				: 'dashboard'
+	);
 
 	let isPanelOpen = $state(false);
 	let panelMode = $state<'form' | 'details'>('form');
@@ -360,7 +369,7 @@
 				</div>
 			{/if}
 
-		{:else}
+		{:else if activeTab === 'archivo'}
 			<!-- ===== SECCIÓN ARCHIVO ===== -->
 			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
 				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
@@ -393,14 +402,34 @@
 					</p>
 				</div>
 			{/if}
+
+		{:else if activeTab === 'ajustes'}
+			<!-- ===== SECCIÓN AJUSTES ===== -->
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+					⚙️ Ajustes
+				</h2>
+				<span class="badge-pill" style="background: rgba(25, 212, 168, 0.15); color: var(--accent-primary); border: 1px solid rgba(25, 212, 168, 0.3);">
+					Perfil y Cuenta
+				</span>
+			</div>
+
+			<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+				Administra tu avatar, información de cuenta y compañero aliado para las historias narrativas.
+			</p>
+
+			<SeccionAjustes user={data.user} />
 		{/if}
 
 		<!-- ===== BOTTOM NAV ===== -->
-		<nav class="bottom-nav ">
+		<nav class="bottom-nav">
 			<!-- Dashboard -->
 			<button
 				class="nav-item {activeTab === 'dashboard' ? 'active' : ''}"
-				onclick={() => (activeTab = 'dashboard')}
+				onclick={() => {
+					playClick();
+					activeTab = 'dashboard';
+				}}
 				aria-label="Dashboard"
 			>
 				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -412,7 +441,10 @@
 			<!-- Tareas -->
 			<button
 				class="nav-item"
-				onclick={() => (activeTab = 'dashboard')}
+				onclick={() => {
+					playClick();
+					activeTab = 'dashboard';
+				}}
 				aria-label="Tareas"
 			>
 				<svg
@@ -437,7 +469,10 @@
 			<!-- Archivo (reemplaza Calendario) -->
 			<button
 				class="nav-item {activeTab === 'archivo' ? 'active' : ''}"
-				onclick={() => (activeTab = 'archivo')}
+				onclick={() => {
+					playClick();
+					activeTab = 'archivo';
+				}}
 				aria-label="Archivo"
 				style="position: relative;"
 			>
@@ -462,7 +497,14 @@
 			</button>
 
 			<!-- Ajustes -->
-			<button class="nav-item" aria-label="Ajustes">
+			<button
+				class="nav-item {activeTab === 'ajustes' ? 'active' : ''}"
+				onclick={() => {
+					playClick();
+					activeTab = 'ajustes';
+				}}
+				aria-label="Ajustes"
+			>
 				<svg
 					width="22"
 					height="22"

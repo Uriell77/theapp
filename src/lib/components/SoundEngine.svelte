@@ -136,6 +136,10 @@
 		customTrackMap?: Record<string, string>;
 		/** Si debe reproducir en bucle la atmósfera */
 		loop?: boolean;
+		/** Si debe mostrar el HUD flotante de control de sonido */
+		showHud?: boolean;
+		/** Si debe mostrarse en línea */
+		inline?: boolean;
 		/** Componente hijo a envolver (típicamente Visualizer) */
 		children?: Snippet;
 	}

@@ -17,20 +17,26 @@
 	<!-- Top Profile Bar -->
 	<div class="profile-bar">
 		<div class="is-flex is-align-items-center gap-3">
-			<figure class="image is-44x44 mr-3" style="width: 44px; height: 44px;">
+			<figure class="image is-44x44 mr-3" style="width: 44px; height: 44px; margin: 0;">
 				<img 
 					class="is-rounded" 
-					src="/emptyavatar.avif" 
+					src={user?.avatarUrl || '/emptyavatar.avif'} 
 					alt="Avatar" 
+					onerror={(e) => {
+						const target = e.currentTarget as HTMLImageElement;
+						if (target.src !== '/emptyavatar.avif') {
+							target.src = '/emptyavatar.avif';
+						}
+					}}
 					style="border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 50%; width: 44px; height: 44px; object-fit: cover; background: #1a2a30;"
 				/>
 			</figure>
 			<div>
 				<div class="has-text-weight-bold has-text-white" style="font-size: 1.05rem; line-height: 1.2;">
-					{user?.nombre_de_usuario || 'Uriell77'}
+					{user?.nombre_de_usuario || 'Usuario'}
 				</div>
 				<div style="color: var(--text-muted); font-size: 0.8rem;">
-					{user?.email || 'hermoso77@gmail.com'}
+					{user?.email || 'Sin correo'}
 				</div>
 			</div>
 		</div>
@@ -44,13 +50,14 @@
 							onclick={playClick}
 							type="submit"
 							class="profile-btn"
+							title="Cerrar sesión"
 						>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
 								<polyline points="16 17 21 12 16 7"></polyline>
 								<line x1="21" y1="12" x2="9" y2="12"></line>
 							</svg>
-							<span>Cerrar sesión</span>
+							<span>Salir</span>
 						</button>
 					</Motion>
 				</form>
@@ -79,7 +86,7 @@
 	</div>
 
 	<!-- Nav Pills -->
-	<div class="nav-pills ">
+	<div class="nav-pills">
 		<a href="/" class="nav-pill {isHome ? 'active' : ''}" onclick={playClick}>Inicio</a>
 		<a href="/dashboard" class="nav-pill {isDashboard ? 'active' : ''}" onclick={playClick}>Dashboard</a>
 		<a href="/dashboard" class="nav-pill" onclick={playClick}>Proyectos</a>

@@ -8,7 +8,7 @@ export const users = pgTable('users', {
 	email: text('email').unique().notNull(),
 	password: text('password').notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
-	aliado: text('aliado')
+	aliados: text('aliados')
 });
 
 // Tabla de Tareas

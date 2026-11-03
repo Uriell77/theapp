@@ -1,27 +1,32 @@
 import { db } from '$lib/server/db';
 import { users, tasks, levels } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, not, inArray } from 'drizzle-orm';
 import { fail, redirect } from '@sveltejs/kit';
 import { GoogleGenAI } from '@google/genai';
 import { GEMINI_API_KEY } from '$env/static/private';
 import { formatChapterForStorage } from '$lib/chapterUtils';
+import { supabase } from '$lib/supabaseClient';
+import { clearSessionCookie } from '$lib/server/auth';
+import bcrypt from 'bcryptjs';
 import type { PageServerLoad, Actions } from './$types';
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
+	const user = locals.user;
+	if (!user) {
 		throw redirect(303, '/auth');
 	}
 
 	// Consulta relacional directa con Drizzle
 	const userRecord = await db.query.users.findFirst({
-		where: eq(users.id, locals.user.id),
+		where: eq(users.id, user.id),
 		columns: {
 			id: true,
 			nombre_de_usuario: true,
 			email: true,
-			createdAt: true
+			createdAt: true,
+			aliados: true
 		},
 		with: {
 			tasks: {
@@ -37,8 +42,23 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(303, '/auth');
 	}
 
+	let avatarUrl: string | null = null;
+	try {
+		const { data: avatarFiles } = await supabase.storage.from('MGAvatars').list('', { search: user.id });
+		const matched = avatarFiles?.find((f) => f.name.startsWith(user.id));
+		if (matched) {
+			const base = supabase.storage.from('MGAvatars').getPublicUrl(matched.name).data.publicUrl;
+			avatarUrl = `${base}?v=${encodeURIComponent(matched.updated_at || '1')}`;
+		}
+	} catch (err) {
+		console.error('Error al obtener avatar en dashboard:', err);
+	}
+
 	return {
-		user: userRecord
+		user: {
+			...userRecord,
+			avatarUrl
+		}
 	};
 };
 
@@ -310,14 +330,43 @@ export const actions: Actions = {
 		const cantidad_de_niveles = cantidad_de_niveles_raw + 1;
 		const sugerenciaContexto = obtenerSugerenciasTema(tema);
 
+		// Obtener datos del usuario (incluyendo el aliado registrado en la base de datos si existe)
+		const [currentUser] = await db
+			.select({
+				nombre_de_usuario: users.nombre_de_usuario,
+				aliados: users.aliados
+			})
+			.from(users)
+			.where(eq(users.id, locals.user.id))
+			.limit(1);
+
+		const nombreFinal = nombre_de_usuario || currentUser?.nombre_de_usuario || 'Aventurero';
+		const aliado = currentUser?.aliados?.trim() || null;
+
 		// --- MOTORES DE PROMPTS ---
 		function generarPromptProductividad(
 			nombre_de_usuario: string,
 			title: string,
 			tema: string,
 			cantidad_de_niveles: number,
-			sugerencia: string
+			sugerencia: string,
+			aliado?: string | null
 		) {
+			const directivaPersonajesSoporte = aliado
+				? `2. PERSONAJE DE SOPORTE (ALIADO EN LA VIDA REAL):
+El usuario ha establecido a su aliado de la vida real: "${aliado}".
+Es OBLIGATORIO incluir a "${aliado}" como el personaje de soporte principal y compañero clave de "${nombre_de_usuario}". Asígnale un rol de apoyo en la trama perfectamente adaptado al tema elegido ("${tema}") (por ejemplo, copiloto estelar o especialista táctico en Guerra Espacial, escudero leal en Cruzada Medieval, compañero de armas en Dinastía Samurái, etc.). Debe interactuar y dialogar activamente con "${nombre_de_usuario}", advertir peligros, colaborar codo a codo en cada reto y aportar habilidades de apoyo decisivas.`
+				: `2. PERSONAJES DE SOPORTE:
+Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, escuderos, inteligencias artificiales tácticas, guerreros veteranos, pilotos, mascotas o exploradores). Deben tener nombres o roles distintivos, dialogar activamente con "${nombre_de_usuario}", aportar habilidades únicas, advertir peligros y luchar hombro a hombro, enriqueciendo la historia con dinámicas colaborativas.`;
+
+			const introCapitulo1 = aliado
+				? `El Capítulo 1 DEBE ser la introducción a la gran tarea/desafío. Presenta con fuerza y detalle al protagonista ("${nombre_de_usuario}"), a su aliado y compañero de soporte ("${aliado}"), y explica vívidamente el universo de la historia: las reglas del mundo, el contexto de la narrativa, qué está en juego y cuál es la gran amenaza, fortaleza o villano supremo al que se enfrentan. Establece las bases épicas antes de que comience el avance.`
+				: `El Capítulo 1 DEBE ser la introducción a la gran tarea/desafío. Presenta con fuerza y detalle al protagonista ("${nombre_de_usuario}"), a sus personajes de soporte o aliados, y explica vívidamente el universo de la historia: las reglas del mundo, el contexto de la narrativa, qué está en juego y cuál es la gran amenaza, fortaleza o villano supremo al que se enfrentan. Establece las bases épicas antes de que comience el avance.`;
+
+			const capitulo1Json = aliado
+				? `Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, a su aliado ${aliado} y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas`
+				: `Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, sus aliados y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas`;
+
 			return `Eres un director de cine épico y maestro narrador. El usuario "${nombre_de_usuario}" tiene el desafío real: "${title}". Tema de la historia: "${tema}".
 Objetivo: Crea una campaña de acción inmersiva de exactamente ${cantidad_de_niveles} capítulos.
 
@@ -328,10 +377,9 @@ La historia DEBE centrarse exclusivamente en torno a esta única misión o trama
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
-El Capítulo 1 DEBE ser la introducción a la gran tarea/desafío. Presenta con fuerza y detalle al protagonista ("${nombre_de_usuario}"), a sus personajes de soporte o aliados, y explica vívidamente el universo de la historia: las reglas del mundo, el contexto de la narrativa, qué está en juego y cuál es la gran amenaza, fortaleza o villano supremo al que se enfrentan. Establece las bases épicas antes de que comience el avance.
+${introCapitulo1}
 
-2. PERSONAJES DE SOPORTE:
-Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, escuderos, inteligencias artificiales tácticas, guerreros veteranos, pilotos, mascotas o exploradores). Deben tener nombres o roles distintivos, dialogar activamente con "${nombre_de_usuario}", aportar habilidades únicas, advertir peligros y luchar hombro a hombro, enriqueciendo la historia con dinámicas colaborativas.
+${directivaPersonajesSoporte}
 
 3. CONTINUIDAD EN PLANO SECUENCIA (CAPÍTULO 2 HASTA EL PENÚLTIMO):
 A partir del Capítulo 2, PROHIBIDO usar resúmenes o pausas temporales. Inicia la acción exactamente en el milisegundo donde terminó el capítulo anterior, manteniendo la adrenalina y la continuidad directa sin saltos.
@@ -362,7 +410,7 @@ Etiquetas permitidas: effect (space-cockpit, hyper-warp, alien-forest, fire-batt
 FORMATO JSON OBLIGATORIO:
 {
   "chapters": [
-    "Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, sus aliados y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas",
+    "${capitulo1Json}",
     "Capítulo 2, [Nombre descriptivo del capítulo 2]. Cuerpo del texto continuando la acción directamente sin usar puntos adicionales"
   ],
   "cinematica": [
@@ -441,8 +489,8 @@ FORMATO JSON OBLIGATORIO:
 
 		const esModoAprendizaje = temasDeAprendizaje.includes(tema);
 		const promptFinal = esModoAprendizaje
-			? generarPromptTutor(nombre_de_usuario, title, tema, cantidad_de_niveles, sugerenciaContexto)
-			: generarPromptProductividad(nombre_de_usuario, title, tema, cantidad_de_niveles, sugerenciaContexto);
+			? generarPromptTutor(nombreFinal, title, tema, cantidad_de_niveles, sugerenciaContexto)
+			: generarPromptProductividad(nombreFinal, title, tema, cantidad_de_niveles, sugerenciaContexto, aliado);
 
 
 		// --- SISTEMA DE ETIQUETAS DE RESERVA ---
@@ -803,5 +851,149 @@ FORMATO JSON OBLIGATORIO:
 			console.error('Error al eliminar la tarea:', error);
 			return fail(500, { message: 'Error al eliminar la tarea' });
 		}
+	},
+
+	updateProfile: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const nombre_de_usuario = (formData.get('nombre_de_usuario') as string)?.trim();
+		const email = (formData.get('email') as string)?.trim().toLowerCase();
+		const aliadoRaw = (formData.get('aliado') as string) || (formData.get('aliado_nombre') as string);
+		const aliadoNombre = aliadoRaw ? aliadoRaw.trim() : null;
+		const password = (formData.get('password') as string)?.trim();
+
+		if (!nombre_de_usuario || !email) {
+			return fail(400, { message: 'Nombre de usuario y correo son obligatorios' });
+		}
+
+		// Validar que el correo no esté en uso por otro usuario
+		const existingUser = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(and(eq(users.email, email), not(eq(users.id, locals.user.id))))
+			.limit(1);
+
+		if (existingUser.length > 0) {
+			return fail(400, { message: 'El correo electrónico ya está en uso por otra cuenta' });
+		}
+
+		const updatePayload: {
+			nombre_de_usuario: string;
+			email: string;
+			aliados: string | null;
+			password?: string;
+		} = {
+			nombre_de_usuario,
+			email,
+			aliados: aliadoNombre || null
+		};
+
+		if (password) {
+			if (password.length < 6) {
+				return fail(400, { message: 'La contraseña debe tener un mínimo de 6 caracteres' });
+			}
+			updatePayload.password = await bcrypt.hash(password, 10);
+		}
+
+		try {
+			await db.update(users).set(updatePayload).where(eq(users.id, locals.user.id));
+			return { success: true, message: 'Perfil y ajustes guardados exitosamente' };
+		} catch (error) {
+			console.error('Error al actualizar perfil de usuario:', error);
+			return fail(500, { message: 'Error interno al guardar los cambios' });
+		}
+	},
+
+	uploadAvatar: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		const formData = await request.formData();
+		const avatarFile = formData.get('avatar') as File;
+		if (!avatarFile || !(avatarFile instanceof File) || avatarFile.size === 0) {
+			return fail(400, { message: 'Debes seleccionar una imagen válida' });
+		}
+
+		if (avatarFile.size > 5 * 1024 * 1024) {
+			return fail(400, { message: 'El archivo excede el tamaño máximo permitido de 5 MB' });
+		}
+
+		try {
+			const buffer = Buffer.from(await avatarFile.arrayBuffer());
+			const fileName = `${locals.user.id}.png`;
+			const { error } = await supabase.storage.from('MGAvatars').upload(fileName, buffer, {
+				contentType: avatarFile.type || 'image/png',
+				upsert: true
+			});
+
+			if (error) {
+				console.error('Error subiendo avatar a Supabase:', error);
+				return fail(500, { message: 'No se pudo subir la imagen al bucket MGAvatars' });
+			}
+
+			return { success: true, message: 'Avatar actualizado con éxito' };
+		} catch (error) {
+			console.error('Error al procesar el avatar:', error);
+			return fail(500, { message: 'Error al procesar la imagen' });
+		}
+	},
+
+	deleteAvatar: async ({ locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+		try {
+			await supabase.storage.from('MGAvatars').remove([`${locals.user.id}.png`]);
+			return { success: true, message: 'Avatar eliminado de MGAvatars' };
+		} catch (error) {
+			console.error('Error al eliminar avatar:', error);
+			return fail(500, { message: 'Error al eliminar avatar' });
+		}
+	},
+
+	deleteAccount: async ({ locals, cookies }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'No autenticado' });
+		}
+
+		const userId = locals.user.id;
+
+		try {
+			// 1. Obtener todas las tareas del usuario
+			const userTasks = await db
+				.select({ id: tasks.id })
+				.from(tasks)
+				.where(eq(tasks.userId, userId));
+
+			const taskIds = userTasks.map((t) => t.id);
+
+			// 1.1 Eliminar de la tabla 'levels' en primer lugar
+			if (taskIds.length > 0) {
+				await db.delete(levels).where(inArray(levels.taskId, taskIds));
+			}
+
+			// 2. Eliminar de la tabla 'tasks' en segundo lugar
+			await db.delete(tasks).where(eq(tasks.userId, userId));
+
+			// 2.1 Intentar eliminar el avatar del bucket MGAvatars si existe
+			try {
+				await supabase.storage.from('MGAvatars').remove([`${userId}.png`]);
+			} catch (err) {
+				console.error('Error al eliminar archivo del bucket MGAvatars:', err);
+			}
+
+			// 3. Eliminar de la tabla 'users' por último
+			await db.delete(users).where(eq(users.id, userId));
+
+			// 4. Limpiar cookie de sesión
+			clearSessionCookie(cookies);
+		} catch (error) {
+			console.error('Error al eliminar la cuenta:', error);
+			return fail(500, { message: 'Error al eliminar la cuenta' });
+		}
+
+		throw redirect(303, '/auth');
 	}
 };
