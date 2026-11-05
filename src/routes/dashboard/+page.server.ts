@@ -375,11 +375,11 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 				: `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción, mostrando el peligro inmediato, usando frases cortas y puntos seguidos para marcar el ritmo.`;
 
 			return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell". El usuario "${nombre_de_usuario}" se enfrenta a un  desafío: "${title}". Tema de la historia: "${tema}".
-Dificultad de la misión: "establecela segun la "${title}" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
+Dificultad de la misión: "establecela segun la analiza los procesos reales de la tarea "${title} y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
-Inspírate en esta premisa para la temática "${tema}": "${sugerencia}".
-La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción.
+Inspírate en esta premisa para construir una trama temática "${tema}": "${sugerencia}".
+La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
 La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
 
@@ -405,7 +405,7 @@ Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste f
 CAPÍTULO FINAL (Resolución): El clímax y la victoria definitiva, escalada a la proporción del desafío. La catarsis final. NUNCA lo dejes en suspenso.
 
 6. METÁFORA INQUEBRANTABLE:
-NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}".
+NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}" para lograr una experiencia narrativa que evoque la realidad sin revelarla directamente.
 
 7. PUNTUACIÓN Y TÍTULOS:
 Los títulos de los capítulos deben seguir el formato: "Capítulo X, [Nombre descriptivo en 2-4 palabras]."
