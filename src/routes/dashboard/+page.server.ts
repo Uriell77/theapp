@@ -386,7 +386,7 @@ Introduce cortos diálogos entre el protagonista y los personajes de soporte par
 REGLAS DE ESTILO Y RITMO (CRÍTICAS):
 1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
 2. SENSORIALIDAD CRUDA: No uses palabras vacías como "épico", "increíble" o "formidable". Describe el olor a ozono, el zumbido de los servomotores, el frío del metal, la vibración del suelo, el sudor o la respiración entrecortada.
-3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad. Una tarea de dificultad baja es una escaramuza táctica, infiltración o recolección de recursos; una épica es un combate a muerte o la manipulación de una gran estructura.
+3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad. Una tarea de dificultad baja es una escaramuza táctica, infiltración o recolección de recursos; una tarea de alto valor es un combate a muerte o la manipulación de una gran estructura.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
