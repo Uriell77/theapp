@@ -379,6 +379,7 @@ Dificultad de la misión: "establecela segun la "${title}" Objetivo: Generar una
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
 Inspírate en esta premisa para la temática "${tema}": "${sugerencia}".
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción.
+La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 
 REGLAS DE ESTILO Y RITMO (CRÍTICAS):
 1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
