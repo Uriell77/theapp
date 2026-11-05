@@ -371,8 +371,8 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 				: `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual.`;
 
 			const capitulo1Json = aliado
-				? `Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, a su aliado ${aliado} y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas`
-				: `Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, sus aliados y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas`;
+				? `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción, mostrando el peligro inmediato y la interacción de apoyo con ${aliado}, usando frases cortas y puntos seguidos para marcar el ritmo.`
+				: `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción, mostrando el peligro inmediato, usando frases cortas y puntos seguidos para marcar el ritmo.`;
 
 			return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell". El usuario "${nombre_de_usuario}" se enfrenta a un  desafío: "${title}". Tema de la historia: "${tema}".
 Dificultad de la misión: "establecela segun la "${title}" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
@@ -410,7 +410,7 @@ NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100%
 7. PUNTUACIÓN Y TÍTULOS:
 Los títulos de los capítulos deben seguir el formato: "Capítulo X, [Nombre descriptivo en 2-4 palabras]."
 Ejemplo de título válido: "Capítulo 1, Sistemas Críticos."
-Cada capítulo DEBE comenzar con el título completo del capítulo El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas ( , ) y punto y coma ( ; ) para separar ideas y generar pausas dramaticas considerando la lectura por voz.
+Cada capítulo DEBE comenzar con el título completo del capítulo El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". 
 NUNCA pongas un punto justo después del número del capítulo.
 
 REGLAS VISUALES:
@@ -428,12 +428,12 @@ FORMATO JSON OBLIGATORIO:
 {
   "chapters": [
     "${capitulo1Json}",
-    "Capítulo 2, [Nombre descriptivo del capítulo 2]. Cuerpo del texto continuando la acción directamente sin usar puntos adicionales"
+    "Capítulo 2, [Nombre descriptivo del capítulo 2]. Texto narrativo en continuidad directa, usando frases cortas y contundentes."
   ],
   "cinematica": [
     { "effect": "...", "color": "...", "speed": "...", "lighting": "...", "mood": "..." }
   ],
-  "defeatChapter": "Final Alternativo: Retirada Táctica. Narra épicamente cómo debe retirarse",
+  "defeatChapter": "Final Alternativo: [Nombre descriptivo]. Narra crudamente cómo el protagonista es superado y forzado a una retirada táctica. ${aliado ? `Es OBLIGATORIO que ${aliado} intervenga para salvarlo del colapso, llevándolo a un lugar seguro.` : ''}",
   "defeatCinematica": { "effect": "ash-storm", "color": "apocalyptic-rust", "speed": "slow", "lighting": "vignette-dark", "mood": "defeat" }
 }`;
 		}
