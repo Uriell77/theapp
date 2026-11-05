@@ -44,10 +44,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	let avatarUrl: string | null = null;
 	try {
-		const { data: avatarFiles } = await supabase.storage.from('MGAvatars').list('', { search: user.id });
+		const { data: avatarFiles } = await supabase.storage
+			.from('MGAvatars')
+			.list('', { search: user.id });
 		const matched = avatarFiles?.find((f) => f.name.startsWith(user.id));
 		if (matched) {
-			const base = supabase.storage.from('MGAvatars').getPublicUrl(matched.name).data.publicUrl;
+			const base = supabase.storage.from('MGAvatars').getPublicUrl(matched.name)
+				.data.publicUrl;
 			avatarUrl = `${base}?v=${encodeURIComponent(matched.updated_at || '1')}`;
 		}
 	} catch (err) {
@@ -203,7 +206,7 @@ export const actions: Actions = {
 				'investigación de un pueblo costero sumido en una niebla antinatural y locura',
 				'huida desesperada a través de ciénagas pantanosas perseguidos por cultistas cósmicos'
 			],
-			'Superheroes': [
+			Superheroes: [
 				'desactivación de un artefacto de disrupción cuántica en la cima de un rascacielos',
 				'rescate masivo de civiles en un monorriel subterráneo a punto de caer al vacío',
 				'batalla aérea a máxima potencia contra el supervillano sobre los rascacielos',
@@ -306,7 +309,10 @@ export const actions: Actions = {
 			if (!lista) {
 				const temaLower = (t || '').toLowerCase();
 				for (const [key, l] of Object.entries(sugerenciasNarrativasPorTema)) {
-					if (key.toLowerCase().includes(temaLower) || temaLower.includes(key.toLowerCase())) {
+					if (
+						key.toLowerCase().includes(temaLower) ||
+						temaLower.includes(key.toLowerCase())
+					) {
 						lista = l;
 						break;
 					}
@@ -360,20 +366,24 @@ Es OBLIGATORIO incluir a "${aliado}" como el personaje de soporte principal y co
 Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, escuderos, inteligencias artificiales tácticas, guerreros veteranos, pilotos, mascotas o exploradores). Deben tener nombres o roles distintivos, dialogar activamente con "${nombre_de_usuario}", aportar habilidades únicas, advertir peligros y luchar hombro a hombro, enriqueciendo la historia con dinámicas colaborativas.`;
 
 			const introCapitulo1 = aliado
-				? `El Capítulo 1 DEBE ser la introducción a la gran tarea/desafío. Presenta con fuerza y detalle al protagonista ("${nombre_de_usuario}"), a su aliado y compañero de soporte ("${aliado}"), y explica vívidamente el universo de la historia: las reglas del mundo, el contexto de la narrativa, qué está en juego y cuál es la gran amenaza, fortaleza o villano supremo al que se enfrentan. Establece las bases épicas antes de que comience el avance.`
-				: `El Capítulo 1 DEBE ser la introducción a la gran tarea/desafío. Presenta con fuerza y detalle al protagonista ("${nombre_de_usuario}"), a sus personajes de soporte o aliados, y explica vívidamente el universo de la historia: las reglas del mundo, el contexto de la narrativa, qué está en juego y cuál es la gran amenaza, fortaleza o villano supremo al que se enfrentan. Establece las bases épicas antes de que comience el avance.`;
+				? `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual.`
+				: `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual.`;
 
 			const capitulo1Json = aliado
 				? `Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, a su aliado ${aliado} y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas`
 				: `Capítulo 1, [Nombre descriptivo del capítulo 1]. Cuerpo del texto introductorio presentando a ${nombre_de_usuario}, sus aliados y el universo de la historia sin usar más puntos en absoluto, solo comas y punto y coma para separar ideas`;
 
-			return `Eres un director de cine épico y maestro narrador. El usuario "${nombre_de_usuario}" tiene el desafío real: "${title}". Tema de la historia: "${tema}".
-Objetivo: Crea una campaña de acción inmersiva de exactamente ${cantidad_de_niveles} capítulos.
+			return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell". El usuario "${nombre_de_usuario}" se enfrenta a un  desafío: "${title}". Tema de la historia: "${tema}".
+Dificultad de la misión: "establecela segun la "${title}" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
-Inspírate activamente en la siguiente misión o trama central para la temática "${tema}":
-  - "${sugerencia}"
-La historia DEBE centrarse exclusivamente en torno a esta única misión o trama principal a lo largo de los capítulos, utilizándola como eje central del conflicto con giros dramáticos inesperados.
+Inspírate en esta premisa para la temática "${tema}": "${sugerencia}".
+La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción.
+
+REGLAS DE ESTILO Y RITMO (CRÍTICAS):
+1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
+2. SENSORIALIDAD CRUDA: No uses palabras vacías como "épico", "increíble" o "formidable". Describe el olor a ozono, el zumbido de los servomotores, el frío del metal, la vibración del suelo, el sudor o la respiración entrecortada.
+3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad. Una tarea de dificultad baja es una escaramuza táctica, infiltración o recolección de recursos; una épica es un combate a muerte o la manipulación de una gran estructura.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
@@ -382,22 +392,26 @@ ${introCapitulo1}
 ${directivaPersonajesSoporte}
 
 3. CONTINUIDAD EN PLANO SECUENCIA (CAPÍTULO 2 HASTA EL PENÚLTIMO):
-A partir del Capítulo 2, PROHIBIDO usar resúmenes o pausas temporales. Inicia la acción exactamente en el milisegundo donde terminó el capítulo anterior, manteniendo la adrenalina y la continuidad directa sin saltos.
+CAPÍTULOS INTERMEDIOS (Plano Secuencia): La acción fluye en tiempo real. Cada capítulo termina en un micro-cliffhanger o un obstáculo repentino.
+
 
 4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
 Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
 
 5. DESENLACE ÉPICO EN EL ÚLTIMO CAPÍTULO (CAPÍTULO ${cantidad_de_niveles} OBLIGATORIO):
-El desenlace de la historia SIEMPRE DEBE ser en el último capítulo (Capítulo ${cantidad_de_niveles}). Este capítulo culminante DEBE narrar el clímax cumbre y la resolución definitiva: la confrontación final, la derrota épica del villano supremo, enemigo formidable o monstruo titánico, la conquista de la fortaleza o la salvación del reino/mundo. NUNCA dejes la historia inconclusa ni en suspenso: la victoria debe ser total, catártica y celebrada.
+CAPÍTULO FINAL (Resolución): El clímax y la victoria definitiva, escalada a la proporción del desafío. La catarsis final. NUNCA lo dejes en suspenso.
 
 6. METÁFORA INQUEBRANTABLE:
 NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}".
 
 7. PUNTUACIÓN Y TÍTULOS:
-Cada capítulo DEBE comenzar con el título completo del capítulo (ejemplo: "Capítulo 1, La Infiltración." o "Capítulo 1, Asedio a la Muralla."). El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas ( , ) y punto y coma ( ; ) para separar ideas y generar pausas dramaticas considerando la lectura por voz.
+Los títulos de los capítulos deben seguir el formato: "Capítulo X, [Nombre descriptivo en 2-4 palabras]."
+Ejemplo de título válido: "Capítulo 1, Sistemas Críticos."
+Cada capítulo DEBE comenzar con el título completo del capítulo El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". PROHIBIDO usar más puntos (.) dentro del cuerpo del texto de los capítulos; usa solo comas ( , ) y punto y coma ( ; ) para separar ideas y generar pausas dramaticas considerando la lectura por voz.
+NUNCA pongas un punto justo después del número del capítulo.
 
 REGLAS VISUALES:
-Analiza el clima de tu texto y asigna:
+Evalúa la atmósfera narrativa predominante en la historia y asigna los valores precisos.
 - Polvo/Desierto: effect: "ash-storm" + color cálido.
 - Agua/Tormentas: effect: "toxic-rain" o "underwater-bubbles" + azul/frío.
 - Frío/Hielo: effect: "snow-blizzard" + hielo/blanco.
@@ -490,44 +504,145 @@ FORMATO JSON OBLIGATORIO:
 		const esModoAprendizaje = temasDeAprendizaje.includes(tema);
 		const promptFinal = esModoAprendizaje
 			? generarPromptTutor(nombreFinal, title, tema, cantidad_de_niveles, sugerenciaContexto)
-			: generarPromptProductividad(nombreFinal, title, tema, cantidad_de_niveles, sugerenciaContexto, aliado);
-
+			: generarPromptProductividad(
+					nombreFinal,
+					title,
+					tema,
+					cantidad_de_niveles,
+					sugerenciaContexto,
+					aliado
+				);
 
 		// --- SISTEMA DE ETIQUETAS DE RESERVA ---
 		function detectCinematicaForText(text: string, defaultMood: string = 'rising-tension') {
 			const lower = (text || '').toLowerCase();
 
-			if (/(fuego|llama|ardient|infernal|volc[aá]n|lava|magma|incendio|combusti[oó]n|ceniza|explosi[oó]n|abrasad|calor|ascuas)/.test(lower)) {
-				return { effect: lower.includes('volc') || lower.includes('ceniza') ? 'volcano-embers' : 'fire-battle', color: 'infernal-orange', speed: 'normal', lighting: 'candle-flicker', mood: defaultMood === 'defeat' ? 'defeat' : 'boss-fight' };
+			if (
+				/(fuego|llama|ardient|infernal|volc[aá]n|lava|magma|incendio|combusti[oó]n|ceniza|explosi[oó]n|abrasad|calor|ascuas)/.test(
+					lower
+				)
+			) {
+				return {
+					effect:
+						lower.includes('volc') || lower.includes('ceniza')
+							? 'volcano-embers'
+							: 'fire-battle',
+					color: 'infernal-orange',
+					speed: 'normal',
+					lighting: 'candle-flicker',
+					mood: defaultMood === 'defeat' ? 'defeat' : 'boss-fight'
+				};
 			}
-			if (/(tormenta|rayo|rel[aá]mpago|trueno|tempestad|el[eé]ctric|hurac[aá]n|cicl[oó]n|lluvia)/.test(lower)) {
-				return { effect: 'electric-storm', color: 'deep-space-blue', speed: 'fast', lighting: 'lightning-flash', mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension' };
+			if (
+				/(tormenta|rayo|rel[aá]mpago|trueno|tempestad|el[eé]ctric|hurac[aá]n|cicl[oó]n|lluvia)/.test(
+					lower
+				)
+			) {
+				return {
+					effect: 'electric-storm',
+					color: 'deep-space-blue',
+					speed: 'fast',
+					lighting: 'lightning-flash',
+					mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension'
+				};
 			}
 			if (/(nieve|hielo|ventisca|glaci|polar|congelad|helad|fr[ií]o|escarcha)/.test(lower)) {
-				return { effect: 'snow-blizzard', color: 'ice-cyan', speed: 'normal', lighting: 'vignette-dark', mood: defaultMood };
+				return {
+					effect: 'snow-blizzard',
+					color: 'ice-cyan',
+					speed: 'normal',
+					lighting: 'vignette-dark',
+					mood: defaultMood
+				};
 			}
 			if (/(mar\b|oc[eé]ano|agua|submarin|abismo|profundidad|acu[aá]tic|olas)/.test(lower)) {
-				return { effect: 'underwater-bubbles', color: 'deep-space-blue', speed: 'slow', lighting: 'none', mood: defaultMood };
+				return {
+					effect: 'underwater-bubbles',
+					color: 'deep-space-blue',
+					speed: 'slow',
+					lighting: 'none',
+					mood: defaultMood
+				};
 			}
-			if (/(t[oó]xic|veneno|pantano|selva|alien|mutaci[oó]n|espora|qu[ií]mic|[aá]cido|radiaci[oó]n)/.test(lower)) {
-				return { effect: lower.includes('selva') || lower.includes('espora') ? 'alien-forest' : 'toxic-rain', color: 'toxic-green', speed: 'normal', lighting: 'none', mood: defaultMood };
+			if (
+				/(t[oó]xic|veneno|pantano|selva|alien|mutaci[oó]n|espora|qu[ií]mic|[aá]cido|radiaci[oó]n)/.test(
+					lower
+				)
+			) {
+				return {
+					effect:
+						lower.includes('selva') || lower.includes('espora')
+							? 'alien-forest'
+							: 'toxic-rain',
+					color: 'toxic-green',
+					speed: 'normal',
+					lighting: 'none',
+					mood: defaultMood
+				};
 			}
-			if (/(ciber|matriz|matrix|c[oó]digo|hacker|digital|servidor|terminal|red\b|protocolo|ia\b|algoritmo)/.test(lower)) {
-				return { effect: 'data-matrix', color: 'cyberpunk-neon', speed: 'normal', lighting: 'none', mood: defaultMood };
+			if (
+				/(ciber|matriz|matrix|c[oó]digo|hacker|digital|servidor|terminal|red\b|protocolo|ia\b|algoritmo)/.test(
+					lower
+				)
+			) {
+				return {
+					effect: 'data-matrix',
+					color: 'cyberpunk-neon',
+					speed: 'normal',
+					lighting: 'none',
+					mood: defaultMood
+				};
 			}
 			if (/(magi|arcano|runa|hechizo|m[ií]stic|reliquia|portal|ancestral)/.test(lower)) {
-				return { effect: 'magic-runes', color: 'fantasy-gold', speed: 'slow', lighting: 'eclipse-ring', mood: defaultMood };
+				return {
+					effect: 'magic-runes',
+					color: 'fantasy-gold',
+					speed: 'slow',
+					lighting: 'eclipse-ring',
+					mood: defaultMood
+				};
 			}
 			if (/(sangre|carmes[ií]|masacre|herida|desgarr|carnicer[ií]a)/.test(lower)) {
-				return { effect: 'blood-drip', color: 'blood-red', speed: 'normal', lighting: 'strobe-alarm', mood: defaultMood };
+				return {
+					effect: 'blood-drip',
+					color: 'blood-red',
+					speed: 'normal',
+					lighting: 'strobe-alarm',
+					mood: defaultMood
+				};
 			}
-			if (/(ceniza|desierto|p[aá]ramo|ruinas|apocal[ií]pt|polvo|destrucci[oó]n|retirada)/.test(lower)) {
-				return { effect: 'ash-storm', color: 'apocalyptic-rust', speed: 'slow', lighting: 'vignette-dark', mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension' };
+			if (
+				/(ceniza|desierto|p[aá]ramo|ruinas|apocal[ií]pt|polvo|destrucci[oó]n|retirada)/.test(
+					lower
+				)
+			) {
+				return {
+					effect: 'ash-storm',
+					color: 'apocalyptic-rust',
+					speed: 'slow',
+					lighting: 'vignette-dark',
+					mood: defaultMood === 'defeat' ? 'defeat' : 'rising-tension'
+				};
 			}
 			if (/(espaci|galaxi|nave|estelar|hiperespacio|cosmos|estrellas|warp)/.test(lower)) {
-				return { effect: lower.includes('warp') || lower.includes('hiper') ? 'hyper-warp' : 'space-cockpit', color: 'deep-space-blue', speed: 'normal', lighting: 'lens-flare', mood: defaultMood };
+				return {
+					effect:
+						lower.includes('warp') || lower.includes('hiper')
+							? 'hyper-warp'
+							: 'space-cockpit',
+					color: 'deep-space-blue',
+					speed: 'normal',
+					lighting: 'lens-flare',
+					mood: defaultMood
+				};
 			}
-			return { effect: defaultMood === 'defeat' ? 'ash-storm' : 'space-cockpit', color: defaultMood === 'defeat' ? 'apocalyptic-rust' : 'deep-space-blue', speed: 'normal', lighting: defaultMood === 'defeat' ? 'vignette-dark' : 'none', mood: defaultMood };
+			return {
+				effect: defaultMood === 'defeat' ? 'ash-storm' : 'space-cockpit',
+				color: defaultMood === 'defeat' ? 'apocalyptic-rust' : 'deep-space-blue',
+				speed: 'normal',
+				lighting: defaultMood === 'defeat' ? 'vignette-dark' : 'none',
+				mood: defaultMood
+			};
 		}
 
 		let chapters: string[] = [];
@@ -537,8 +652,8 @@ FORMATO JSON OBLIGATORIO:
 
 		try {
 			const prompt = promptFinal;
-			
-// --- INICIO DE REEMPLAZO ---
+
+			// --- INICIO DE REEMPLAZO ---
 			// Priorizamos los modelos que confirmamos tienen cuota disponible actualmente.
 			const availableModels = [
 				'gemini-3.5-flash',
@@ -562,7 +677,7 @@ FORMATO JSON OBLIGATORIO:
 								responseMimeType: 'application/json'
 							}
 						});
-						
+
 						if (result?.text) {
 							console.log(`¡Éxito usando ${modelName}!`);
 							break;
@@ -570,7 +685,7 @@ FORMATO JSON OBLIGATORIO:
 					} catch (aiError: any) {
 						lastError = aiError;
 						console.warn(`[Aviso] El modelo ${modelName} falló:`, aiError.message);
-						
+
 						// Si es un error 404 (Not Found), pasamos al siguiente modelo inmediatamente
 						if (aiError.status === 404) {
 							break;
@@ -580,18 +695,22 @@ FORMATO JSON OBLIGATORIO:
 						if ((aiError.status === 503 || aiError.status === 429) && retries > 1) {
 							retries--;
 							const delay = 2000 * (3 - retries); // Exponencial simple
-							console.log(`Reintentando ${modelName} en ${delay}ms... (${retries} intentos restantes)`);
+							console.log(
+								`Reintentando ${modelName} en ${delay}ms... (${retries} intentos restantes)`
+							);
 							await new Promise((resolve) => setTimeout(resolve, delay));
 							continue;
 						}
-						break; 
+						break;
 					}
 				}
 				if (result?.text) break;
 			}
 
 			if (!result?.text) {
-				console.error('Error final: No se pudo obtener respuesta de ningún modelo configurado.');
+				console.error(
+					'Error final: No se pudo obtener respuesta de ningún modelo configurado.'
+				);
 				throw lastError || new Error('Respuesta vacía del modelo de IA');
 			}
 			// --- FIN DE REEMPLAZO ---
@@ -604,22 +723,26 @@ FORMATO JSON OBLIGATORIO:
 			}
 
 			const parsed = JSON.parse(rawText);
-			
+
 			// --- CORRECCIÓN DE FORMATO Y PUNTUACIÓN (Garantiza título antes del punto y cuerpo después) ---
 			chapters = Array.isArray(parsed.chapters)
 				? parsed.chapters.map((cap: string) => formatChapterForStorage(cap))
 				: [];
 
 			cinematicaTags = Array.isArray(parsed.cinematica) ? parsed.cinematica : [];
-			defeatChapter = parsed.defeatChapter ? formatChapterForStorage(parsed.defeatChapter) : '';
-			defeatCinematica = parsed.defeatCinematica || detectCinematicaForText(defeatChapter, 'defeat');
+			defeatChapter = parsed.defeatChapter
+				? formatChapterForStorage(parsed.defeatChapter)
+				: '';
+			defeatCinematica =
+				parsed.defeatCinematica || detectCinematicaForText(defeatChapter, 'defeat');
 
 			if (chapters.length === 0) {
 				return fail(500, {
 					title,
 					tema,
 					cantidad_de_niveles,
-					message: 'No fue posible estructurar los capítulos de la historia. Por favor, inténtalo de nuevo.'
+					message:
+						'No fue posible estructurar los capítulos de la historia. Por favor, inténtalo de nuevo.'
 				});
 			}
 		} catch (aiError: any) {
@@ -641,7 +764,12 @@ FORMATO JSON OBLIGATORIO:
 				if (cinematicaTags[idx] && cinematicaTags[idx].effect) {
 					return cinematicaTags[idx];
 				}
-				const mood = idx === 0 ? 'intro' : idx === chapters.length - 1 ? 'boss-fight' : 'rising-tension';
+				const mood =
+					idx === 0
+						? 'intro'
+						: idx === chapters.length - 1
+							? 'boss-fight'
+							: 'rising-tension';
 				return detectCinematicaForText(`${tema} ${cap}`, mood);
 			});
 		}
@@ -670,7 +798,7 @@ FORMATO JSON OBLIGATORIO:
 			await db.insert(levels).values({
 				taskId: newTask.id,
 				content: chapters,
-				cinematica: cinematicaTags.map(tag => JSON.stringify(tag)),
+				cinematica: cinematicaTags.map((tag) => JSON.stringify(tag)),
 				vista: [defeatChapter, JSON.stringify(defeatCinematica)]
 			});
 
@@ -720,7 +848,7 @@ FORMATO JSON OBLIGATORIO:
 
 		return { success: true };
 	},
-	
+
 	abandonTask: async ({ request, locals }) => {
 		if (!locals.user) {
 			return fail(401, { message: 'No autenticado' });
@@ -837,9 +965,7 @@ FORMATO JSON OBLIGATORIO:
 		}
 		try {
 			// 1. Eliminar primero los registros asociados en 'levels'
-			await db
-				.delete(levels)
-				.where(eq(levels.taskId, taskId));
+			await db.delete(levels).where(eq(levels.taskId, taskId));
 
 			// 2. Luego eliminar la tarea en 'tasks'
 			await db
@@ -860,7 +986,8 @@ FORMATO JSON OBLIGATORIO:
 		const formData = await request.formData();
 		const nombre_de_usuario = (formData.get('nombre_de_usuario') as string)?.trim();
 		const email = (formData.get('email') as string)?.trim().toLowerCase();
-		const aliadoRaw = (formData.get('aliado') as string) || (formData.get('aliado_nombre') as string);
+		const aliadoRaw =
+			(formData.get('aliado') as string) || (formData.get('aliado_nombre') as string);
 		const aliadoNombre = aliadoRaw ? aliadoRaw.trim() : null;
 		const password = (formData.get('password') as string)?.trim();
 
