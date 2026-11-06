@@ -375,10 +375,10 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 				: `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción, mostrando el peligro inmediato, usando frases cortas y puntos seguidos para marcar el ritmo.`;
 
 			return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell". El usuario "${nombre_de_usuario}" se enfrenta a un  desafío: "${title}". Tema de la historia: "${tema}".
-Dificultad de la misión: "establecela segun la analiza los procesos reales de la tarea "${title} y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
+La Dificultad de la misión debes establecerla segun los procesos reales de la tarea ${title}, y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
-Inspírate en esta premisa para construir una trama temática "${tema}": "${sugerencia}".
+Inspírate en esta premisa para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}").
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
 La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
@@ -386,7 +386,7 @@ Introduce cortos diálogos entre el protagonista y los personajes de soporte par
 REGLAS DE ESTILO Y RITMO (CRÍTICAS):
 1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
 2. SENSORIALIDAD CRUDA: No uses palabras vacías como "épico", "increíble" o "formidable". Describe el olor a ozono, el zumbido de los servomotores, el frío del metal, la vibración del suelo, el sudor o la respiración entrecortada.
-3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad. Una tarea de dificultad baja es una escaramuza táctica, infiltración o recolección de recursos; una tarea de alto valor es un combate a muerte o la manipulación de una gran estructura.
+3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad. Una tarea de dificultad baja (por ejemplo. limpiar el cuarto) es una escaramuza táctica, infiltración o recolección de recursos; una tarea de alto valor (como cobatir una enfermedad, un embarazo) es un combate a muerte o la manipulación de una gran estructura.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
@@ -400,9 +400,11 @@ CAPÍTULOS INTERMEDIOS (Plano Secuencia): La acción fluye en tiempo real. Cada 
 
 4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
 Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
+Utiliza la psicologia de la tarea real (${title}) para reflejar la tensión, el miedo, la ansiedad, la urgencia y la presión de tiempo en la narrativa. Cada capítulo debe reflejar un aumento progresivo de dificultad y tensión.
 
 5. DESENLACE ÉPICO EN EL ÚLTIMO CAPÍTULO (CAPÍTULO ${cantidad_de_niveles} OBLIGATORIO):
 CAPÍTULO FINAL (Resolución): El clímax y la victoria definitiva, escalada a la proporción del desafío. La catarsis final. NUNCA lo dejes en suspenso.
+Utiliza un evento dramático que simbolice la superación de la tarea real ("${title}") y la culminación de la misión. La victoria debe sentirse merecida y reflejar el aprendizaje y crecimiento del protagonista.
 
 6. METÁFORA INQUEBRANTABLE:
 NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}" para lograr una experiencia narrativa que evoque la realidad sin revelarla directamente.
