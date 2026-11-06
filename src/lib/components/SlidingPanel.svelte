@@ -135,7 +135,7 @@
 														</h4>
 													</div>
 												{/if}
-												<p class="is-italic has-text-weight-bold is-size-7-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsedDefeat.body || parsedDefeat.title, speed: 45 }}></p>
+												<p class="is-italic has-text-weight-bold is-size-6-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsedDefeat.body || parsedDefeat.title, speed: 45 }}></p>
 											</div>
 										</Visualizer>
 									</SoundEngine>
@@ -161,7 +161,7 @@
 																		</h4>
 																	</div>
 																{/if}
-																<p class="is-italic has-text-weight-bold is-size-7-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsed.body || parsed.title, speed: 45 }}></p>
+																<p class="is-italic has-text-weight-bold is-size-6-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsed.body || parsed.title, speed: 45 }}></p>
 															</div>
 														</Visualizer>
 													</SoundEngine>
@@ -177,7 +177,7 @@
 																		</h4>
 																	</div>
 																{/if}
-																<p class="is-italic has-text-weight-bold is-size-7-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsed.body || parsed.title, speed: 45 }}></p>
+																<p class="is-italic has-text-weight-bold is-size-6-mobile narrative-body-text {isKids ? 'font-kids text-kids' : 'text-standard'}" style="color: {isKids ? '#fff9e6' : '#f0f0f0'}; line-height: 1.75; white-space: pre-wrap;" use:typewriter={{ text: parsed.body || parsed.title, speed: 45 }}></p>
 															</div>
 														</Visualizer>
 													</SoundEngine>
