@@ -382,11 +382,13 @@ Inspírate en esta premisa para construir una trama temática "${tema}": "${suge
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
 La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
+Describe con detalles toda la secuencia de las batallas usando la sensorialidad cruda: zarpadas, golpes, vibraciones, saltos, giros, caídas, sudor, respiración entrecortada, fatiga, desgaste físico y psicológico. Describe texturas, olores, sonidos del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
+Narra los pensamientos y emociones del protagonista mientras ejecuta acciones de alto riesgo como durante la infiltración, el combate, la persecución o la resolución de un conflicto crítico. Refleja su tensión, miedo, ansiedad, urgencia y presión de tiempo en la narrativa.
 
 REGLAS DE ESTILO Y RITMO (CRÍTICAS):
 1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
 2. SENSORIALIDAD CRUDA: No uses palabras vacías como "épico", "increíble" o "formidable". Describe el olor a ozono, el zumbido de los servomotores, el frío del metal, la vibración del suelo, el sudor o la respiración entrecortada.
-3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad. Una tarea de dificultad baja (por ejemplo. limpiar el cuarto) es una escaramuza táctica, infiltración o recolección de recursos; una tarea de alto valor (como cobatir una enfermedad, un embarazo) es un combate a muerte o la manipulación de una gran estructura.
+3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad siempre dandole emocion inmersiva. Una tarea de dificultad baja es una escaramuza táctica, infiltración o recolección de recursos; una tarea de alto valor es un combate a muerte o la manipulación de una gran estructura.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
