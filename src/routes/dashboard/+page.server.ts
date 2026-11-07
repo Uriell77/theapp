@@ -378,7 +378,7 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 La Dificultad de la misión debes establecerla segun los procesos reales de la tarea ${title}, y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
-Inspírate en esta premisa para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}").
+Inspírate en esta premisa para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}") pero manteniendo la narrativa en la ficción.
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
 La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
@@ -388,7 +388,7 @@ Narra los pensamientos y emociones del protagonista mientras ejecuta acciones de
 REGLAS DE ESTILO Y RITMO (CRÍTICAS):
 1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
 2. SENSORIALIDAD CRUDA: No uses palabras vacías como "épico", "increíble" o "formidable". Describe el olor a ozono, el zumbido de los servomotores, el frío del metal, la vibración del suelo, el sudor o la respiración entrecortada.
-3. ESCALA PROPORCIONAL: Ajusta la magnitud del conflicto a la dificultad siempre dandole emocion inmersiva. Una tarea de dificultad baja es una escaramuza táctica, infiltración o recolección de recursos; una tarea de alto valor es un combate a muerte o la manipulación de una gran estructura.
+3. SIN ESCALA PROPORCIONAL: Toda tarea debe ser tratada con la misma importancia narrativa, sin distinción de nivel de dificultad.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
 1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
