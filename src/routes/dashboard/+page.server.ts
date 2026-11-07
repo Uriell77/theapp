@@ -371,8 +371,8 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 				: `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual.`;
 
 			const capitulo1Json = aliado
-				? `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción, mostrando el peligro inmediato y la interacción de apoyo con ${aliado}, usando frases cortas y puntos seguidos para marcar el ritmo.`
-				: `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción, mostrando el peligro inmediato, usando frases cortas y puntos seguidos para marcar el ritmo.`;
+				? `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción a manera de prologo, mostrando el peligro inmediato y la interacción de apoyo con ${aliado}, usando frases cortas y puntos seguidos para marcar el ritmo.`
+				: `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción a manera de prologo, mostrando el peligro inmediato, usando frases cortas y puntos seguidos para marcar el ritmo.`;
 
 			return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell". El usuario "${nombre_de_usuario}" se enfrenta a un  desafío: "${title}". Tema de la historia: "${tema}".
 La Dificultad de la misión debes establecerla segun los procesos reales de la tarea ${title}, y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
