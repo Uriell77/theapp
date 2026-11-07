@@ -382,7 +382,7 @@ Inspírate en esta premisa para construir una trama temática "${tema}": "${suge
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
 La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
-Describe con detalles toda la secuencia de las batallas usando la sensorialidad cruda: zarpadas, golpes, vibraciones, saltos, giros, caídas, sudor, respiración entrecortada, fatiga, desgaste físico y psicológico. Describe texturas, olores, sonidos del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
+Narra con detalles toda la secuencia de las batallas usando la sensorialidad cruda: zarpadas, golpes, vibraciones, saltos, giros, caídas, sudor, respiración entrecortada, fatiga, desgaste físico y psicológico. Describe texturas, olores, sonidos del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
 Narra los pensamientos y emociones del protagonista mientras ejecuta acciones de alto riesgo como durante la infiltración, el combate, la persecución o la resolución de un conflicto crítico. Refleja su tensión, miedo, ansiedad, urgencia y presión de tiempo en la narrativa.
 
 REGLAS DE ESTILO Y RITMO (CRÍTICAS):
