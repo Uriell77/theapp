@@ -367,8 +367,8 @@ Es OBLIGATORIO incluir a "${aliado}" como el personaje de soporte principal y co
 Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, escuderos, inteligencias artificiales tácticas, guerreros veteranos, pilotos, mascotas o exploradores). Deben tener nombres o roles distintivos, dialogar activamente con "${nombre_de_usuario}", aportar habilidades únicas, advertir peligros y luchar hombro a hombro, enriqueciendo la historia con dinámicas colaborativas.`;
 
 			const introCapitulo1 = aliado
-				? `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual.`
-				: `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual.`;
+				? `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual. el capitulo funciona como un prólogo que establece la misión y el peligro inminente, mostrando la colaboración con "${aliado}".`
+				: `El Capítulo 1 (In Media Res): No expliques el universo. Lanza al lector directamente a la acción en curso. Presenta la amenaza de inmediato a través de los sentidos del protagonista y la interacción con al menos un personaje de soporte (IA, escudero, piloto aliado) que le asista. Refleja su estado actual. El capitulo funciona como un prólogo que establece la misión y el peligro inminente, mostrando la colaboración con los personajes de soporte.`;
 
 			const capitulo1Json = aliado
 				? `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción a manera de prologo, mostrando el peligro inmediato y la interacción de apoyo con ${aliado}, usando frases cortas y puntos seguidos para marcar el ritmo.`
@@ -398,6 +398,8 @@ ${directivaPersonajesSoporte}
 
 3. CONTINUIDAD EN PLANO SECUENCIA (CAPÍTULO 2 HASTA EL PENÚLTIMO):
 CAPÍTULOS INTERMEDIOS (Plano Secuencia): La acción fluye en tiempo real. Cada capítulo termina en un micro-cliffhanger o un obstáculo repentino.
+LA HISTORIA DEBE MANTENERSE EN CONTINUIDAD DIRECTA, SIN SALTOS TEMPORALES. Cada capítulo debe seguir la historia y la trama y los personajes tal como finalizo el anterior y desarrollarse hacia el logro de la misión.
+
 
 
 4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
