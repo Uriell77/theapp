@@ -327,9 +327,10 @@ export const actions: Actions = {
 				];
 			}
 			// Seleccionar aleatoriamente una sola sugerencia para centrar la historia en una única misión o trama
-			const indice = Math.floor(Math.random() * lista.length);
-			console.log(lista[indice]);
-			return lista[indice];
+			// Ya no seleccionamos una diferencia, pasamos la lista completa para que la IA elija la diferencia más idónea para la trama en relación a la tarea
+			//const indice = Math.floor(Math.random() * lista.length);
+			console.log(lista);
+			return lista;
 		}
 
 		// En ambos prompts la cantidad de capítulos/niveles es el valor ingresado más 1
@@ -356,7 +357,7 @@ export const actions: Actions = {
 			title: string,
 			tema: string,
 			cantidad_de_niveles: number,
-			sugerencia: string,
+			sugerencia: string[],
 			aliado?: string | null
 		) {
 			const directivaPersonajesSoporte = aliado
@@ -378,7 +379,7 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 La Dificultad de la misión debes establecerla segun los procesos reales de la tarea ${title}, y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
-Inspírate en esta premisa para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}") pero manteniendo la narrativa en la ficción.
+Inspírate en esta lista y elije la opción más idónea para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}") pero manteniendo la narrativa en la ficción.
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
 La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
@@ -400,8 +401,6 @@ ${directivaPersonajesSoporte}
 3. CONTINUIDAD EN PLANO SECUENCIA (CAPÍTULO 2 HASTA EL PENÚLTIMO):
 CAPÍTULOS INTERMEDIOS (Plano Secuencia): La acción fluye en tiempo real. Cada capítulo termina en un micro-cliffhanger o un obstáculo repentino.
 LA HISTORIA DEBE MANTENERSE EN CONTINUIDAD DIRECTA, SIN SALTOS TEMPORALES. Cada capítulo debe seguir la historia y la trama y los personajes tal como finalizo el anterior y desarrollarse hacia el logro de la misión.
-
-
 
 4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
 Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
