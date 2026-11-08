@@ -110,7 +110,7 @@
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
-						<span class="badge-general tag  is-size-7 font-modern-chapter">{task.tema} ⚔️</span>
+						<span class="badge-general is-size-7 font-modern-chapter">{task.tema} ⚔️</span>
 					{/if}
 
 					<!-- Botón de eliminación rápida -->
