@@ -28,7 +28,7 @@
         opciones: [
             { valor: 'Cyberpunk y Neón', etiqueta: 'Ciberespacio' }, 
             { valor: 'Steampunk', etiqueta: 'Steampunk' }, 
-            { valor: 'Guerra Espacial de Naves', etiqueta: 'Galaxia' },         
+            { valor: 'Guerra Espacial de Naves', etiqueta: 'Espacio' },         
             { valor: 'Combate de Mechas Gigantes', etiqueta: 'Mechas' },
             { valor: 'Superhéroes y Cómics', etiqueta: 'Superhéroes' },
             { valor: 'Supervivencia Post-Apocalíptica', etiqueta: 'Mundo Post-Apocaliptico' }
