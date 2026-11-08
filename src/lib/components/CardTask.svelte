@@ -9,12 +9,39 @@
 		onSelect?: () => void;
 	}
 
-	let { task, hasViewed = false, onSelect }: Props = $props();
 
+	let { task, hasViewed = false, onSelect}: Props = $props();
 	let statusNum = $derived(parseInt(task?.status, 10) || 0);
 	let isAbandoned = $derived(statusNum === -1);
 	let isKids = $derived(isKidsTheme(task?.tema));
 	let isArchived = $derived(Boolean(task?.isArchived));
+
+	const tematicas: { valor: string; etiqueta: string } [] = [
+            { valor: 'Alta Fantasía y Magia', etiqueta: 'Fantasía' },
+            { valor: 'Cruzada Medieval', etiqueta: 'Medieval' },
+            { valor: 'Mitología Griega y el Olimpo', etiqueta: 'Olimpo' },
+            { valor: 'Dinastía Samurái', etiqueta: 'Samurái' },
+            { valor: 'Alquimia y Magia Arcana', etiqueta: 'Alquimia' },	
+            { valor: 'Cyberpunk y Neón', etiqueta: 'Ciberespacio' }, 
+            { valor: 'Steampunk', etiqueta: 'Steampunk' }, 
+            { valor: 'Guerra Espacial de Naves', etiqueta: 'Galaxia' },         
+            { valor: 'Combate de Mechas Gigantes', etiqueta: 'Mechas' },
+            { valor: 'Superhéroes y Cómics', etiqueta: 'Superhéroes' },
+            { valor: 'Supervivencia Post-Apocalíptica', etiqueta: 'Mundo Post-Apocaliptico' },
+            { valor: 'Apocalipsis Zombie', etiqueta: 'Zombie' }, // UI limpia, pero Gemini recibe "Zombie"
+            { valor: 'Espionaje Táctico Moderno', etiqueta: 'Espionaje' },
+		{ valor: 'Atraco de Guante Blanco y Estafa Maestra', etiqueta: 'Golpe Maestro' },
+		{ valor: 'Detective Noir', etiqueta: 'Noir' },
+            { valor: 'El Salvaje Oeste', etiqueta: 'Salvaje Oeste' },
+            { valor: 'Terror Cosmico', etiqueta: 'Terror Cosmico' }, 
+            { valor: 'Guerra Mundia', etiqueta: 'Guerra' }, 
+            { valor: 'Desastre Natural', etiqueta: 'Desastre Matural' }, 
+		{ valor: 'Comedia Romántica y Torpeza Adorable', etiqueta: 'Comedia Romántica' },
+		{ valor: 'Comedia Absurda y Caos Cotidiano', etiqueta: 'Caos y Comedia' }
+	]
+
+	console.log(tematicas)
+
 
 	function handleAdvanceClick(e: MouseEvent) {
 		if (isAbandoned) {
@@ -110,7 +137,7 @@
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
-						<span class="badge-general is-size-7 font-modern-chapter">{task.tema} ⚔️</span>
+						<span class="badge-general is-size-7 font-modern-chapter">{tematicas.find((t) => t.valor === task.tema)?.etiqueta || 'Tema no especificado'} ⚔️</span>
 					{/if}
 
 					<!-- Botón de eliminación rápida -->
