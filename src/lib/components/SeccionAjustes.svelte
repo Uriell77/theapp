@@ -113,7 +113,7 @@
 		<!-- Subsección Avatar -->
 		<div class="avatar-header-row mb-4">
 			<div class="avatar-preview-box">
-				<figure class="avatar-img-wrap">
+				<figure class="image is-60x60">
 					<img
 						src={previewAvatarUrl || user?.avatarUrl || '/emptyavatar.avif'}
 						alt="Avatar del usuario"
@@ -143,7 +143,7 @@
 				<h3 class="has-text-white has-text-weight-bold" style="font-size: 1.15rem; margin: 0;">
 					{user?.nombre_de_usuario || 'Usuario'}
 				</h3>
-				<p style="color: var(--text-muted); font-size: 0.82rem; margin: 2px 0 10px 0;">
+				<p class="is-hidden"style="color: var(--text-muted); font-size: 0.82rem; margin: 2px 0 10px 0;">
 					Avatar guardado en <strong style="color: var(--accent-primary);">MGAvatars</strong>
 				</p>
 
@@ -229,7 +229,7 @@
 			</div>
 		</div>
 
-		<hr style="border: 0; border-top: 1px solid var(--card-border); margin: 18px 0;" />
+		<hr class="mt-6" style="border: 0; border-top: 1px solid var(--card-border); margin: 18px 0;" />
 
 		<!-- Formulario de Datos de Usuario -->
 		<form
@@ -253,7 +253,7 @@
 			}}
 		>
 			<!-- ID de Usuario -->
-			<div class="field mb-4">
+			<div class="field mb-4 is-hidden">
 				<div class="is-flex is-justify-content-space-between is-align-items-center mb-1">
 					<label for="uid" class="custom-label">ID de Usuario</label>
 					<button type="button" class="btn-copy-link" onclick={copyUserId}>
@@ -275,7 +275,7 @@
 
 			<!-- Nombre de Usuario -->
 			<div class="field mb-4">
-				<label for="username" class="custom-label">Nombre de Usuario</label>
+				<label for="username" class="custom-label">Nombre</label>
 				<input
 					id="username"
 					type="text"
@@ -457,7 +457,7 @@
 
 	.avatar-pencil-btn {
 		position: absolute;
-		bottom: -2px;
+		bottom: -35px;
 		right: -2px;
 		width: 26px;
 		height: 26px;

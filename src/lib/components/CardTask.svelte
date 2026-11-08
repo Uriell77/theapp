@@ -110,7 +110,7 @@
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
-						<span class="badge-general font-modern-chapter">General ⚔️</span>
+						<span class="badge-general tag  is-size-7 font-modern-chapter">{task.tema} ⚔️</span>
 					{/if}
 
 					<!-- Botón de eliminación rápida -->
@@ -173,7 +173,7 @@
 
 				{#each Array(task.cantidad_de_niveles) as _, idx}
 					<div class="timeline-step {statusNum !== -1 && idx <= statusNum ? 'active' : ''}">
-						{idx + 1}
+						{idx}
 					</div>
 				{/each}
 			</div>
@@ -353,13 +353,10 @@
 	}
 
 	.badge-general {
-		background: rgba(25, 212, 168, 0.14);
 		border: 1px solid rgba(25, 212, 168, 0.35);
 		color: #19d4a8;
 		padding: 3px 8px;
 		border-radius: 12px;
-		font-size: 0.72rem;
-		font-weight: 700;
 		white-space: nowrap;
 		letter-spacing: 0.02em;
 	}
