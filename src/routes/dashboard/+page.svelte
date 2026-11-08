@@ -13,61 +13,48 @@
 	import { playClick } from '$lib/audio';
 
 	const tematicasAgrupadas = [
-		{
-			grupo: 'Fantasía y Mitología',
-			opciones: [
-				{ valor: 'Magia y Fantasía', etiqueta: 'Magia y Fantasía' },
-				{ valor: 'Cruzada Medieval', etiqueta: 'Cruzada Medieval' },
-				{ valor: 'Odisea Mitológica Griega', etiqueta: 'Odisea Mitológica Griega' },
-				{ valor: 'Dinastía Samurái', etiqueta: 'Dinastía Samurái' },
-				{ valor: 'Alquimia y Magia Arcana', etiqueta: 'Alquimia y Magia Arcana' }
-			]
-		},
-		{
-			grupo: 'Ciencia Ficción',
-			opciones: [
-				{ valor: 'Guerra Espacial', etiqueta: 'Guerra Espacial' },
-				{ valor: 'Rebelión Cyberpunk', etiqueta: 'Rebelión Cyberpunk' },
-				{ valor: 'Supervivencia Post-Apocalíptica', etiqueta: 'Supervivencia Post-Apocalíptica' },
-				{ valor: 'Mundo Steampunk', etiqueta: 'Mundo Steampunk' }
-			]
-		},
-		{
-			grupo: 'Terror y Supervivencia',
-			opciones: [
-				{ valor: 'Apocalipsis Zombi', etiqueta: 'Apocalipsis Zombi' },
-				{ valor: 'Terror Lovecraftiano', etiqueta: 'Terror Lovecraftiano' },
-				{ valor: 'Catastrofe Natural', etiqueta: 'Catástrofe Natural' }
-			]
-		},
-		{
-			grupo: 'Acción y Aventura',
-			opciones: [
-				{ valor: 'Superheroes', etiqueta: 'Superhéroes' },
-				{ valor: 'Guerra Mundial', etiqueta: 'Guerra Mundial' },
-				{ valor: 'Vaqueros y Western', etiqueta: 'Vaqueros y Western' }
-			]
-		},
-		{
-			grupo: 'Misterio, Thriller y Drama',
-			opciones: [
-				{ valor: 'Agente Secreto', etiqueta: 'Agente Secreto' },
-				{ valor: 'Espionaje Internacional', etiqueta: 'Espionaje Internacional' },
-				{ valor: 'Detective Noir', etiqueta: 'Detective Noir (Años 20)' },
-				{ valor: 'El Gran Atraco', etiqueta: 'El Gran Atraco (Heist)' },
-				{ valor: 'Romance Diurno', etiqueta: 'Romance Diurno' }
-			]
-		},
-		{
-			grupo: 'Aprendizaje y Exploración',
-			opciones: [
-				{ valor: 'Aprendizaje Infantil', etiqueta: 'Aprendizaje Infantil' },
-				{ valor: 'Aprendizaje Adolescente', etiqueta: 'Aprendizaje Adolescente' },
-				{ valor: 'Aprendizaje de Habilidades', etiqueta: 'Aprendizaje de Habilidades' },
-				{ valor: 'Conocimiento Universal', etiqueta: 'Conocimiento Universal' }
-			]
-		}
-	];
+    {
+        grupo: 'Fantasía y Mitología',
+        opciones: [
+            { valor: 'Alta Fantasía y Magia', etiqueta: 'Fantasía' },
+            { valor: 'Cruzada Medieval', etiqueta: 'Medieval' },
+            { valor: 'Mitología Griega y el Olimpo', etiqueta: 'Olimpo' },
+            { valor: 'Dinastía Samurái', etiqueta: 'Samurái' },
+            { valor: 'Alquimia y Magia Arcana', etiqueta: 'Alquimia' }
+        ]
+    },
+    {
+        grupo: 'Ciencia Ficción',
+        opciones: [
+            { valor: 'Cyberpunk y Neón', etiqueta: 'Ciberespacio' }, 
+            { valor: 'Steampunk', etiqueta: 'Steampunk' }, 
+            { valor: 'Guerra Espacial de Naves', etiqueta: 'Galaxia' },         
+            { valor: 'Combate de Mechas Gigantes', etiqueta: 'Mechas' },
+            { valor: 'Superhéroes y Cómics', etiqueta: 'Superhéroes' },
+            { valor: 'Supervivencia Post-Apocalíptica', etiqueta: 'Mundo Post-Apocaliptico' }
+        ]
+    },
+    {
+        grupo: 'Supervivencia y Acción',
+        opciones: [
+            { valor: 'Apocalipsis Zombie', etiqueta: 'Zombie' }, // UI limpia, pero Gemini recibe "Zombie"
+            { valor: 'Espionaje Táctico Moderno', etiqueta: 'Espionaje' },
+		{ valor: 'Atraco de Guante Blanco y Estafa Maestra', etiqueta: 'Golpe Maestro' },
+		{ valor: 'Detective Noir', etiqueta: 'Noir' },
+            { valor: 'El Salvaje Oeste', etiqueta: 'Salvaje Oeste' },
+            { valor: 'Terror Cosmico', etiqueta: 'Terror Cosmico' }, 
+            { valor: 'Guerra Mundia', etiqueta: 'Guerra' }, 
+            { valor: 'Desastre Natural', etiqueta: 'Desastre Matural' }, 
+        ]
+    },
+    {
+    grupo: 'Humor y Vida Cotidiana',
+    opciones: [
+        { valor: 'Comedia Romántica y Torpeza Adorable', etiqueta: 'Comedia Romántica' },
+        { valor: 'Comedia Absurda y Caos Cotidiano', etiqueta: 'Caos y Comedia' }
+    ]
+}
+];
 
 	let { data } = $props();
 

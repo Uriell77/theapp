@@ -96,14 +96,14 @@ export const actions: Actions = {
 				'defensa heroica del puente levadizo ante una horda de invasores',
 				'emboscada en el bosque de las brumas contra caballeros renegados'
 			],
-			'Magia y Fantasía': [
+			'Alta Fantasía y Magia': [
 				'infiltración en la aguja de cristal del nigromante',
 				'purificación de las raíces del árbol sagrado corrompido',
 				'despertar de un coloso rúnico dormido bajo la montaña',
 				'pacto arriesgado con un fénix guardián de fuego blanco',
 				'travesía por un portal dimensional inestable a través de tierras feéricas'
 			],
-			'Odisea Mitológica Griega': [
+			'Mitología Griega y el Olimpo': [
 				'cacería de la hidra venenosa en el pantano de Lerna',
 				'incursión y escape del laberinto del minotauro implacable',
 				'navegación sorteando el canto hipnótico de las sirenas y los escollos',
@@ -123,7 +123,7 @@ export const actions: Actions = {
 				'destilación de la piedra filosofal bajo la alineación de tres lunas',
 				'combate contra una quimera alquímica mutante creada por un experimento fallido'
 			],
-			'Guerra Espacial': [
+			'Guerra Espacial de Naves': [
 				'asalto aéreo a la nave nodriza invasora en la órbita de un planeta sitiado',
 				'navegación a través de un cinturón de asteroides hostil bajo fuego de cazas',
 				'defensa desesperada del hangar principal de la estación orbital',
@@ -144,7 +144,7 @@ export const actions: Actions = {
 				'destrucción de una base enemiga en el espacio',
 				'ataque a instalaciones enemigas espaciales en cazas espaciales'
 			],
-			'Rebelión Cyberpunk': [
+			'Cyberpunk y Neón': [
 				'hackeo en tiempo real de la megatorre corporativa de telecomunicaciones',
 				'persecución a alta velocidad en moto por autopistas de neón y lluvia ácida',
 				'extracción encubierta de un informante clave en el bajo mundo cibernético',
@@ -163,13 +163,13 @@ export const actions: Actions = {
 				'defensa de un asentamiento improvisado contra un ataque coordinado de saqueadores y mutantes',
 				'destrucción de mounstruos mutantes en un laboratorio abandonado mientras se busca una cura para la radiación'
 			],
-			'Mundo Steampunk': [
+			'Steampunk': [
 				'abordaje aéreo entre dirigibles de vapor y engranajes en plena tormenta',
 				'sabotaje al gigantesco autómata de relojería que asedia la capital',
 				'carrera de locomotoras acorazadas sobre puentes colgantes de hierro',
 				'infiltración en la refinería de gas flotante del barón industrial'
 			],
-			'Catastrofe Natural': [
+			'Desastre Natural': [
 				'evacuación contrarreloj ante la violenta erupción de un volcán ardiente',
 				'rescate acuático en bote en medio de un diluvio torrencial que inunda la ciudad',
 				'búsqueda y rescate de supervivientes entre los escombros tras un terremoto devastador',
@@ -194,19 +194,26 @@ export const actions: Actions = {
 				'evacuación de un hospital infantil ante la amenaza de un tornado que se aproxima rápidamente',
 				'rescate de un grupo de montañistas atrapados en un glaciar durante una tormenta de nieve'
 			],
-			'Apocalipsis Zombi': [
+			'Combate de Mechas Gigantes':[
+				'Combate de mechas en arena',
+				'Combate con kaiyus',
+				'Defensa de ciudad con mechas',
+				'Infiltración en base enemiga con mechas',
+
+			],
+			'Apocalipsis Zombie': [
 				'defensa desesperada de una barricada improvisada contra una turba de infectados',
 				'carrera sigilosa por las azoteas de la metrópoli evitando activar a la horda',
 				'búsqueda de la cepa de la cura en el laboratorio central contaminado',
 				'rescate de un convoy de civiles rodeado en un túnel colapsado'
 			],
-			'Terror Lovecraftiano': [
+			'Terror Cosmico': [
 				'descifrado de inscripciones arcanas en las paredes de un templo submarino ciclópeo',
 				'ritual para cerrar una brecha estelar antes de que despierte la entidad del vacío',
 				'investigación de un pueblo costero sumido en una niebla antinatural y locura',
 				'huida desesperada a través de ciénagas pantanosas perseguidos por cultistas cósmicos'
 			],
-			Superheroes: [
+			'Superhéroes y Cómics': [
 				'desactivación de un artefacto de disrupción cuántica en la cima de un rascacielos',
 				'rescate masivo de civiles en un monorriel subterráneo a punto de caer al vacío',
 				'batalla aérea a máxima potencia contra el supervillano sobre los rascacielos',
@@ -237,13 +244,13 @@ export const actions: Actions = {
 				'infiltración en un depósito de armas enemigo para sabotear su suministro antes de un ataque masivo',
 				'rescate de un grupo de civiles atrapados en una ciudad sitiada mientras se enfrenta a francotiradores enemigos'
 			],
-			'Vaqueros y Western': [
+			'El Salvaje Oeste': [
 				'duelo al mediodía bajo el sol abrasador en la calle principal del pueblo',
 				'asalto a caballo y salto al tren en marcha que transporta el cargamento de oro',
 				'defensa del rancho asediado por una despiadada banda de forajidos',
 				'persecución a través del cañón rocoso siguiendo el rastro del líder bandido'
 			],
-			'Agente Secreto': [
+			'Espionaje Táctico Moderno': [
 				'infiltración en la fiesta de gala de la embajada internacional con identidad falsa',
 				'burlar sistemas biométricos de alta seguridad y cámaras térmicas en el búnker',
 				'persecución automovilística frenética por carreteras de montaña evadiendo francotiradores',
@@ -252,9 +259,7 @@ export const actions: Actions = {
 				'interrogatorio psicológico de un informante clave en un sótano oscuro y aislado',
 				'rescate de un compañero capturado en un almacén abandonado mientras se enfrenta a mercenarios armados',
 				'infiltración en un laboratorio secreto para recuperar un prototipo de arma experimental antes de que caiga en manos enemigas',
-				'intercepción de un mensaje de texto cifrado en un servidor de comunicaciones enemigas'
-			],
-			'Espionaje Internacional': [
+				'intercepción de un mensaje de texto cifrado en un servidor de comunicaciones enemigas',
 				'intercambio confidencial de microfilmes en una estación ferroviaria bajo la niebla',
 				'descifrado de un canal de audio satelital en un piso franco antes de ser rastreados',
 				'evasión de un cerco de contrainteligencia en un aeropuerto diplomático extranjero'
@@ -265,42 +270,21 @@ export const actions: Actions = {
 				'descubrimiento de la pista definitiva en la caja fuerte de la mansión del magnate',
 				'confrontación final con el asesino de guante blanco en el depósito portuario'
 			],
-			'El Gran Atraco': [
-				'infiltración por conductos de aire sincronizada al segundo para evitar sensores láser',
-				'perforación de la compuerta acorazada de la bóveda subterránea con taladro criogénico',
-				'escape coordinado en furgonetas señuelo burlando el cerco policial en la autopista',
-				'desactivación remota del sistema de alarmas mediante un pulso electromagnético'
+			'Atraco de Guante Blanco y Estafa Maestra': [
+				"Infiltrarse en la gala exclusiva de un magnate corrupto para clonar sus credenciales bancarias y desviar sus fondos ocultos.",
+        			"Montar una empresa ficticia para engañar a un especulador despiadado y recuperar las escrituras de un barrio marginado.",
+        			"Burlar la seguridad láser de una bóveda de alta tecnología para robar pruebas incriminatorias antes de que sean destruidas.",
+        			"Ejecutar un engaño a gran escala usando disfraces y tecnología para que un criminal confiese sus delitos en una transmisión en vivo."
 			],
-			'Romance Diurno': [
-				'encuentro casual pero transformador bajo la lluvia en una pintoresca librería',
-				'carrera contra el reloj en el aeropuerto para declarar el amor antes del despegue',
-				'revelación de una carta secreta que aclara un doloroso malentendido del pasado',
-				'baile espontáneo en el mirador iluminado con vista a la ciudad al atardecer'
-			],
-			'Aprendizaje Infantil': [
-				'búsqueda de las gemas de colores del alfabeto en el valle de los juguetes mágicos',
-				'construcción de un puente de bloques de madera para ayudar a cruzar al conejito tímido',
-				'enseñar al pequeño dragón que teme al fuego a encender su primera chispita de bondad',
-				'resolver las divertidas adivinanzas del búho sabio en lo alto del gran árbol de cuentos',
-				'gran fiesta de estrellas y globos celebrando que todos lograron aprender la lección'
-			],
-			'Aprendizaje Adolescente': [
-				'descifrado colaborativo del enigma científico en el laboratorio escolar tras clases',
-				'competencia en el torneo interescolar de debate o robótica superando la ansiedad',
-				'descubrimiento de un misterio oculto en los archivos olvidados de la academia',
-				'superación de la prueba decisiva del jurado gracias al trabajo en equipo y la perseverancia'
-			],
-			'Aprendizaje de Habilidades': [
-				'dominio de la técnica base tras múltiples intentos fallidos guiados por el instructor',
-				'resolución de un error técnico crítico aplicando los principios teóricos aprendidos',
-				'primer proyecto real ejecutado bajo presión con estándares de calidad profesional',
-				'presentación de la obra maestra final demostrando autonomía y maestría completa'
-			],
-			'Conocimiento Universal': [
-				'debate filosófico en la gran biblioteca clásica sobre el orden y belleza del cosmos',
-				'comprensión profunda de los principios universales que rigen la materia y la vida',
-				'superación de las tres pruebas dialécticas impuestas por el consejo de pensadores',
-				'unificación de conceptos complejos para resolver una gran incógnita de la humanidad'
+			"comedia romántica y torpeza adorable": [
+				"Intentar organizar la cita perfecta sorpresa, pero una serie de malentendidos ridículos y accidentes torpes amenazan con arruinarlo todo.",
+				"Tratar de impresionar a esa persona especial fingiendo ser un experto en algo, lo que desata una avalancha de mentiras blancas difíciles de sostener.",
+				"Un intento bien intencionado de preparar un regalo hecho a mano termina en un desastre pegajoso, obligando a improvisar antes de que llegue la pareja."
+			], 
+			"comedia absurda y caos cotidiano": [
+				"Un arreglo casero de cinco minutos que mágicamente desata una inundación, un incendio menor y la fuga de la mascota del vecino.",
+				"Intentar borrar desesperadamente un mensaje enviado por error al jefe supremo, lo que implica infiltrarse en la oficina usando disfraces ridículos.",
+					"Una cadena de favores absurdos que sale mal: para conseguir un objeto simple, hay que lidiar con personajes excéntricos de la ciudad que exigen misiones cada vez más locas."
 			]
 		};
 
