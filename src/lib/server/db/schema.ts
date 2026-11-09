@@ -26,9 +26,25 @@ export const tasks = pgTable(
 		userId: text('user_id')
 			.references(() => users.id, { onDelete: 'cascade' })
 			.notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull()
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		milestones: timestamp('milestones', { withTimezone: true }).array()
 	},
 	(table) => [index('tasks_user_id_idx').on(table.userId)]
+);
+
+// Tabla de Bitácora / Project Logs (Fricción Positiva)
+export const projectLogs = pgTable(
+	'project_logs',
+	{
+		id: text('id').primaryKey(),
+		projectId: text('project_id'),
+		taskId: integer('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+		level: integer('level').notNull(),
+		logText: text('log_text').notNull(),
+		mediaUrl: text('media_url'),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(table) => [index('project_logs_task_id_idx').on(table.taskId)]
 );
 
 // Tabla de niveles

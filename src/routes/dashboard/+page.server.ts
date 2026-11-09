@@ -76,6 +76,19 @@ export const actions: Actions = {
 		const tema = (formData.get('tema') as string)?.trim();
 		const cantidad_de_niveles_raw = parseInt(formData.get('cantidad_de_niveles') as string, 10);
 		const nombre_de_usuario = (formData.get('nombredeusuario') as string)?.trim();
+		const milestonesRaw = formData.get('milestones') as string | null;
+
+		let parsedMilestones: Date[] | null = null;
+		if (milestonesRaw) {
+			try {
+				const arr = JSON.parse(milestonesRaw);
+				if (Array.isArray(arr) && arr.length > 0) {
+					parsedMilestones = arr.map((item: string) => new Date(item));
+				}
+			} catch (e) {
+				console.error('Error al parsear milestones:', e);
+			}
+		}
 
 		if (!title || !tema || isNaN(cantidad_de_niveles_raw) || cantidad_de_niveles_raw < 1) {
 			return fail(400, {
@@ -288,7 +301,7 @@ export const actions: Actions = {
 			]
 		};
 
-		function obtenerSugerenciasTema(t: string): string {
+		function obtenerSugerenciasTema(t: string): string[] {
 			let lista = sugerenciasNarrativasPorTema[t];
 			if (!lista) {
 				const temaLower = (t || '').toLowerCase();
@@ -433,14 +446,15 @@ FORMATO JSON OBLIGATORIO:
 			title: string,
 			tema: string,
 			cantidad_de_niveles: number,
-			sugerencia: string
+			sugerencia: string | string[]
 		) {
+			const sugerenciaTexto = Array.isArray(sugerencia) ? sugerencia.join(', ') : sugerencia;
 			return `Eres un pedagogo gamificador y maestro de aventuras formativas. El usuario "${nombre_de_usuario}" quiere APRENDER esto en la vida real: "${title}". Enfoque/Tema: "${tema}".
 Objetivo: Crea un TUTORIAL SECUENCIAL de exactamente ${cantidad_de_niveles} lecciones/capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
 Inspírate en la siguiente situación o misión de aprendizaje central para la temática "${tema}":
-  - "${sugerencia}"
+  - "${sugerenciaTexto}"
 La aventura DEBE centrarse en torno a esta única misión o trama de aprendizaje principal a lo largo de las lecciones, utilizándola para enriquecer el contexto, las pruebas y los retos pedagógicos dentro de la ambientación.
 
 REGLAS PEDAGÓGICAS (TUTOR GAMIFICADO):
@@ -780,7 +794,8 @@ FORMATO JSON OBLIGATORIO:
 					tema,
 					cantidad_de_niveles,
 					userId: locals.user.id,
-					status: '0'
+					status: '0',
+					milestones: parsedMilestones
 				})
 				.returning();
 
@@ -825,6 +840,18 @@ FORMATO JSON OBLIGATORIO:
 		}
 
 		const currentStatus = parseInt(task.status, 10) || 0;
+
+		// Validación estricta de Time-Gating en el servidor
+		if (Array.isArray(task.milestones) && task.milestones.length > 0) {
+			const targetMilestone = task.milestones[currentStatus];
+			if (targetMilestone) {
+				const milestoneTime = new Date(targetMilestone).getTime();
+				if (!isNaN(milestoneTime) && Date.now() < milestoneTime) {
+					return fail(403, { message: 'El capítulo aún está bloqueado por Time-Gating' });
+				}
+			}
+		}
+
 		if (currentStatus < task.cantidad_de_niveles - 1) {
 			try {
 				await db

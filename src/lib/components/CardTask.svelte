@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { Motion } from 'svelte-motion';
 	import { parseChapter, isKidsTheme, capitalizeWords } from '$lib/chapterUtils';
+	import BitacoraModal from './BitacoraModal.svelte';
 
 	interface Props {
 		task: any;
@@ -9,12 +10,59 @@
 		onSelect?: () => void;
 	}
 
+	let { task = $bindable(), hasViewed = false, onSelect }: Props = $props();
 
-	let { task, hasViewed = false, onSelect}: Props = $props();
+	let isModalOpen = $state(false);
+	let currentTime = $state(Date.now());
+	let localMilestones = $state<any[] | null>(null);
+
+	$effect(() => {
+		const timer = setInterval(() => {
+			currentTime = Date.now();
+		}, 1000);
+		return () => clearInterval(timer);
+	});
+
+	$effect(() => {
+		localMilestones = task?.milestones || null;
+	});
+
 	let statusNum = $derived(parseInt(task?.status, 10) || 0);
+	let progreso = $derived(
+		task?.progreso !== undefined ? Number(task.progreso) : statusNum
+	);
 	let isAbandoned = $derived(statusNum === -1);
 	let isKids = $derived(isKidsTheme(task?.tema));
 	let isArchived = $derived(Boolean(task?.isArchived));
+
+	let currentMilestone = $derived.by(() => {
+		const list = localMilestones ?? task?.milestones;
+		if (!list) return null;
+
+		let arr = list;
+		if (typeof arr === 'string') {
+			try {
+				arr = JSON.parse(arr);
+			} catch {
+				return null;
+			}
+		}
+
+		if (!Array.isArray(arr) || arr.length === 0) return null;
+
+		const target = arr[progreso] !== undefined ? arr[progreso] : arr[arr.length - 1];
+		if (!target) return null;
+
+		const time = target instanceof Date ? target.getTime() : new Date(target).getTime();
+		return isNaN(time) ? null : time;
+	});
+
+	let isTimeLocked = $derived.by(() => {
+		if (isAbandoned) return false;
+		if (isLastLevel) return false;
+		if (!currentMilestone) return false;
+		return currentTime < currentMilestone;
+	});
 
 	const tematicas: { valor: string; etiqueta: string } [] = [
             { valor: 'Alta Fantasía y Magia', etiqueta: 'Fantasía' },
@@ -40,7 +88,6 @@
 		{ valor: 'Comedia Absurda y Caos Cotidiano', etiqueta: 'Caos y Comedia' }
 	]
 
-	console.log(tematicas)
 
 
 	function handleAdvanceClick(e: MouseEvent) {
@@ -50,6 +97,30 @@
 		if (!hasViewed) {
 			e.preventDefault();
 			if (onSelect) onSelect();
+			return;
+		}
+		if (isTimeLocked) {
+			e.preventDefault();
+			isModalOpen = true;
+			return;
+		}
+	}
+
+	function handleClickerClick(e: MouseEvent) {
+		if (isAbandoned || isLastLevel) {
+			return;
+		}
+		if (!hasViewed) {
+			if (onSelect) onSelect();
+			return;
+		}
+		if (isTimeLocked) {
+			e.preventDefault();
+			isModalOpen = true;
+			return;
+		}
+		if (onSelect) {
+			onSelect();
 		}
 	}
 
@@ -119,12 +190,14 @@
 			id={`task-${task.id}`}
 			style="position: relative;"
 		>
-			<!-- Botón transparente para abrir panel de detalles -->
+			<!-- Botón transparente para abrir panel de detalles con Time-Gating -->
 			<button
 				type="button"
 				class="clicker-btn"
-				onclick={onSelect}
-				aria-label={`Ver detalles de ${task.title}`}
+				class:is-locked={hasViewed && isTimeLocked}
+				disabled={isLastLevel && !isAbandoned}
+				onclick={handleClickerClick}
+				aria-label={hasViewed && isTimeLocked ? `Nivel bloqueado por tiempo` : `Ver detalles de ${task.title}`}
 			></button>
 
 			<!-- Header del Card: Título + Badge de categoría + Botón de eliminar -->
@@ -265,23 +338,53 @@
 					>
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion
-							whileHover={!isLastLevel || isAbandoned ? { scale: 1.02 } : {}}
-							whileTap={!isLastLevel || isAbandoned ? { scale: 0.98 } : {}}
+							whileHover={!isLastLevel && !isAbandoned && !(hasViewed && isTimeLocked) ? { scale: 1.02 } : {}}
+							whileTap={!isLastLevel && !isAbandoned && !(hasViewed && isTimeLocked) ? { scale: 0.98 } : {}}
 							let:motion
 						>
 							<button
 								use:motion
 								class="btn-primary"
+								class:is-time-locked={hasViewed && isTimeLocked}
 								style="width: 100%;"
-								disabled={isLastLevel && !isAbandoned}
-								type={isAbandoned || hasViewed ? 'submit' : 'button'}
+								disabled={(isLastLevel && !isAbandoned) || (hasViewed && isTimeLocked)}
+								type={isAbandoned ? 'submit' : hasViewed && !isTimeLocked ? 'submit' : 'button'}
 								onclick={handleAdvanceClick}
 							>
-								<span>{isAbandoned ? 'Reiniciar' : hasViewed ? 'Avanzar' : 'Abrir para avanzar'}</span>
-								<span style="font-size: 1.1rem; line-height: 1;">→</span>
+								<span>
+									{#if isAbandoned}
+										Reiniciar
+									{:else if !hasViewed}
+										{progreso === 0 ? 'Visualizar para avanzar' : 'Abrir para avanzar'}
+									{:else if isTimeLocked}
+										Avanzar (Bloqueado)
+									{:else}
+										Avanzar
+									{/if}
+								</span>
+								{#if hasViewed && isTimeLocked}
+									<span style="font-size: 1rem; line-height: 1;">🔒</span>
+								{:else}
+									<span style="font-size: 1.1rem; line-height: 1;">→</span>
+								{/if}
 							</button>
 						</Motion>
 					</form>
+
+					<!-- Botón Desbloquear (Fricción Positiva) -->
+					{#if hasViewed && isTimeLocked}
+						<Motion whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} let:motion>
+							<button
+								use:motion
+								class="button is-warning is-light is-small"
+								style="border-radius: 12px; font-weight: 700; padding: 0 14px; height: 100%; min-height: 38px; white-space: nowrap; box-shadow: 0 0 10px rgba(255, 209, 102, 0.25);"
+								type="button"
+								onclick={() => (isModalOpen = true)}
+							>
+								🔓 Desbloquear
+							</button>
+						</Motion>
+					{/if}
 
 					<!-- Botón Abandonar -->
 					<form
@@ -317,6 +420,17 @@
 			</div>
 		</div>
 	</Motion>
+
+	<BitacoraModal
+		bind:isOpen={isModalOpen}
+		project={task}
+		level={progreso}
+		onUnlocked={(newMilestones) => {
+			task.milestones = newMilestones;
+			localMilestones = [...newMilestones];
+			currentTime = Date.now();
+		}}
+	/>
 {:else}
 	<progress class="progress is-small is-primary" max="100"></progress>
 {/if}
@@ -334,6 +448,11 @@
 		z-index: 10;
 	}
 
+	.clicker-btn:disabled,
+	.clicker-btn.is-locked {
+		cursor: not-allowed;
+	}
+
 	:global(.project-card) {
 		position: relative;
 		overflow: hidden;
@@ -349,6 +468,25 @@
 			0 12px 36px rgba(0, 0, 0, 0.35),
 			inset 0 1px 1px rgba(255, 255, 255, 0.22),
 			inset 0 -1px 0 rgba(255, 255, 255, 0.04) !important;
+	}
+
+	:global(.project-card .btn-primary:disabled),
+	:global(.project-card .btn-primary.is-time-locked) {
+		opacity: 0.45 !important;
+		cursor: not-allowed !important;
+		filter: grayscale(0.85) !important;
+		box-shadow: none !important;
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		background: #203138 !important;
+		color: #8fa3ad !important;
+		pointer-events: none !important;
+	}
+
+	:global(.project-card .btn-outline:disabled) {
+		opacity: 0.4 !important;
+		cursor: not-allowed !important;
+		filter: grayscale(0.85) !important;
+		pointer-events: none !important;
 	}
 
 	/* Reducir tamaño de letra en botones de las cards */

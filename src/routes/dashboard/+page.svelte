@@ -89,6 +89,43 @@
 	let newTaskTitle = $state('');
 	let newTaskTema = $state('Guerra Espacial');
 	let newTaskNiveles = $state(3);
+	let endDate = $state('');
+	let milestones = $state<string[]>([]);
+
+	function formatToDateTimeLocal(date: Date): string {
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+	}
+
+	$effect(() => {
+		if (!endDate) {
+			milestones = [];
+			return;
+		}
+
+		const start = Date.now();
+		const end = new Date(endDate).getTime();
+
+		if (isNaN(end) || end <= start || newTaskNiveles <= 1) {
+			milestones = [];
+			return;
+		}
+
+		const totalSteps = newTaskNiveles;
+		const stepInterval = (end - start) / totalSteps;
+		const calculated: string[] = [];
+
+		for (let i = 1; i <= totalSteps; i++) {
+			if (i === totalSteps) {
+				calculated.push(endDate);
+			} else {
+				const stepTime = new Date(start + stepInterval * i);
+				calculated.push(formatToDateTimeLocal(stepTime));
+			}
+		}
+
+		milestones = calculated;
+	});
 
 	// Estados de carga y error
 	let isSubmitting = $state(false);
@@ -164,6 +201,8 @@
 							newTaskTitle = '';
 							newTaskTema = 'Guerra Espacial';
 							newTaskNiveles = 3;
+							endDate = '';
+							milestones = [];
 						} else if (result.type === 'failure') {
 							errorMessage = (result.data?.message as string) || 'Error al crear la tarea';
 						}
@@ -294,6 +333,75 @@
 						</div>
 					</div>
 				</div>
+
+				<div class="field mb-6-mobile mb-3-desktop">
+					<label
+						class="label"
+						for="projectEndDate"
+						style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;"
+					>
+						Fecha y Hora Objetivo (Final)
+					</label>
+					<div class="control">
+						<input
+							class="input"
+							type="datetime-local"
+							id="projectEndDate"
+							name="endDate"
+							bind:value={endDate}
+							disabled={isSubmitting}
+							style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); color: white; border-radius: 14px; padding: 12px 16px; font-family: inherit;"
+						/>
+					</div>
+				</div>
+
+				{#if milestones.length > 0}
+					<div
+						class="box mb-5 p-4"
+						style="background: rgba(14, 23, 29, 0.7); border: 1px solid var(--card-border); border-radius: 14px;"
+					>
+						<p class="is-size-7 has-text-weight-bold has-text-primary mb-3" style="text-transform: uppercase; letter-spacing: 0.05em;">
+							⏱️ Línea de Tiempo de Capítulos
+						</p>
+						<div class="is-flex is-flex-direction-column" style="gap: 0.85rem;">
+							<!-- Nodo Inicial Fijo -->
+							<div class="is-flex is-align-items-center">
+								<span class="tag is-success mr-2" style="font-size: 0.75rem;">Inicio</span>
+								<span class="is-size-7 has-text-grey-light">Creación (Ahora)</span>
+							</div>
+
+							<!-- Nodos Intermedios Editables -->
+							{#each milestones as _, i}
+								{#if i < milestones.length - 1}
+									<div class="field is-horizontal is-align-items-center mb-0" style="gap: 0.5rem;">
+										<div class="field-label is-small" style="text-align: left; flex-grow: 1;">
+											<span class="tag is-info is-light" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
+										</div>
+										<div class="field-body" style="flex-grow: 3;">
+											<div class="control" style="width: 100%;">
+												<input
+													class="input is-small"
+													type="datetime-local"
+													bind:value={milestones[i]}
+													disabled={isSubmitting}
+													style="background: rgba(0, 0, 0, 0.35); border: 1px solid var(--card-border); color: white; border-radius: 8px; font-family: inherit;"
+												/>
+											</div>
+										</div>
+									</div>
+								{/if}
+							{/each}
+
+							<!-- Nodo Final Fijo -->
+							<div class="is-flex is-align-items-center">
+								<span class="tag is-danger mr-2" style="font-size: 0.75rem;">Final</span>
+								<span class="is-size-7 has-text-white">{endDate.replace('T', ' ')}</span>
+							</div>
+						</div>
+					</div>
+
+					<input type="hidden" name="milestones" value={JSON.stringify(milestones)} />
+				{/if}
 				<input class="is-hidden" type="text" value="{data?.user?.nombre_de_usuario}" name="nombredeusuario" />
 
 				<Motion
