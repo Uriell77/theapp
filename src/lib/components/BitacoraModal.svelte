@@ -93,9 +93,7 @@
 </script>
 
 {#if isOpen}
-<div class="columns is-centered is-mobile">
-<div class="column is-full-mobile">
-	<div class="modal is-active" style="position: fixed; inset: 0; z-index: 9999;">
+	<div class="modal is-active" role="presentation">
 		<div
 			class="modal-background"
 			role="button"
@@ -105,14 +103,8 @@
 				if ((e.key === 'Enter' || e.key === ' ') && !isSubmitting) isOpen = false;
 			}}
 		></div>
-		<div
-			class=" section modal-card has-background-dark"
-			style="width: 100vw; height: 100vh; max-height: 100vh; margin: 0; border-radius: 0; display: flex; flex-direction: column;"
-		>
-			<header
-				class="modal-card-head has-background-black-bis"
-				style="border-radius: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);"
-			>
+		<div class="modal-card has-background-dark">
+			<header class="modal-card-head has-background-black-bis">
 				<p class="modal-card-title has-text-white has-text-weight-bold">
 					Bitácora de Desbloqueo - Capítulo {level + 1}
 				</p>
@@ -125,10 +117,7 @@
 				></button>
 			</header>
 
-			<section
-				class="modal-card-body has-background-dark has-text-white"
-				style="flex: 1; overflow-y: auto; padding: 1.5rem;"
-			>
+			<section class="modal-card-body has-background-dark has-text-white">
 				{#if errorMessage}
 					<div class="notification is-danger is-light mb-4">
 						{errorMessage}
@@ -160,7 +149,6 @@
 								bind:value={logText}
 								disabled={isSubmitting}
 								required
-								style="border: 1px solid rgba(255, 255, 255, 0.2); font-family: inherit;"
 							></textarea>
 						</div>
 					</div>
@@ -170,7 +158,7 @@
 							Evidencia Visual (Cámara / Foto)
 						</label>
 						<div class="file has-name is-fullwidth">
-							<label class="file-label" style="width: 100%;">
+							<label class="file-label">
 								<input
 									id="logMediaFile"
 									class="file-input"
@@ -184,7 +172,7 @@
 									<span class="file-icon">📷</span>
 									<span class="file-label">Tomar foto o subir...</span>
 								</span>
-								<span class="file-name has-background-dark has-text-grey-light" style="flex: 1;">
+								<span class="file-name has-background-dark has-text-grey-light">
 									{selectedFile ? selectedFile.name : 'Ningún archivo seleccionado'}
 								</span>
 							</label>
@@ -193,10 +181,7 @@
 				</form>
 			</section>
 
-			<footer
-				class="modal-card-foot has-background-black-bis is-justify-content-flex-end"
-				style="border-radius: 0; border-top: 1px solid rgba(255, 255, 255, 0.1);"
-			>
+			<footer class="modal-card-foot has-background-black-bis is-justify-content-flex-end">
 				<button
 					class="button is-ghost has-text-grey-light mr-3"
 					type="button"
@@ -217,6 +202,103 @@
 			</footer>
 		</div>
 	</div>
-</div>
-</div>
 {/if}
+
+<style>
+	.modal {
+		box-sizing: border-box;
+		padding: 1rem;
+	}
+
+	.modal-card {
+		box-sizing: border-box;
+		width: min(100%, 48rem);
+		min-width: 0;
+		height: min(100%, 52rem);
+		max-height: 100%;
+		margin: 0;
+		overflow: hidden;
+		border-radius: 0.5rem;
+	}
+
+	.modal-card-head,
+	.modal-card-foot {
+		flex: 0 0 auto;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		border-radius: 0;
+		border-color: rgb(255 255 255 / 10%);
+	}
+
+	.modal-card-title {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.modal-card-body {
+		box-sizing: border-box;
+		flex: 1 1 auto;
+		min-width: 0;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		padding: 1.5rem;
+	}
+
+	.modal-card-body :global(.notification),
+	.modal-card-body :global(.label) {
+		overflow-wrap: anywhere;
+	}
+
+	.modal-card-body :global(.textarea) {
+		box-sizing: border-box;
+		max-width: 100%;
+		font-family: inherit;
+	}
+
+	.modal-card-body :global(.file-label) {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.modal-card-body :global(.file-cta),
+	.modal-card-body :global(.file-name) {
+		min-width: 0;
+	}
+
+	.modal-card-body :global(.file-name) {
+		flex: 1 1 0;
+		height: auto;
+		white-space: normal;
+		word-break: break-word;
+	}
+
+	@media (max-width: 480px) {
+		.modal {
+			padding: 0;
+		}
+
+		.modal-card {
+			width: 100%;
+			height: 100%;
+			max-height: 100%;
+			border-radius: 0;
+		}
+
+		.modal-card-head,
+		.modal-card-body,
+		.modal-card-foot {
+			padding: 1rem;
+		}
+
+		.modal-card-foot {
+			justify-content: stretch;
+		}
+
+		.modal-card-foot :global(.button) {
+			flex: 1 1 auto;
+			margin: 0;
+			white-space: normal;
+		}
+	}
+</style>
