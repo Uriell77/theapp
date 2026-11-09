@@ -1,11 +1,23 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Motion } from 'svelte-motion';
-	import { parseChapter, isKidsTheme, capitalizeWords } from '$lib/chapterUtils';
+	import { isKidsTheme, capitalizeWords } from '$lib/chapterUtils';
 	import BitacoraModal from './BitacoraModal.svelte';
 
+	interface TaskData {
+		id: number | string;
+		title?: string;
+		tema?: string;
+		status: string | number;
+		cantidad_de_niveles: number;
+		progreso?: number | string;
+		milestones?: (string | Date)[] | string | null;
+		isArchived?: boolean;
+		[key: string]: any;
+	}
+
 	interface Props {
-		task: any;
+		task: TaskData;
 		hasViewed?: boolean;
 		onSelect?: () => void;
 	}
@@ -14,7 +26,7 @@
 
 	let isModalOpen = $state(false);
 	let currentTime = $state(Date.now());
-	let localMilestones = $state<any[] | null>(null);
+	let localMilestones = $state<any[] | string | null>(null);
 
 	$effect(() => {
 		const timer = setInterval(() => {
@@ -27,10 +39,8 @@
 		localMilestones = task?.milestones || null;
 	});
 
-	let statusNum = $derived(parseInt(task?.status, 10) || 0);
-	let progreso = $derived(
-		task?.progreso !== undefined ? Number(task.progreso) : statusNum
-	);
+	let statusNum = $derived(parseInt(String(task?.status), 10) || 0);
+	let progreso = $derived(task?.progreso !== undefined ? Number(task.progreso) : statusNum);
 	let isAbandoned = $derived(statusNum === -1);
 	let isKids = $derived(isKidsTheme(task?.tema));
 	let isArchived = $derived(Boolean(task?.isArchived));
@@ -57,6 +67,8 @@
 		return isNaN(time) ? null : time;
 	});
 
+	let isLastLevel = $derived(task ? statusNum >= task.cantidad_de_niveles - 1 : false);
+
 	let isTimeLocked = $derived.by(() => {
 		if (isAbandoned) return false;
 		if (isLastLevel) return false;
@@ -64,31 +76,35 @@
 		return currentTime < currentMilestone;
 	});
 
-	const tematicas: { valor: string; etiqueta: string } [] = [
-            { valor: 'Alta Fantasía y Magia', etiqueta: 'Fantasía' },
-            { valor: 'Cruzada Medieval', etiqueta: 'Medieval' },
-            { valor: 'Mitología Griega y el Olimpo', etiqueta: 'Olimpo' },
-            { valor: 'Dinastía Samurái', etiqueta: 'Samurái' },
-            { valor: 'Alquimia y Magia Arcana', etiqueta: 'Alquimia' },	
-            { valor: 'Cyberpunk y Neón', etiqueta: 'Ciberespacio' }, 
-            { valor: 'Steampunk', etiqueta: 'Steampunk' }, 
-            { valor: 'Guerra Espacial de Naves', etiqueta: 'Espacio' },         
-            { valor: 'Combate de Mechas Gigantes', etiqueta: 'Mechas' },
-            { valor: 'Superhéroes y Cómics', etiqueta: 'Superhéroes' },
-            { valor: 'Supervivencia Post-Apocalíptica', etiqueta: 'Mundo Post-Apocaliptico' },
-            { valor: 'Apocalipsis Zombie', etiqueta: 'Zombie' }, // UI limpia, pero Gemini recibe "Zombie"
-            { valor: 'Espionaje Táctico Moderno', etiqueta: 'Espionaje' },
-		{ valor: 'Atraco de Guante Blanco y Estafa Maestra', etiqueta: 'Golpe Maestro' },
-		{ valor: 'Detective Noir', etiqueta: 'Noir' },
-            { valor: 'El Salvaje Oeste', etiqueta: 'Salvaje Oeste' },
-            { valor: 'Terror Cosmico', etiqueta: 'Terror Cosmico' }, 
-            { valor: 'Guerra Mundia', etiqueta: 'Guerra' }, 
-            { valor: 'Desastre Natural', etiqueta: 'Desastre Matural' }, 
-		{ valor: 'Comedia Romántica y Torpeza Adorable', etiqueta: 'Comedia Romántica' },
-		{ valor: 'Comedia Absurda y Caos Cotidiano', etiqueta: 'Caos y Comedia' }
-	]
+	let isLocked = $derived(isTimeLocked);
 
+	const tematicasMap: Record<string, string> = {
+		'Alta Fantasía y Magia': 'Fantasía',
+		'Cruzada Medieval': 'Medieval',
+		'Mitología Griega y el Olimpo': 'Olimpo',
+		'Dinastía Samurái': 'Samurái',
+		'Alquimia y Magia Arcana': 'Alquimia',
+		'Cyberpunk y Neón': 'Ciberespacio',
+		'Steampunk': 'Steampunk',
+		'Guerra Espacial de Naves': 'Espacio',
+		'Combate de Mechas Gigantes': 'Mechas',
+		'Superhéroes y Cómics': 'Superhéroes',
+		'Supervivencia Post-Apocalíptica': 'Mundo Post-Apocalíptico',
+		'Apocalipsis Zombie': 'Zombie',
+		'Espionaje Táctico Moderno': 'Espionaje',
+		'Atraco de Guante Blanco y Estafa Maestra': 'Golpe Maestro',
+		'Detective Noir': 'Noir',
+		'El Salvaje Oeste': 'Salvaje Oeste',
+		'Terror Cosmico': 'Terror Cósmico',
+		'Guerra Mundia': 'Guerra',
+		'Desastre Natural': 'Desastre Natural',
+		'Comedia Romántica y Torpeza Adorable': 'Comedia Romántica',
+		'Comedia Absurda y Caos Cotidiano': 'Caos y Comedia'
+	};
 
+	let tematicaEtiqueta = $derived(
+		task?.tema ? tematicasMap[task.tema] || capitalizeWords(task.tema) : 'Tema no especificado'
+	);
 
 	function handleAdvanceClick(e: MouseEvent) {
 		if (isAbandoned) {
@@ -99,7 +115,7 @@
 			if (onSelect) onSelect();
 			return;
 		}
-		if (isTimeLocked) {
+		if (isLocked) {
 			e.preventDefault();
 			isModalOpen = true;
 			return;
@@ -110,11 +126,11 @@
 		if (isAbandoned || isLastLevel) {
 			return;
 		}
-		if (!hasViewed) {
-			if (onSelect) onSelect();
+		if (!hasViewed && onSelect) {
+			onSelect();
 			return;
 		}
-		if (isTimeLocked) {
+		if (isLocked) {
 			e.preventDefault();
 			isModalOpen = true;
 			return;
@@ -124,15 +140,6 @@
 		}
 	}
 
-	let isLastLevel = $derived(task ? statusNum >= task.cantidad_de_niveles - 1 : false);
-	let currentLevelContent = $derived.by(() => {
-		if (!task?.levels?.[0]?.content) return '';
-		return task.levels[0].content[statusNum] || `Nivel ${statusNum + 1}`;
-	});
-	let currentCinematica = $derived.by(() => {
-		if (!task?.levels?.[0]?.cinematica) return null;
-		return task.levels[0].cinematica[statusNum] || null;
-	});
 	let progressPercent = $derived(
 		task && task.cantidad_de_niveles > 1
 			? Math.min(100, (statusNum / (task.cantidad_de_niveles - 1)) * 100).toFixed(1)
@@ -140,29 +147,8 @@
 				? '100'
 				: '0'
 	);
-	let defeatChapter = $derived.by(() => {
-		if (!task?.levels?.[0]?.vista) return null;
-		return task.levels[0].vista || null;
-	});
 
-	let rawChapterTitle = $derived.by(() => {
-		if (statusNum === -1) {
-			if (Array.isArray(defeatChapter) && typeof defeatChapter[0] === 'string') {
-				return parseChapter(defeatChapter[0]).title || 'Final Alternativo';
-			}
-			return 'Final Alternativo';
-		}
-		if (!currentLevelContent) return `Nivel ${statusNum + 1}`;
-		return parseChapter(currentLevelContent).title || `Nivel ${statusNum + 1}`;
-	});
-
-	// Capitalización para que todas las palabras inicien con mayúscula
-	let displayTitle = $derived(capitalizeWords(task?.title));
-	let displayTema = $derived(capitalizeWords(task?.tema));
-	let displayChapterTitle = $derived.by(() => {
-		const raw = rawChapterTitle.endsWith('.') ? rawChapterTitle : `${rawChapterTitle}.`;
-		return capitalizeWords(raw);
-	});
+	let displayTitle = $derived(capitalizeWords(task?.title || 'Proyecto sin título'));
 
 	let stepRatio = $derived.by(() => {
 		if (!task) return 0;
@@ -188,62 +174,64 @@
 			class:is-kids-theme={isKids}
 			class:is-archived-card={isArchived}
 			id={`task-${task.id}`}
-			style="position: relative;"
 		>
-			<!-- Botón transparente para abrir panel de detalles con Time-Gating -->
+			<!-- Botón transparente para abrir panel de detalles o modal con Time-Gating -->
 			<button
 				type="button"
 				class="clicker-btn"
-				class:is-locked={hasViewed && isTimeLocked}
+				class:is-locked={isLocked}
 				disabled={isLastLevel && !isAbandoned}
 				onclick={handleClickerClick}
-				aria-label={hasViewed && isTimeLocked ? `Nivel bloqueado por tiempo` : `Ver detalles de ${task.title}`}
+				aria-label={isLocked ? 'Nivel bloqueado por tiempo' : `Ver detalles de ${task.title}`}
 			></button>
 
 			<!-- Header del Card: Título + Badge de categoría + Botón de eliminar -->
-			<div class="card-header-line" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-				<h3 class="has-text-weight-bold has-text-white {isKids ? 'font-kids' : 'font-modern-chapter'}" style="font-size: 1.25rem; margin-bottom: 6px; text-transform: capitalize; flex: 1;">
+			<div class="card-header-line">
+				<h3
+					class="card-title has-text-weight-bold has-text-white {isKids ? 'font-kids' : 'font-modern-chapter'}"
+				>
 					{displayTitle}
 				</h3>
 
-				<div style="display: flex; align-items: center; gap: 6px; position: relative; z-index: 15;">
+				<div class="card-header-actions">
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
-						<span class="badge-general is-size-7 font-modern-chapter">{tematicas.find((t) => t.valor === task.tema)?.etiqueta || 'Tema no especificado'} ⚔️</span>
+						<span class="badge-general font-modern-chapter">
+							{tematicaEtiqueta} ⚔️
+						</span>
 					{/if}
 
 					<!-- Botón de eliminación rápida -->
 					{#if isArchived}
-					<form
-						method="POST"
-						action="?/deleteTask"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update();
-							};
-						}}
-					>
-						<input type="hidden" name="taskId" value={task.id} />
-						<button
-							type="submit"
-							class="btn-icon-delete"
-							title="Eliminar tarea"
-							aria-label="Eliminar tarea"
-							onclick={(e) => {
-								if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) {
-									e.preventDefault();
-								}
+						<form
+							method="POST"
+							action="?/deleteTask"
+							use:enhance={() => {
+								return async ({ update }) => {
+									await update();
+								};
 							}}
 						>
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<polyline points="3 6 5 6 21 6"></polyline>
-								<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-							</svg>
-						</button>
-					</form>
+							<input type="hidden" name="taskId" value={task.id} />
+							<button
+								type="submit"
+								class="btn-icon-delete"
+								title="Eliminar tarea"
+								aria-label="Eliminar tarea"
+								onclick={(e) => {
+									if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) {
+										e.preventDefault();
+									}
+								}}
+							>
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="3 6 5 6 21 6"></polyline>
+									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+								</svg>
+							</button>
+						</form>
 					{:else}
-						<!-- Botón de eliminar deshabilitado para tareas activas -->
 						<button
 							type="button"
 							class="btn-icon-delete is-hidden"
@@ -261,9 +249,8 @@
 				</div>
 			</div>
 
-
 			<!-- Progress Timeline -->
-			<div class="progress-timeline">
+			<div class="progress-timeline" style="--total-steps: {task.cantidad_de_niveles};">
 				<div
 					class="tooltip-progress"
 					style="left: calc(14px + (100% - 28px) * {stepRatio}); transform: translateX(-{stepPercent}%); --arrow-left: {Math.max(14, Math.min(86, Number(stepPercent)))}%;"
@@ -272,14 +259,14 @@
 				</div>
 
 				{#each Array(task.cantidad_de_niveles) as _, idx}
-					<div class="timeline-step {statusNum !== -1 && idx <= statusNum ? 'active' : ''}">
+					<div class="timeline-step" class:active={statusNum !== -1 && idx <= statusNum}>
 						{idx}
 					</div>
 				{/each}
 			</div>
 
 			<!-- Action Buttons -->
-			<div style="display: flex; gap: 10px; margin-top: 20px; position: relative; z-index: 15;">
+			<div class="card-actions">
 				{#if isArchived}
 					<!-- Opciones para tareas archivadas: Desarchivar y Eliminar -->
 					<form
@@ -290,13 +277,13 @@
 								await update();
 							};
 						}}
-						style="flex: 1;"
+						class="action-form"
 					>
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-							<button use:motion class="btn-primary" style="width: 100%;" type="submit">
-								<span>Restaurar al Dashboard</span>
-								<span style="font-size: 1.1rem; line-height: 1;">↩</span>
+							<button use:motion class="btn-primary w-100" type="submit">
+								<span class="btn-text">Restaurar al Dashboard</span>
+								<span class="btn-icon">↩</span>
 							</button>
 						</Motion>
 					</form>
@@ -310,17 +297,16 @@
 								await update();
 							};
 						}}
-						style="flex: 1;"
+						class="action-form"
 					>
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
 							<button
 								use:motion
-								class="btn-primary"
-								style="width: 100%; background: linear-gradient(135deg, #19d4a8 0%, #11998e 100%);"
+								class="btn-primary btn-archive w-100"
 								type="submit"
 							>
-								<span>Archivar Proyecto 📦</span>
+								<span class="btn-text">Archivar Proyecto 📦</span>
 							</button>
 						</Motion>
 					</form>
@@ -334,56 +320,60 @@
 								await update();
 							};
 						}}
-						style="flex: 1;"
+						class="action-form"
+						class:is-hidden={isLocked}
 					>
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion
-							whileHover={!isLastLevel && !isAbandoned && !(hasViewed && isTimeLocked) ? { scale: 1.02 } : {}}
-							whileTap={!isLastLevel && !isAbandoned && !(hasViewed && isTimeLocked) ? { scale: 0.98 } : {}}
+							whileHover={!isLastLevel && !isAbandoned && !isLocked ? { scale: 1.02 } : {}}
+							whileTap={!isLastLevel && !isAbandoned && !isLocked ? { scale: 0.98 } : {}}
 							let:motion
 						>
 							<button
 								use:motion
-								class="btn-primary"
-								class:is-time-locked={hasViewed && isTimeLocked}
-								style="width: 100%;"
-								disabled={(isLastLevel && !isAbandoned) || (hasViewed && isTimeLocked)}
-								type={isAbandoned ? 'submit' : hasViewed && !isTimeLocked ? 'submit' : 'button'}
+								class="btn-primary w-100"
+								class:is-hidden={isLocked}
+								class:is-time-locked={isLocked}
+								disabled={(isLastLevel && !isAbandoned) || isLocked}
+								type={isAbandoned ? 'submit' : hasViewed && !isLocked ? 'submit' : 'button'}
 								onclick={handleAdvanceClick}
 							>
-								<span>
+								<span class="btn-text">
 									{#if isAbandoned}
 										Reiniciar
 									{:else if !hasViewed}
 										{progreso === 0 ? 'Visualizar para avanzar' : 'Abrir para avanzar'}
-									{:else if isTimeLocked}
+									{:else if isLocked}
 										Avanzar (Bloqueado)
 									{:else}
 										Avanzar
 									{/if}
 								</span>
-								{#if hasViewed && isTimeLocked}
-									<span style="font-size: 1rem; line-height: 1;">🔒</span>
-								{:else}
-									<span style="font-size: 1.1rem; line-height: 1;">→</span>
-								{/if}
+								<span class="btn-icon">
+									{#if isLocked}
+										🔒
+									{:else}
+										→
+									{/if}
+								</span>
 							</button>
 						</Motion>
 					</form>
 
 					<!-- Botón Desbloquear (Fricción Positiva) -->
-					{#if hasViewed && isTimeLocked}
-						<Motion whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} let:motion>
-							<button
-								use:motion
-								class="button is-warning is-light is-small"
-								style="border-radius: 12px; font-weight: 700; padding: 0 14px; height: 100%; min-height: 38px; white-space: nowrap; box-shadow: 0 0 10px rgba(255, 209, 102, 0.25);"
-								type="button"
-								onclick={() => (isModalOpen = true)}
-							>
-								🔓 Desbloquear
-							</button>
-						</Motion>
+					{#if isLocked}
+						<div class="action-form">
+							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+								<button
+									use:motion
+									class="button is-warning is-light is-small btn-unlock w-100"
+									type="button"
+									onclick={() => (isModalOpen = true)}
+								>
+									<span class="btn-text">🔓 Desbloquear</span>
+								</button>
+							</Motion>
+						</div>
 					{/if}
 
 					<!-- Botón Abandonar -->
@@ -395,8 +385,8 @@
 								await update();
 							};
 						}}
-						style="flex: 1;"
-						class={isAbandoned ? 'is-hidden' : ''}
+						class="action-form"
+						class:is-hidden={isAbandoned}
 					>
 						<input type="hidden" name="taskId" value={task.id} />
 						<input type="hidden" name="status" value="-1" />
@@ -407,12 +397,11 @@
 						>
 							<button
 								use:motion
-								class="btn-outline"
-								style="width: 100%;"
+								class="btn-outline w-100"
 								disabled={!hasViewed || isLastLevel || isAbandoned}
 								type="submit"
 							>
-								Abandonar
+								<span class="btn-text">Abandonar</span>
 							</button>
 						</Motion>
 					</form>
@@ -441,7 +430,7 @@
 		top: 0;
 		left: 0;
 		width: 100%;
-		height: calc(100% - 65px);
+		height: 100%;
 		background: transparent;
 		border: none;
 		cursor: pointer;
@@ -450,12 +439,16 @@
 
 	.clicker-btn:disabled,
 	.clicker-btn.is-locked {
-		cursor: not-allowed;
+		cursor: pointer;
 	}
 
 	:global(.project-card) {
 		position: relative;
 		overflow: hidden;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: 100%;
+		padding: clamp(14px, 3.5vw, 22px) !important;
 		background: linear-gradient(
 			135deg,
 			rgba(255, 255, 255, 0.07) 0%,
@@ -464,10 +457,136 @@
 			rgba(16, 24, 28, 0.78) 100%
 		) !important;
 		border: 1px solid rgba(255, 255, 255, 0.12) !important;
+		border-radius: 18px !important;
 		box-shadow: 
 			0 12px 36px rgba(0, 0, 0, 0.35),
 			inset 0 1px 1px rgba(255, 255, 255, 0.22),
 			inset 0 -1px 0 rgba(255, 255, 255, 0.04) !important;
+	}
+
+	.card-header-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 8px 12px;
+		flex-wrap: wrap;
+		position: relative;
+		z-index: 12;
+	}
+
+	.card-title {
+		font-size: clamp(1.05rem, 3.5vw, 1.25rem);
+		line-height: 1.3;
+		margin-bottom: 4px;
+		text-transform: capitalize;
+		flex: 1 1 180px;
+		min-width: 0;
+		overflow-wrap: break-word;
+		word-break: break-word;
+	}
+
+	.card-header-actions {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+		position: relative;
+		z-index: 20;
+	}
+
+	.badge-kids,
+	.badge-general {
+		padding: 3px 8px;
+		border-radius: 12px;
+		font-size: clamp(0.68rem, 2vw, 0.74rem);
+		white-space: nowrap;
+		max-width: 100%;
+		display: inline-flex;
+		align-items: center;
+		line-height: 1.2;
+	}
+
+	.badge-kids {
+		background: rgba(255, 209, 102, 0.15);
+		border: 1px solid rgba(255, 209, 102, 0.35);
+		color: #ffd166;
+		font-weight: 600;
+	}
+
+	.badge-general {
+		border: 1px solid rgba(25, 212, 168, 0.35);
+		color: #19d4a8;
+		letter-spacing: 0.02em;
+	}
+
+	.btn-icon-delete {
+		background: rgba(231, 102, 102, 0.12);
+		border: 1px solid rgba(231, 102, 102, 0.25);
+		color: #e76666;
+		border-radius: 8px;
+		width: 26px;
+		height: 26px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s;
+		flex-shrink: 0;
+	}
+
+	.btn-icon-delete:hover {
+		background: rgba(231, 102, 102, 0.28);
+		color: #ffffff;
+		transform: scale(1.08);
+	}
+
+	.progress-timeline {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		position: relative;
+		margin: 32px 0 20px 0;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	:global(.project-card .timeline-step) {
+		width: clamp(16px, calc((100% - 24px) / var(--total-steps, 10)), 28px);
+		height: clamp(16px, calc((100% - 24px) / var(--total-steps, 10)), 28px);
+		aspect-ratio: 1 / 1;
+		min-width: 16px;
+		min-height: 16px;
+		font-size: clamp(0.55rem, 1.8vw, 0.78rem);
+		flex-shrink: 0;
+	}
+
+	:global(.project-card .tooltip-progress) {
+		max-width: calc(100% - 10px);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: clamp(0.65rem, 2vw, 0.72rem);
+	}
+
+	.card-actions {
+		display: flex;
+		gap: 8px;
+		margin-top: 18px;
+		position: relative;
+		z-index: 20;
+		flex-wrap: wrap;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.action-form {
+		flex: 1 1 130px;
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	.w-100 {
+		width: 100% !important;
 	}
 
 	:global(.project-card .btn-primary:disabled),
@@ -489,61 +608,44 @@
 		pointer-events: none !important;
 	}
 
-	/* Reducir tamaño de letra en botones de las cards */
 	:global(.project-card .btn-primary),
-	:global(.project-card .btn-outline) {
-		font-size: 0.72rem;
+	:global(.project-card .btn-outline),
+	:global(.project-card .btn-unlock) {
+		font-size: clamp(0.7rem, 2.2vw, 0.78rem);
 		padding: 8px 10px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	:global(.project-card .btn-primary span:first-child),
-	:global(.project-card .btn-outline span:first-child) {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.badge-kids {
-		background: rgba(255, 209, 102, 0.15);
-		border: 1px solid rgba(255, 209, 102, 0.35);
-		color: #ffd166;
-		padding: 3px 8px;
-		border-radius: 12px;
-		font-size: 0.72rem;
-		font-weight: 600;
-		white-space: nowrap;
-	}
-
-	.badge-general {
-		border: 1px solid rgba(25, 212, 168, 0.35);
-		color: #19d4a8;
-		padding: 3px 8px;
-		border-radius: 12px;
-		white-space: nowrap;
-		letter-spacing: 0.02em;
-	}
-
-	.btn-icon-delete {
-		background: rgba(231, 102, 102, 0.12);
-		border: 1px solid rgba(231, 102, 102, 0.25);
-		color: #e76666;
-		border-radius: 8px;
-		width: 26px;
-		height: 26px;
+		min-height: 36px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		cursor: pointer;
-		transition: all 0.2s;
+		gap: 6px;
+		box-sizing: border-box;
+		border-radius: 12px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	.btn-icon-delete:hover {
-		background: rgba(231, 102, 102, 0.28);
-		color: #ffffff;
-		transform: scale(1.08);
+	.btn-archive {
+		background: linear-gradient(135deg, #19d4a8 0%, #11998e 100%) !important;
+	}
+
+	.btn-unlock {
+		border-radius: 12px !important;
+		font-weight: 700 !important;
+		box-shadow: 0 0 10px rgba(255, 209, 102, 0.25) !important;
+	}
+
+	.btn-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
+	}
+
+	.btn-icon {
+		font-size: 1rem;
+		line-height: 1;
+		flex-shrink: 0;
 	}
 
 	:global(.project-card.is-kids-theme) {
