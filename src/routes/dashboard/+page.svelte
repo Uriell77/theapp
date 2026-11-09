@@ -299,7 +299,7 @@
 							</button>
 
 							<input
-								class="spinner-input"
+								class="spinner-input is-small"
 								type="number"
 								name="cantidad_de_niveles"
 								id="taskNiveles"
@@ -357,7 +357,7 @@
 
 				{#if milestones.length > 0}
 					<div
-						class="container box mb-3 p-4"
+						class="container is-scroll mb-3 p-4"
 						style="background: rgba(14, 23, 29, 0.7); border: 1px solid var(--card-border); border-radius: 14px;"
 					>
 						<p class="is-size-7 has-text-weight-bold has-text-primary mb-3" style="text-transform: uppercase; letter-spacing: 0.05em;">
@@ -378,7 +378,7 @@
 											<span class="tag is-info is-light is-inline" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
 										</div>
 										<div class="field-body is-inline" style="flex-grow: 3;">
-											<div class="control" style="width: 60%;">
+											<div class="control" style="width: 80%;">
 												<input
 													class="input is-small"
 													type="datetime-local"
@@ -627,6 +627,10 @@
 
 <style>
 
+.is-scroll{
+   overflow: scroll;
+}
+
 input[type='text'] {
 	background: rgba(0, 0, 0, 0.25);
 	border: 1px solid var(--card-border);
@@ -739,7 +743,7 @@ select:disabled {
 	outline: none;
 	color: #00e5ff;
 	font-family: inherit;
-	font-size: 2rem;
+	font-size: 1rem;
 	font-weight: 800;
 	text-align: center;
 	width: 90px;
