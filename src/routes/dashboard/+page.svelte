@@ -373,7 +373,7 @@
 							<!-- Nodos Intermedios Editables -->
 							{#each milestones as _, i}
 								{#if i < milestones.length - 1}
-									<div class="field is-horizontal is-align-items-center mb-0" style="gap: 0.5rem;">
+									<div class="field is-horizontal is-align-items-center mb-0 is-inline" style="gap: 0.5rem;">
 										<div class="field-label is-small" style="text-align: left; flex-grow: 1;">
 											<span class="tag is-info is-light" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
 										</div>
@@ -628,6 +628,7 @@
 <style>
 .linetime{
 scroll-y: auto;
+max-height: 20px;
 }
 
 input[type='text'] {
