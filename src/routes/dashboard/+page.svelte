@@ -365,7 +365,7 @@
 						</p>
 						<div class="is-flex is-flex-direction-column" style="gap: 0.85rem;">
 							<!-- Nodo Inicial Fijo -->
-							<div class="is-flex is-align-items-center">
+							<div class="is-flex is-align-items-center is-inline">
 								<span class="tag is-success mr-2" style="font-size: 0.75rem;">Inicio</span>
 								<span class="is-size-7 has-text-grey-light">Creación (Ahora)</span>
 							</div>
@@ -378,7 +378,7 @@
 											<span class="tag is-info is-light" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
 										</div>
 										<div class="field-body" style="flex-grow: 3;">
-											<div class="control" style="width: 100%;">
+											<div class="control" style="width: 60%;">
 												<input
 													class="input is-small"
 													type="datetime-local"
