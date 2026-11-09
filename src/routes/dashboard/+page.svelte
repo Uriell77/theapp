@@ -285,8 +285,8 @@
 								aria-label="Disminuir niveles"
 							>
 								<svg
-									width="32"
-									height="32"
+									width="22"
+									height="22"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -318,8 +318,8 @@
 								aria-label="Aumentar niveles"
 							>
 								<svg
-									width="32"
-									height="32"
+									width="22"
+									height="22"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -412,7 +412,7 @@
 					<section class="section is-flex is-justify-content-center is-align-items-center mt-0 pt-0 pb-2 mb-6">
 						<button
 							use:motion
-							class="btn-primary mb-6-is-desktom"
+							class="button btn-primary mb-6-is-desktom is-small"
 							style="width: 70%; margin-top: 1.5rem;"
 							type="submit"
 							disabled={isSubmitting}
@@ -629,7 +629,9 @@
 
 .is-scroll{
    overflow: scroll;
-   max-height: 5rem;
+   max-height: 9rem;
+   padding-bottom: 1px;
+   margin-bottom: 1px;
 }
 
 input[type='text'] {
@@ -700,7 +702,7 @@ select:disabled {
 	background-color: #0d1317;
 	border: 1px solid #ffffff;
 	border-radius: 9999px;
-	padding: 3px 2px;
+	padding: 1px 1px;
 	width: 300px;
 	margin: 0 auto;
 	box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4);
@@ -749,6 +751,7 @@ select:disabled {
 	text-align: center;
 	width: 90px;
 	pointer-events: none;
+	height: 1%;
 }
 
 .spinner-input::-webkit-outer-spin-button,
