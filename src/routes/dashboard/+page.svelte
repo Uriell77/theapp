@@ -216,7 +216,7 @@
 					</div>
 				{/if}
 
-				<div class="field mb-6-mobile mb-3-desktop">
+				<div class="field mb-3-mobile mb-3-desktop">
 					<label
 						class="label"
 						for="taskTitle"
@@ -238,7 +238,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-6-mobile mb-3-desktop">
+				<div class="field mb-3-mobile mb-3-desktop">
 					<label
 						class="label"
 						for="taskTema"
@@ -265,7 +265,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-6-mobile mb-3-desktop">
+				<div class="field mb-3-mobile mb-3-desktop">
 					<label
 						class="label mb-0 pb-0"
 						for="taskNiveles"
@@ -334,7 +334,7 @@
 					</div>
 				</div>
 
-				<div class="field mb-6-mobile mb-3-desktop">
+				<div class="field mb-3-mobile mb-3-desktop">
 					<label
 						class="label"
 						for="projectEndDate"
@@ -357,7 +357,7 @@
 
 				{#if milestones.length > 0}
 					<div
-						class="box mb-5 p-4"
+						class="box mb-3 p-4"
 						style="background: rgba(14, 23, 29, 0.7); border: 1px solid var(--card-border); border-radius: 14px;"
 					>
 						<p class="is-size-7 has-text-weight-bold has-text-primary mb-3" style="text-transform: uppercase; letter-spacing: 0.05em;">
