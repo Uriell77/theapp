@@ -626,9 +626,6 @@
 </main>
 
 <style>
-.linetime{
-scroll-y: auto;
-}
 
 input[type='text'] {
 	background: rgba(0, 0, 0, 0.25);
