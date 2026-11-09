@@ -629,7 +629,7 @@
 
 .is-scroll{
    overflow: scroll;
-   max-height: 1rem;
+   max-height: 3rem;
 }
 
 input[type='text'] {
