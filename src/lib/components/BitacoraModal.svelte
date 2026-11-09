@@ -34,7 +34,6 @@
 		try {
 			let mediaUrl: string | null = null;
 
-			// Subida de imagen a Supabase Storage (si se proporciona)
 			if (selectedFile) {
 				const fileExt = selectedFile.name.split('.').pop();
 				const fileName = `${project.id}_lvl${level}_${Date.now()}.${fileExt}`;
@@ -50,7 +49,6 @@
 				}
 			}
 
-			// Inserción en la tabla project_logs y actualización del proyecto vía API interna
 			const response = await fetch('/api/project-logs', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -69,8 +67,6 @@
 			}
 
 			const result = await response.json();
-
-			// Actualizar localmente la fecha del nivel bloqueado
 			const updatedMilestones: string[] = result.milestones || [...(project.milestones || [])];
 			if (level < updatedMilestones.length) {
 				updatedMilestones[level] = new Date().toISOString();
@@ -78,7 +74,6 @@
 				updatedMilestones.push(new Date().toISOString());
 			}
 
-			// Actualización reactiva y cierre del modal
 			onUnlocked(updatedMilestones);
 			logText = '';
 			selectedFile = null;
@@ -103,6 +98,7 @@
 				if ((e.key === 'Enter' || e.key === ' ') && !isSubmitting) isOpen = false;
 			}}
 		></div>
+
 		<div class="modal-card has-background-dark">
 			<header class="modal-card-head has-background-black-bis">
 				<p class="modal-card-title has-text-white has-text-weight-bold">
@@ -183,7 +179,7 @@
 
 			<footer class="modal-card-foot has-background-black-bis is-justify-content-flex-end">
 				<button
-					class="button is-ghost has-text-grey-light mr-3"
+					class="button is-ghost has-text-grey-light"
 					type="button"
 					disabled={isSubmitting}
 					onclick={() => (isOpen = false)}
@@ -205,34 +201,42 @@
 {/if}
 
 <style>
+	:global(body) {
+		overflow: hidden;
+	}
+
 	.modal {
 		box-sizing: border-box;
-		padding: 1rem;
+		padding: 0.75rem;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.modal-card {
 		box-sizing: border-box;
 		width: min(100%, 48rem);
-		min-width: 0;
-		height: min(100%, 52rem);
+		height: min(100vh - 1.5rem, 52rem);
 		max-height: 100%;
-		margin: 0;
+		margin: 0 auto;
 		overflow: hidden;
-		border-radius: 0.5rem;
+		border-radius: 0.75rem;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.modal-card-head,
 	.modal-card-foot {
 		flex: 0 0 auto;
-		flex-wrap: wrap;
-		gap: 0.75rem;
+		padding: 0.75rem 1rem;
 		border-radius: 0;
 		border-color: rgb(255 255 255 / 10%);
+		gap: 0.5rem;
 	}
 
 	.modal-card-title {
 		min-width: 0;
 		overflow-wrap: anywhere;
+		line-height: 1.3;
 	}
 
 	.modal-card-body {
@@ -240,35 +244,43 @@
 		flex: 1 1 auto;
 		min-width: 0;
 		min-height: 0;
-		overflow-x: hidden;
 		overflow-y: auto;
-		padding: 1.5rem;
+		overflow-x: hidden;
+		padding: 1rem;
 	}
 
-	.modal-card-body :global(.notification),
-	.modal-card-body :global(.label) {
+	:global(.notification),
+	:global(.label),
+	:global(.file-name),
+	:global(.file-label),
+	:global(.textarea) {
 		overflow-wrap: anywhere;
+		word-break: break-word;
 	}
 
-	.modal-card-body :global(.textarea) {
+	:global(.textarea) {
 		box-sizing: border-box;
 		max-width: 100%;
+		min-height: 140px;
+		resize: vertical;
 		font-family: inherit;
 	}
 
-	.modal-card-body :global(.file-label) {
+	:global(.file-label) {
+		display: flex;
+		flex-wrap: wrap;
 		width: 100%;
 		min-width: 0;
+		align-items: stretch;
 	}
 
-	.modal-card-body :global(.file-cta),
-	.modal-card-body :global(.file-name) {
+	:global(.file-cta),
+	:global(.file-name) {
 		min-width: 0;
+		flex: 1 1 100%;
 	}
 
-	.modal-card-body :global(.file-name) {
-		flex: 1 1 0;
-		height: auto;
+	:global(.file-name) {
 		white-space: normal;
 		word-break: break-word;
 	}
@@ -279,25 +291,28 @@
 		}
 
 		.modal-card {
-			width: 100%;
-			height: 100%;
-			max-height: 100%;
+			width: 100vw;
+			height: 100vh;
+			max-height: 100vh;
 			border-radius: 0;
 		}
 
 		.modal-card-head,
 		.modal-card-body,
 		.modal-card-foot {
-			padding: 1rem;
+			padding: 0.75rem 0.875rem;
 		}
 
 		.modal-card-foot {
+			display: flex;
+			flex-wrap: wrap;
 			justify-content: stretch;
+			gap: 0.5rem;
 		}
 
 		.modal-card-foot :global(.button) {
-			flex: 1 1 auto;
-			margin: 0;
+			flex: 1 1 calc(50% - 0.25rem);
+			min-width: 0;
 			white-space: normal;
 		}
 	}
