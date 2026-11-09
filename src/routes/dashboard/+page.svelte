@@ -357,7 +357,7 @@
 
 				{#if milestones.length > 0}
 					<div
-						class="box mb-3 p-4"
+						class="box mb-3 p-4 linetime"
 						style="background: rgba(14, 23, 29, 0.7); border: 1px solid var(--card-border); border-radius: 14px;"
 					>
 						<p class="is-size-7 has-text-weight-bold has-text-primary mb-3" style="text-transform: uppercase; letter-spacing: 0.05em;">
@@ -626,6 +626,10 @@
 </main>
 
 <style>
+.linetime{
+scroll-y: auto;
+}
+
 input[type='text'] {
 	background: rgba(0, 0, 0, 0.25);
 	border: 1px solid var(--card-border);
@@ -738,7 +742,7 @@ select:disabled {
 	outline: none;
 	color: #00e5ff;
 	font-family: inherit;
-	font-size: 2.5rem;
+	font-size: 2rem;
 	font-weight: 800;
 	text-align: center;
 	width: 90px;
