@@ -106,7 +106,7 @@
 			}}
 		></div>
 		<div
-			class="modal-card has-background-dark"
+			class=" section modal-card has-background-dark"
 			style="width: 100vw; height: 100vh; max-height: 100vh; margin: 0; border-radius: 0; display: flex; flex-direction: column;"
 		>
 			<header
