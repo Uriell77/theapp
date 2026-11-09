@@ -212,6 +212,7 @@
 		padding: 0.75rem;
 		align-items: center;
 		justify-content: center;
+        z-index:20000
 	}
 
 	.modal-card {
