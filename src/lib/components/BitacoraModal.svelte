@@ -93,6 +93,8 @@
 </script>
 
 {#if isOpen}
+<div class:"columns is-centered is-mobile">
+<div class:"column is-full-mobile">
 	<div class="modal is-active" style="position: fixed; inset: 0; z-index: 9999;">
 		<div
 			class="modal-background"
@@ -215,4 +217,6 @@
 			</footer>
 		</div>
 	</div>
+</div>
+</div>
 {/if}
