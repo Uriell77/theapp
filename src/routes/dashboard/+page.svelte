@@ -628,7 +628,7 @@
 <style>
 .linetime{
 scroll-y: auto;
-max-height: 20px;
+max-height: 2rem;
 }
 
 input[type='text'] {
