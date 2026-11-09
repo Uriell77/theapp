@@ -88,6 +88,7 @@
 </script>
 
 {#if isOpen}
+<section class="section">
 	<div class="modal is-active" role="presentation">
 		<div
 			class="modal-background"
@@ -198,6 +199,7 @@
 			</footer>
 		</div>
 	</div>
+</section>
 {/if}
 
 <style>
