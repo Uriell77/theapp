@@ -357,7 +357,7 @@
 
 				{#if milestones.length > 0}
 					<div
-						class="box mb-3 p-4 linetime"
+						class="box mb-3 p-4"
 						style="background: rgba(14, 23, 29, 0.7); border: 1px solid var(--card-border); border-radius: 14px;"
 					>
 						<p class="is-size-7 has-text-weight-bold has-text-primary mb-3" style="text-transform: uppercase; letter-spacing: 0.05em;">
@@ -373,9 +373,9 @@
 							<!-- Nodos Intermedios Editables -->
 							{#each milestones as _, i}
 								{#if i < milestones.length - 1}
-									<div class="field is-horizontal is-align-items-center mb-0 is-inline" style="gap: 0.5rem;">
+									<div class="field is-horizontal is-align-items-center mb-0" style="gap: 0.5rem;">
 										<div class="field-label is-small" style="text-align: left; flex-grow: 1;">
-											<span class="tag is-info is-light" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
+											<span class="tag is-info is-light is-inline" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
 										</div>
 										<div class="field-body" style="flex-grow: 3;">
 											<div class="control" style="width: 60%;">
