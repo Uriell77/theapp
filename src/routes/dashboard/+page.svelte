@@ -373,11 +373,11 @@
 							<!-- Nodos Intermedios Editables -->
 							{#each milestones as _, i}
 								{#if i < milestones.length - 1}
-									<div class="field is-horizontal is-align-items-center mb-0" style="gap: 0.5rem;">
+									<div class="field is-flex is-align-items-center mb-0" style="gap: 0.5rem;">
 										<div class="field-label is-small" style="text-align: left; flex-grow: 1;">
 											<span class="tag is-info is-light is-inline" style="font-size: 0.72rem;">Capítulo {i + 1}</span>
 										</div>
-										<div class="field-body" style="flex-grow: 3;">
+										<div class="field-body is-inline" style="flex-grow: 3;">
 											<div class="control" style="width: 60%;">
 												<input
 													class="input is-small"
