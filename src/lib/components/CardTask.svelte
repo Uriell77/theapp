@@ -252,7 +252,7 @@
 								<input type="hidden" name="taskId" value={task.id} />
 								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
 									<button use:motion class="btn-primary w-100" type="submit">
-										<span class="btn-text">Avanzar de Nivel</span>
+										<span class="btn-text">Reiniciar</span>
 										<span class="btn-icon">→</span>
 									</button>
 								</Motion>
