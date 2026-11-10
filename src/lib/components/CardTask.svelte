@@ -107,36 +107,17 @@
 	);
 
 	function handleAdvanceClick(e: MouseEvent) {
-		if (isAbandoned) {
-			return;
-		}
-		if (!hasViewed) {
+		if (isAbandoned || !hasViewed) {
 			e.preventDefault();
 			if (onSelect) onSelect();
-			return;
-		}
-		if (isLocked) {
-			e.preventDefault();
-			isModalOpen = true;
 			return;
 		}
 	}
 
 	function handleClickerClick(e: MouseEvent) {
-		if (isAbandoned || isLastLevel) {
+		if (isAbandoned || !hasViewed) {
+			if (onSelect) onSelect();
 			return;
-		}
-		if (!hasViewed && onSelect) {
-			onSelect();
-			return;
-		}
-		if (isLocked) {
-			e.preventDefault();
-			isModalOpen = true;
-			return;
-		}
-		if (onSelect) {
-			onSelect();
 		}
 	}
 
@@ -175,21 +156,19 @@
 			class:is-archived-card={isArchived}
 			id={`task-${task.id}`}
 		>
-			<!-- Botón transparente para abrir panel de detalles o modal con Time-Gating -->
-			<button
-				type="button"
-				class="clicker-btn"
-				class:is-locked={isLocked}
-				disabled={isLastLevel && !isAbandoned}
-				onclick={handleClickerClick}
-				aria-label={isLocked ? 'Nivel bloqueado por tiempo' : `Ver detalles de ${task.title}`}
-			></button>
+			<!-- BOTÓN 0: Superpuesto. Solo activo cuando se va a visualizar o en abandono -->
+			{#if isAbandoned || !hasViewed}
+				<button
+					type="button"
+					class="clicker-btn"
+					onclick={handleClickerClick}
+					aria-label={isAbandoned ? 'Visualizar historia alternativa' : `Visualizar cinemática de ${task.title}`}
+				></button>
+			{/if}
 
 			<!-- Header del Card: Título + Badge de categoría + Botón de eliminar -->
 			<div class="card-header-line">
-				<h3
-					class="card-title has-text-weight-bold has-text-white {isKids ? 'font-kids' : 'font-modern-chapter'}"
-				>
+				<h3 class="card-title has-text-weight-bold has-text-white {isKids ? 'font-kids' : 'font-modern-chapter'}">
 					{displayTitle}
 				</h3>
 
@@ -202,48 +181,17 @@
 						</span>
 					{/if}
 
-					<!-- Botón de eliminación rápida -->
+					<!-- Botón de eliminación rápida (Solo archivadas) -->
 					{#if isArchived}
-						<form
-							method="POST"
-							action="?/deleteTask"
-							use:enhance={() => {
-								return async ({ update }) => {
-									await update();
-								};
-							}}
-						>
+						<form method="POST" action="?/deleteTask" use:enhance={() => { return async ({ update }) => { await update(); }; }}>
 							<input type="hidden" name="taskId" value={task.id} />
-							<button
-								type="submit"
-								class="btn-icon-delete"
-								title="Eliminar tarea"
-								aria-label="Eliminar tarea"
-								onclick={(e) => {
-									if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) {
-										e.preventDefault();
-									}
-								}}
-							>
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<polyline points="3 6 5 6 21 6"></polyline>
-									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-								</svg>
+							<button type="submit" class="btn-icon-delete" title="Eliminar tarea" aria-label="Eliminar tarea" onclick={(e) => { if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) { e.preventDefault(); } }}>
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
 							</button>
 						</form>
 					{:else}
-						<button
-							type="button"
-							class="btn-icon-delete is-hidden"
-							title="Eliminar tarea (solo disponible para archivadas)"
-							aria-label="Eliminar tarea (solo disponible para archivadas)"
-							disabled
-							style="opacity: 0.5; cursor: not-allowed;"
-						>
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<polyline points="3 6 5 6 21 6"></polyline>
-								<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-							</svg>
+						<button type="button" class="btn-icon-delete is-hidden" title="Eliminar tarea" aria-label="Eliminar tarea" disabled style="opacity: 0.5; cursor: not-allowed;">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
 						</button>
 					{/if}
 				</div>
@@ -268,17 +216,7 @@
 			<!-- Action Buttons -->
 			<div class="card-actions">
 				{#if isArchived}
-					<!-- Opciones para tareas archivadas: Desarchivar y Eliminar -->
-					<form
-						method="POST"
-						action="?/unarchiveTask"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update();
-							};
-						}}
-						class="action-form"
-					>
+					<form method="POST" action="?/unarchiveTask" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
 							<button use:motion class="btn-primary w-100" type="submit">
@@ -288,123 +226,74 @@
 						</Motion>
 					</form>
 				{:else if isLastLevel && !isAbandoned}
-					<!-- Tarea completada: Opción de archivarla -->
-					<form
-						method="POST"
-						action="?/archiveTask"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update();
-							};
-						}}
-						class="action-form"
-					>
+					<form method="POST" action="?/archiveTask" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-							<button
-								use:motion
-								class="btn-primary btn-archive w-100"
-								type="submit"
-							>
+							<button use:motion class="btn-primary btn-archive w-100" type="submit">
 								<span class="btn-text">Archivar Proyecto 📦</span>
 							</button>
 						</Motion>
 					</form>
 				{:else}
-					<!-- Tarea activa: Avanzar / Abrir -->
-					<form
-						method="POST"
-						action="?/advanceLevel"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update();
-							};
-						}}
-						class="action-form"
-						class:is-hidden={isLocked}
-					>
-						<input type="hidden" name="taskId" value={task.id} />
-						<Motion
-							whileHover={!isLastLevel && !isAbandoned && !isLocked ? { scale: 1.02 } : {}}
-							whileTap={!isLastLevel && !isAbandoned && !isLocked ? { scale: 0.98 } : {}}
-							let:motion
-						>
-							<button
-								use:motion
-								class="btn-primary w-100"
-								class:is-hidden={isLocked}
-								class:is-time-locked={isLocked}
-								disabled={(isLastLevel && !isAbandoned) || isLocked}
-								type={isAbandoned ? 'submit' : hasViewed && !isLocked ? 'submit' : 'button'}
-								onclick={handleAdvanceClick}
-							>
-								<span class="btn-text">
-									{#if isAbandoned}
-										Reiniciar
-									{:else if !hasViewed}
-										{progreso === 0 ? 'Visualizar para avanzar' : 'Abrir para avanzar'}
-									{:else if isLocked}
-										Avanzar (Bloqueado)
-									{:else}
-										Avanzar
-									{/if}
-								</span>
-								<span class="btn-icon">
-									{#if isLocked}
-										🔒
-									{:else}
-										→
-									{/if}
-								</span>
-							</button>
-						</Motion>
-					</form>
-
-					<!-- Botón Desbloquear (Fricción Positiva) -->
-					{#if isLocked}
+					
+					<!-- Manejo estricto de Estados según requerimientos -->
+					{#if isAbandoned}
+						<!-- Estado Abandono: Botón 1 para ver historia alternativa (El Botón 3 oculto porque ya está abandonado) -->
 						<div class="action-form">
 							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-								<button
-									use:motion
-									class="button is-warning is-light is-small btn-unlock w-100"
-									type="button"
-									onclick={() => (isModalOpen = true)}
-								>
-									<span class="btn-text">🔓 Desbloquear</span>
+								<button use:motion class="btn-primary w-100" type="button" onclick={handleAdvanceClick}>
+									<span class="btn-text">Visualizar historia alternativa</span>
+									<span class="btn-icon">👁️</span>
 								</button>
 							</Motion>
 						</div>
+					{:else}
+						
+						<!-- Estados Activos Normales -->
+						{#if !hasViewed}
+							<!-- Estado 1: Botón 0 (arriba) y Botón 1 en "Visualizar" -->
+							<div class="action-form">
+								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+									<button use:motion class="btn-primary w-100" type="button" onclick={handleAdvanceClick}>
+										<span class="btn-text">Visualizar para avanzar</span>
+										<span class="btn-icon">👁️</span>
+									</button>
+								</Motion>
+							</div>
+						{:else if isLocked}
+							<!-- Estado 2: Botón 0 y 1 Ocultos. Botón 2 Activo -->
+							<div class="action-form">
+								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+									<button use:motion class="button is-warning is-light is-small btn-unlock w-100" type="button" onclick={() => (isModalOpen = true)}>
+										<span class="btn-text">🔓 Desbloquear</span>
+									</button>
+								</Motion>
+							</div>
+						{:else}
+							<!-- Estado 3: Desbloqueado luego de bitácora (Formulario de avance de servidor) -->
+							<form method="POST" action="?/advanceLevel" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
+								<input type="hidden" name="taskId" value={task.id} />
+								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+									<button use:motion class="btn-primary w-100" type="submit">
+										<span class="btn-text">Avanzar de Nivel</span>
+										<span class="btn-icon">→</span>
+									</button>
+								</Motion>
+							</form>
+						{/if}
+
+						<!-- BOTÓN 3: Abandonar (Siempre activo mientras no esté en abandono) -->
+						<form method="POST" action="?/abandonTask" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
+							<input type="hidden" name="taskId" value={task.id} />
+							<input type="hidden" name="status" value="-1" />
+							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+								<button use:motion class="btn-outline w-100" type="submit">
+									<span class="btn-text">Abandonar</span>
+								</button>
+							</Motion>
+						</form>
 					{/if}
 
-					<!-- Botón Abandonar -->
-					<form
-						method="POST"
-						action="?/abandonTask"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update();
-							};
-						}}
-						class="action-form"
-						class:is-hidden={isAbandoned}
-					>
-						<input type="hidden" name="taskId" value={task.id} />
-						<input type="hidden" name="status" value="-1" />
-						<Motion
-							whileHover={hasViewed && !isLastLevel && !isAbandoned ? { scale: 1.02 } : {}}
-							whileTap={hasViewed && !isLastLevel && !isAbandoned ? { scale: 0.98 } : {}}
-							let:motion
-						>
-							<button
-								use:motion
-								class="btn-outline w-100"
-								disabled={!hasViewed || isLastLevel || isAbandoned}
-								type="submit"
-							>
-								<span class="btn-text">Abandonar</span>
-							</button>
-						</Motion>
-					</form>
 				{/if}
 			</div>
 		</div>
@@ -425,6 +314,7 @@
 {/if}
 
 <style>
+    /* ... TODO EL CÓDIGO CSS ORIGINAL SE MANTIENE INTACTO ... */
 	.clicker-btn {
 		position: absolute;
 		top: 0;
@@ -657,4 +547,166 @@
 		opacity: 0.92;
 		border-color: rgba(154, 166, 173, 0.25) !important;
 	}
+</style>
+			localMilestones = [...newMilestones];
+			currentTime = Date.now();
+		}}
+	/>
+{:else}
+	<progress class="progress is-small is-primary" max="100"></progress>
+{/if}
+
+<style>
+	.clicker-btn {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		z-index: 10;
+	}
+
+	.clicker-btn:disabled,
+	.clicker-btn.is-locked {
+		cursor: pointer;
+	}
+
+	:global(.project-card) {
+		position: relative;
+		overflow: hidden;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: 100%;
+		padding: clamp(14px, 3.5vw, 22px) !important;
+		background: linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.07) 0%,
+			rgba(255, 255, 255, 0.02) 22%,
+			rgba(30, 45, 54, 0.65) 50%,
+			rgba(16, 24, 28, 0.78) 100%
+		) !important;
+		border: 1px solid rgba(255, 255, 255, 0.12) !important;
+		border-radius: 18px !important;
+		box-shadow: 
+			0 12px 36px rgba(0, 0, 0, 0.35),
+			inset 0 1px 1px rgba(255, 255, 255, 0.22),
+			inset 0 -1px 0 rgba(255, 255, 255, 0.04) !important;
+	}
+
+	.card-header-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 8px 12px;
+		flex-wrap: wrap;
+		position: relative;
+		z-index: 12;
+	}
+
+	.card-title {
+		font-size: clamp(1.05rem, 3.5vw, 1.25rem);
+		line-height: 1.3;
+		margin-bottom: 4px;
+		text-transform: capitalize;
+		flex: 1 1 180px;
+		min-width: 0;
+		overflow-wrap: break-word;
+		word-break: break-word;
+	}
+
+	.card-header-actions {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+		position: relative;
+		z-index: 20;
+	}
+
+	.badge-kids,
+	.badge-general {
+		padding: 3px 8px;
+		border-radius: 12px;
+		font-size: clamp(0.68rem, 2vw, 0.74rem);
+		white-space: nowrap;
+		max-width: 100%;
+		display: inline-flex;
+		align-items: center;
+		line-height: 1.2;
+	}
+
+	.badge-kids {
+		background: rgba(255, 209, 102, 0.15);
+		border: 1px solid rgba(255, 209, 102, 0.35);
+		color: #ffd166;
+		font-weight: 600;
+	}
+
+	.badge-general {
+		border: 1px solid rgba(25, 212, 168, 0.35);
+		color: #19d4a8;
+		letter-spacing: 0.02em;
+	}
+
+	.btn-icon-delete {
+		background: rgba(231, 102, 102, 0.12);
+		border: 1px solid rgba(231, 102, 102, 0.25);
+		color: #e76666;
+		border-radius: 8px;
+		width: 26px;
+		height: 26px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s;
+		flex-shrink: 0;
+	}
+
+	.btn-icon-delete:hover {
+		background: rgba(231, 102, 102, 0.28);
+		color: #ffffff;
+		transform: scale(1.08);
+	}
+
+	.progress-timeline {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		position: relative;
+		margin: 32px 0 20px 0;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	:global(.project-card .timeline-step) {
+		width: clamp(16px, calc((100% - 24px) / var(--total-steps, 10)), 28px);
+		height: clamp(16px, calc((100% - 24px) / var(--total-steps, 10)), 28px);
+		aspect-ratio: 1 / 1;
+		min-width: 16px;
+		min-height: 16px;
+		font-size: clamp(0.55rem, 1.8vw, 0.78rem);
+		flex-shrink: 0;
+	}
+
+	:global(.project-card .tooltip-progress) {
+		max-width: calc(100% - 10px);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: clamp(0.65rem, 2vw, 0.72rem);
+	}
+
+	.card-actions {
+		display: flex;
+		gap: 8px;
+		margin-top: 18px;
+		position: relative;
+		z-index: 20;
+		flex-wrap: wrap;
+		width: 100%;
+		box-sizing: border-box;
 </style>
