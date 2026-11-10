@@ -247,6 +247,16 @@
 								</button>
 							</Motion>
 						</div>
+                          <!-- Estado 3: Desbloqueado luego de bitácora (Formulario de avance de servidor) -->
+							<form method="POST" action="?/advanceLevel" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
+								<input type="hidden" name="taskId" value={task.id} />
+								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+									<button use:motion class="btn-primary w-100" type="submit">
+										<span class="btn-text">Avanzar de Nivel</span>
+										<span class="btn-icon">→</span>
+									</button>
+								</Motion>
+							</form>
 					{:else}
 						
 						<!-- Estados Activos Normales -->
