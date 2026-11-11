@@ -629,7 +629,8 @@
 <style>
 
 .is-scroll{
-   overflow: scroll;
+   overflow-y: auto; /* Muestra la barra de scroll vertical solo si hace falta */
+   max-height: 300px; /* Debes definir un límite de altura. Ajusta este valor a lo que necesites */
    padding-bottom: 1px;
    margin-bottom: 1px;
 }
