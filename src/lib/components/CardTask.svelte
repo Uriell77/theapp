@@ -172,7 +172,7 @@
 					{displayTitle}
 				</h3>
 
-				<div class="card-header-actions is-pulled-right">
+				<div class="card-header-actions is-justify-content-flex-end">
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
@@ -184,7 +184,7 @@
 					<!-- Botón de eliminación rápida (Solo archivadas) -->
 					{#if isArchived}
 						<form class="" method="POST" action="?/deleteTask" use:enhance={() => { return async ({ update }) => { await update(); }; }}>
-							<input class="is-pulled-right" type="hidden" name="taskId" value={task.id} />
+							<input class="" type="hidden" name="taskId" value={task.id} />
 							<button type="submit" class="btn-icon-delete" title="Eliminar tarea" aria-label="Eliminar tarea" onclick={(e) => { if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) { e.preventDefault(); } }}>
 								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
 							</button>
