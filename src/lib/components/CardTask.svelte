@@ -172,7 +172,7 @@
 					{displayTitle}
 				</h3>
 
-				<div class="card-header-actions is-justify-content-flex-end">
+				<div class="card-header-actions is-justify-content-flex-end is-flex">
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
