@@ -186,9 +186,10 @@
 
 
 
-	<SlidingPanel class="is-scroll" bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
+	<SlidingPanel class="" bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
 		{#if panelMode === 'form'}
 			<form
+                class="is-scroll"
 				method="POST"
 				action="?/createTask"
 				use:enhance={() => {
