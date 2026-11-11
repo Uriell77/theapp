@@ -630,7 +630,7 @@
 
 .is-scroll{
    overflow: scroll;
-   max-height: 100%;
+   min-height: auto;
    padding-bottom: 1px;
    margin-bottom: 1px;
 }
