@@ -3,6 +3,9 @@
 	import { invalidateAll } from '$app/navigation';
 	import { Motion } from 'svelte-motion';
 	import { playClick } from '$lib/audio';
+	import { untrack } from 'svelte';
+	import { SKINS, SKIN_STORAGE_KEY, applySkin, getTemaGroup, type SkinId } from '$lib/skins';
+	import { devState } from '$lib/devState.svelte';
 
 	let { user }: { user: any } = $props();
 
@@ -72,6 +75,54 @@
 		} catch {
 			return String(rawDate);
 		}
+	}
+
+	// ───────── ARMERÍA DE SKINS ─────────
+	// Victorias (proyectos 100%) por grupo temático y por tema
+	let victoriesByGroup = $derived.by(() => {
+		const counts: Record<string, number> = {};
+		for (const t of user?.tasks ?? []) {
+			const status = parseInt(t.status, 10);
+			if (status === -1 || status < t.cantidad_de_niveles - 1) continue;
+			const group = getTemaGroup(t.tema);
+			if (group) counts[group] = (counts[group] ?? 0) + 1;
+		}
+		return counts;
+	});
+
+	let victoriesByTema = $derived.by(() => {
+		const counts: Record<string, number> = {};
+		for (const t of user?.tasks ?? []) {
+			const status = parseInt(t.status, 10);
+			if (status === -1 || status < t.cantidad_de_niveles - 1) continue;
+			counts[t.tema] = (counts[t.tema] ?? 0) + 1;
+		}
+		return counts;
+	});
+
+	let dominantGroup = $derived(
+		Object.entries(victoriesByGroup).sort((a, b) => b[1] - a[1])[0] ?? null
+	);
+
+	let activeSkin = $state<SkinId>('default');
+
+	function isSkinUnlocked(skin: (typeof SKINS)[number]) {
+		return devState.isDevMode || skin.group === null || (victoriesByGroup[skin.group] ?? 0) >= 1;
+	}
+
+	$effect(() => {
+		const saved = localStorage.getItem(SKIN_STORAGE_KEY) as SkinId | null;
+		if (saved && SKINS.some((k) => k.id === saved)) {
+			untrack(() => (activeSkin = saved));
+		}
+	});
+
+	function selectSkin(skin: (typeof SKINS)[number]) {
+		if (!isSkinUnlocked(skin)) return;
+		playClick();
+		activeSkin = skin.id;
+		localStorage.setItem(SKIN_STORAGE_KEY, skin.id);
+		applySkin(skin.id);
 	}
 </script>
 
@@ -388,6 +439,49 @@
 			</div>
 		</form>
 	</div>
+	<!-- 🛡️ Armería de Skins -->
+	<section class="glass-panel armory mt-5">
+		<div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
+			<h3 class="has-text-weight-bold has-text-white" style="font-size: 1.1rem; margin: 0;">🛡️ Armería de Skins</h3>
+			{#if devState.isDevMode}<span class="badge-tag">DEV</span>{/if}
+		</div>
+		<p class="armory-hint">
+			{#if dominantGroup}
+				Afinidad dominante: <strong>{dominantGroup[0]}</strong> ({dominantGroup[1]}
+				{dominantGroup[1] === 1 ? 'victoria' : 'victorias'}).
+			{:else}
+				Completa proyectos al 100% para desbloquear nuevas apariencias.
+			{/if}
+		</p>
+		{#if Object.keys(victoriesByTema).length > 0}
+			<div class="armory-tags">
+				{#each Object.entries(victoriesByTema) as [tema, n]}
+					<span class="tag is-dark is-rounded">{tema} · {n}</span>
+				{/each}
+			</div>
+		{/if}
+
+		<div class="armory-grid">
+			{#each SKINS as skin (skin.id)}
+				{@const unlocked = isSkinUnlocked(skin)}
+				<button
+					type="button"
+					class="skin-card"
+					class:active={activeSkin === skin.id}
+					class:locked={!unlocked}
+					disabled={!unlocked}
+					onclick={() => selectSkin(skin)}
+					aria-label="Skin {skin.name}"
+				>
+					<div class="skin-swatch" style="background: linear-gradient(135deg, {skin.swatch[0]}, {skin.swatch[1]});">
+						<span>{unlocked ? skin.icon : '🔒'}</span>
+					</div>
+					<strong class="skin-name">{skin.name}</strong>
+					<small class="skin-desc">{unlocked ? (activeSkin === skin.id ? 'Equipado' : skin.desc) : skin.desc}</small>
+				</button>
+			{/each}
+		</div>
+	</section>
 </div>
 
 <style>
@@ -579,5 +673,72 @@
 		font-size: 0.76rem;
 		line-height: 1.35;
 		margin: 0;
+	}
+
+	.armory {
+		padding: 16px;
+	}
+	.armory-hint {
+		color: var(--text-muted);
+		font-size: 0.82rem;
+		margin-bottom: 10px;
+	}
+	.armory-hint strong {
+		color: var(--accent-primary);
+	}
+	.armory-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-bottom: 12px;
+	}
+	.armory-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 10px;
+	}
+	.skin-card {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+		padding: 10px;
+		text-align: left;
+		color: var(--text-main);
+		background: rgba(0, 0, 0, 0.25);
+		border: 1px solid var(--card-border);
+		border-radius: 14px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+	.skin-card:hover:not(.locked) {
+		transform: translateY(-2px);
+		border-color: var(--accent-primary);
+	}
+	.skin-card.active {
+		border-color: var(--accent-primary);
+		box-shadow: 0 0 16px var(--accent-glow);
+	}
+	.skin-card.locked {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	.skin-swatch {
+		width: 100%;
+		height: 44px;
+		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.3rem;
+	}
+	.skin-name {
+		font-size: 0.85rem;
+		color: var(--text-main);
+	}
+	.skin-desc {
+		font-size: 0.68rem;
+		color: var(--text-muted);
+		line-height: 1.3;
 	}
 </style>

@@ -4,7 +4,15 @@
 	import { page } from '$app/state';
 	import { playClick } from '$lib/audio';
 
-	let { children }: { children?: Snippet } = $props();
+	let {
+		children,
+		activeView = '',
+		onViewChange
+	}: {
+		children?: Snippet;
+		activeView?: string;
+		onViewChange?: (view: 'dashboard' | 'bitacora') => void;
+	} = $props();
 
 	let pathname = $derived(page.url.pathname);
 	let isDashboard = $derived(pathname.startsWith('/dashboard'));
@@ -88,8 +96,28 @@
 	<!-- Nav Pills -->
 	<div class="nav-pills">
 		<a href="/" class="nav-pill {isHome ? 'active' : ''}" onclick={playClick}>Inicio</a>
-		<a href="/dashboard" class="nav-pill {isDashboard ? 'active' : ''}" onclick={playClick}>Dashboard</a>
-		<a href="/dashboard" class="nav-pill" onclick={playClick}>Proyectos</a>
+		<a
+			href="/dashboard"
+			class="nav-pill {isDashboard && activeView !== 'bitacora' ? 'active' : ''}"
+			onclick={(e) => {
+				playClick();
+				if (onViewChange) {
+					e.preventDefault();
+					onViewChange('dashboard');
+				}
+			}}>Dashboard</a
+		>
+		<a
+			href="/dashboard?tab=bitacora"
+			class="nav-pill {activeView === 'bitacora' ? 'active' : ''}"
+			onclick={(e) => {
+				playClick();
+				if (onViewChange) {
+					e.preventDefault();
+					onViewChange('bitacora');
+				}
+			}}>Bitácora</a
+		>
 	</div>
 
 	{@render children?.()}

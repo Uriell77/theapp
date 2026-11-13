@@ -2,8 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Fredoka:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Orbitron:wght@600;700;800&family=Outfit:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700;800&display=swap');
 
 :root {
-  --bg-color: #12191d;
-  --card-bg: rgba(30, 45, 54, 0.65);
+  /* Variables de skin (sobrescritas por [data-theme]) */
+  --bg-main: #12191d;
+  --bg-card: rgba(30, 45, 54, 0.65);
+  --accent-glow: rgba(25, 212, 168, 0.35);
+
+  --bg-color: var(--bg-main);
+  --card-bg: var(--bg-card);
   --card-border: rgba(255, 255, 255, 0.08);
   --accent-primary: #19d4a8; /* Verde Turquesa vibrante */
   --accent-danger: #e76666;
@@ -33,6 +38,34 @@
   /* Compatibilidad con variables existentes */
   --font-modern-title: var(--font-hierarchy-heading);
   --font-kids: var(--font-genre-kids);
+}
+
+/* === SKINS (Armería) === */
+[data-theme='cyberpunk'] {
+  --bg-main: #0b0618;
+  --bg-card: rgba(36, 12, 62, 0.65);
+  --accent-primary: #ff2bd6;
+  --accent-glow: rgba(0, 240, 255, 0.45);
+  --card-border: rgba(255, 43, 214, 0.22);
+  --bg-gradient: linear-gradient(180deg, #0b0618 0%, #1d0b38 100%);
+}
+
+[data-theme='olimpo'] {
+  --bg-main: #14110a;
+  --bg-card: rgba(46, 40, 28, 0.65);
+  --accent-primary: #e8b923;
+  --accent-glow: rgba(255, 215, 0, 0.4);
+  --card-border: rgba(232, 185, 35, 0.22);
+  --bg-gradient: linear-gradient(180deg, #14110a 0%, #2a2417 100%);
+}
+
+[data-theme='tactico'] {
+  --bg-main: #130b0b;
+  --bg-card: rgba(48, 24, 28, 0.65);
+  --accent-primary: #e0323c;
+  --accent-glow: rgba(224, 50, 60, 0.4);
+  --card-border: rgba(224, 50, 60, 0.22);
+  --bg-gradient: linear-gradient(180deg, #130b0b 0%, #262a30 100%);
 }
 
 body {

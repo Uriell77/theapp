@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { Motion } from 'svelte-motion';
@@ -72,26 +72,64 @@
 	// Separar activas / archivadas
 	let tasks = $derived(allTasks.filter((t: any) => !t.isArchived));
 	let archivedTasks = $derived(allTasks.filter((t: any) => t.isArchived));
-	let victoryTasks = $derived(archivedTasks.filter((t: any) => isTaskCompleted(t)));
-	let retreatTasks = $derived(archivedTasks.filter((t: any) => !isTaskCompleted(t)));
+	// Victoria: completadas al 100%  ·  Archivo (Retiradas Tácticas): abandonadas
+	let victoryTasks = $derived(allTasks.filter((t: any) => isTaskCompleted(t)));
+	let retreatTasks = $derived(allTasks.filter((t: any) => parseInt(t.status, 10) === -1));
 
-	// Pestaña activa del nav: 'dashboard' | 'archivo' | 'ajustes'
-	let activeTab = $state<'dashboard' | 'archivo' | 'ajustes'>(
-		page.url.searchParams.get('tab') === 'ajustes'
-			? 'ajustes'
-			: page.url.searchParams.get('tab') === 'archivo'
-				? 'archivo'
-				: 'dashboard'
-	);
+	// Vista activa: 'dashboard' | 'victoria' | 'bitacora' | 'archivo' | 'ajustes'
+	type ViewId = 'dashboard' | 'victoria' | 'bitacora' | 'archivo' | 'ajustes';
+	const VIEWS: ViewId[] = ['dashboard', 'victoria', 'bitacora', 'archivo', 'ajustes'];
+	const tabParam = page.url.searchParams.get('tab') as ViewId | null;
+	let activeTab = $state<ViewId>(tabParam && VIEWS.includes(tabParam) ? tabParam : 'dashboard');
+
+	// Bitácora global (project_logs + join con tasks)
+	let globalLogs = $state<any[]>([]);
+	let logsLoading = $state(false);
+	let logsError = $state<string | null>(null);
+	let expandedImage = $state<string | null>(null);
+
+	async function loadGlobalLogs() {
+		const ids = allTasks.map((t: any) => t.id);
+		if (ids.length === 0) {
+			globalLogs = [];
+			return;
+		}
+		logsLoading = true;
+		logsError = null;
+		const { data: rows, error } = await supabase
+			.from('project_logs')
+			.select('*, tasks(title, tema)')
+			.in('task_id', ids)
+			.order('created_at', { ascending: false });
+		if (error) {
+			console.error('Error al cargar la bitácora global:', error);
+			logsError = 'No se pudo cargar la bitácora.';
+			globalLogs = [];
+		} else {
+			globalLogs = rows ?? [];
+		}
+		logsLoading = false;
+	}
+
+	$effect(() => {
+		if (activeTab === 'bitacora') {
+			void allTasks.length;
+			untrack(() => loadGlobalLogs());
+		}
+	});
+
+	function formatLogDate(value: string) {
+		const d = new Date(value);
+		return isNaN(d.getTime())
+			? ''
+			: d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+	}
 
 	let isPanelOpen = $state(false);
 	let panelMode = $state<'form' | 'details'>('form');
 	let selectedTaskId = $state<number | null>(null);
 	let selectedChapter = $state<number | null>(null);
 	let startInVictory = $state(false);
-
-	// Salón de la Victoria (100%) vs Retiradas Tácticas (abandonadas) dentro del Archivo
-	let archiveTab = $state<'victoria' | 'retiradas'>('victoria');
 	let selectedTask = $derived(allTasks.find((t: any) => t.id === selectedTaskId) || null);
 	let viewedTasks = $state<Record<string, string>>({});
 
@@ -210,7 +248,7 @@
 <main class="app-container pt-0 pb-6">
 
 
-	<Navbar />
+	<Navbar activeView={activeTab} onViewChange={(v) => (activeTab = v)} />
 
 
 
@@ -494,65 +532,135 @@
 				</div>
 			{/if}
 
-		{:else if activeTab === 'archivo'}
-			<!-- ===== SECCIÓN ARCHIVO ===== -->
+		{:else if activeTab === 'victoria'}
+			<!-- ===== SALÓN DE LA VICTORIA ===== -->
 			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
 				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
-					📦 Archivo
+					🏆 Salón de la Victoria
+				</h2>
+				<span class="badge-pill">{victoryTasks.length} {victoryTasks.length === 1 ? 'victoria' : 'victorias'}</span>
+			</div>
+
+			{#if victoryTasks.length > 0}
+				<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+					Misiones completadas al 100%. Revive la bitácora de tu viaje o relee la crónica completa.
+				</p>
+				<div>
+					{#each victoryTasks as Task (Task.id)}
+						<CardTask
+							task={Task}
+							hasViewed={true}
+							onSelect={() => openVictory(Task.id)}
+							onVictory={() => openVictory(Task.id)}
+						/>
+					{/each}
+				</div>
+			{:else}
+				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+					<div style="font-size: 2.5rem; margin-bottom: 12px;">🏆</div>
+					<p class="has-text-grey-light mb-2" style="font-weight: 600;">El Salón de la Victoria está vacío</p>
+					<p class="has-text-grey-light" style="font-size: 0.85rem;">
+						Completa un proyecto al 100% para verlo aquí.
+					</p>
+				</div>
+			{/if}
+
+		{:else if activeTab === 'bitacora'}
+			<!-- ===== BITÁCORA GLOBAL ===== -->
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+					📸 Bitácora
+				</h2>
+				<span class="badge-pill">{globalLogs.length} {globalLogs.length === 1 ? 'registro' : 'registros'}</span>
+			</div>
+
+			{#if logsLoading}
+				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+					<p class="has-text-grey-light">Cargando tu bitácora…</p>
+				</div>
+			{:else if logsError}
+				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+					<p class="has-text-danger">{logsError}</p>
+				</div>
+			{:else if globalLogs.length === 0}
+				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+					<div style="font-size: 2.5rem; margin-bottom: 12px;">📓</div>
+					<p class="has-text-grey-light mb-2" style="font-weight: 600;">Tu bitácora está en blanco</p>
+					<p class="has-text-grey-light" style="font-size: 0.85rem;">
+						Cada vez que desbloquees un nivel registrando tu esfuerzo, aparecerá aquí.
+					</p>
+				</div>
+			{:else}
+				<div class="log-feed">
+					{#each globalLogs as log (log.id)}
+						<article class="glass-panel log-feed-card mb-4">
+							<div class="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
+								<div>
+									<h3 class="has-text-weight-bold has-text-white is-capitalized" style="font-size: 1.05rem;">
+										{log.tasks?.title ?? 'Proyecto'}
+									</h3>
+									<span style="color: var(--text-muted); font-size: 0.78rem;">{log.tasks?.tema ?? ''}</span>
+								</div>
+								<span class="tag is-warning is-light">🔓 Nivel {log.level}</span>
+							</div>
+							<time style="color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;">
+								{formatLogDate(log.created_at)}
+							</time>
+							<p class="log-feed-text mt-2">{log.log_text}</p>
+							{#if log.media_url}
+								<button type="button" class="log-feed-img-btn mt-3" aria-label="Expandir imagen" onclick={() => (expandedImage = log.media_url)}>
+									<img src={log.media_url} alt="Evidencia del nivel {log.level}" loading="lazy" />
+									<span class="log-feed-expand">⤢ Expandir</span>
+								</button>
+							{/if}
+						</article>
+					{/each}
+				</div>
+			{/if}
+
+			{#if expandedImage}
+				<div class="modal is-active" style="z-index: 2000;">
+					<div class="modal-background" role="presentation" onclick={() => (expandedImage = null)}></div>
+					<div class="modal-content">
+						<img src={expandedImage} alt="Evidencia ampliada" style="border-radius: 16px; width: 100%;" />
+					</div>
+					<button class="modal-close is-large" aria-label="Cerrar" onclick={() => (expandedImage = null)}></button>
+				</div>
+			{/if}
+
+		{:else if activeTab === 'archivo'}
+			<!-- ===== ARCHIVO: RETIRADAS TÁCTICAS ===== -->
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+					⛺ Retiradas Tácticas
 				</h2>
 				<span class="badge-pill" style="background: rgba(154,166,173,0.35); color: #ccc;">
-					{archivedTasks.length} {archivedTasks.length === 1 ? 'proyecto' : 'proyectos'}
+					{retreatTasks.length} {retreatTasks.length === 1 ? 'misión' : 'misiones'}
 				</span>
 			</div>
 
-			<div class="tabs is-centered is-boxed is-small mb-3">
-				<ul>
-					<li class:is-active={archiveTab === 'victoria'}>
-						<!-- svelte-ignore a11y_missing_attribute -->
-						<a role="button" tabindex="0" onclick={() => (archiveTab = 'victoria')} onkeydown={(e) => e.key === 'Enter' && (archiveTab = 'victoria')}>
-							🏆 Victorias ({victoryTasks.length})
-						</a>
-					</li>
-					<li class:is-active={archiveTab === 'retiradas'}>
-						<!-- svelte-ignore a11y_missing_attribute -->
-						<a role="button" tabindex="0" onclick={() => (archiveTab = 'retiradas')} onkeydown={(e) => e.key === 'Enter' && (archiveTab = 'retiradas')}>
-							⛺ Retiradas ({retreatTasks.length})
-						</a>
-					</li>
-				</ul>
-			</div>
-
-			{#each [archiveTab === 'victoria' ? victoryTasks : retreatTasks] as list}
-				{#if list.length > 0}
-					<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
-						{archiveTab === 'victoria'
-							? 'Misiones completadas al 100%. Revive la bitácora de tu viaje o relee la crónica completa cuando quieras.'
-							: 'Misiones abandonadas. Puedes restaurarlas al dashboard o eliminarlas definitivamente.'}
+			{#if retreatTasks.length > 0}
+				<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+					Misiones abandonadas. Lee su capítulo de retirada, reinícialas o elimínalas.
+				</p>
+				<div>
+					{#each retreatTasks as Task (Task.id)}
+						<CardTask
+							task={Task}
+							hasViewed={true}
+							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
+						/>
+					{/each}
+				</div>
+			{:else}
+				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+					<div style="font-size: 2.5rem; margin-bottom: 12px;">⛺</div>
+					<p class="has-text-grey-light mb-2" style="font-weight: 600;">No hay retiradas tácticas</p>
+					<p class="has-text-grey-light" style="font-size: 0.85rem;">
+						Las misiones abandonadas aparecerán aquí.
 					</p>
-					<div>
-						{#each list as Task (Task.id)}
-							<CardTask
-								task={Task}
-								hasViewed={true}
-								onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
-								onVictory={() => openVictory(Task.id)}
-							/>
-						{/each}
-					</div>
-				{:else}
-					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-						<div style="font-size: 2.5rem; margin-bottom: 12px;">{archiveTab === 'victoria' ? '🏆' : '⛺'}</div>
-						<p class="has-text-grey-light mb-2" style="font-weight: 600;">
-							{archiveTab === 'victoria' ? 'El Salón de la Victoria está vacío' : 'No hay retiradas tácticas'}
-						</p>
-						<p class="has-text-grey-light" style="font-size: 0.85rem;">
-							{archiveTab === 'victoria'
-								? 'Completa un proyecto al 100% y guárdalo para verlo aquí.'
-								: 'Los proyectos abandonados archivados aparecerán aquí.'}
-						</p>
-					</div>
-				{/if}
-			{/each}
+				</div>
+			{/if}
 
 		{:else if activeTab === 'ajustes'}
 			<!-- ===== SECCIÓN AJUSTES ===== -->
@@ -589,29 +697,17 @@
 				<span>Dashboard</span>
 			</button>
 
-			<!-- Tareas -->
+			<!-- Victoria -->
 			<button
-				class="nav-item"
+				class="nav-item {activeTab === 'victoria' ? 'active' : ''}"
 				onclick={() => {
 					playClick();
-					activeTab = 'dashboard';
+					activeTab = 'victoria';
 				}}
-				aria-label="Tareas"
+				aria-label="Victoria"
 			>
-				<svg
-					width="22"
-					height="22"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<polyline points="9 11 12 14 22 4"></polyline>
-					<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-				</svg>
-				<span>Tareas</span>
+				<span style="font-size: 20px; line-height: 22px; height: 22px;">🏆</span>
+				<span>Victoria</span>
 			</button>
 
 			<!-- FAB crear -->
@@ -624,7 +720,7 @@
 					playClick();
 					activeTab = 'archivo';
 				}}
-				aria-label="Archivo"
+				aria-label="Archivo (Retiradas)"
 				style="position: relative;"
 			>
 				<svg
@@ -641,9 +737,9 @@
 					<rect x="1" y="3" width="22" height="5"></rect>
 					<line x1="10" y1="12" x2="14" y2="12"></line>
 				</svg>
-				<span>Archivo</span>
-				{#if archivedTasks.length > 0}
-					<span class="nav-badge">{archivedTasks.length}</span>
+				<span>Retiradas</span>
+				{#if retreatTasks.length > 0}
+					<span class="nav-badge">{retreatTasks.length}</span>
 				{/if}
 			</button>
 
@@ -883,4 +979,41 @@ select:disabled {
 
 
 
+
+	:global(.log-feed-card) {
+		padding: 16px;
+	}
+	.log-feed-text {
+		color: var(--text-main);
+		font-size: 0.92rem;
+		line-height: 1.6;
+		white-space: pre-wrap;
+	}
+	.log-feed-img-btn {
+		position: relative;
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 1px solid var(--card-border);
+		border-radius: 16px;
+		overflow: hidden;
+		background: none;
+		cursor: zoom-in;
+	}
+	.log-feed-img-btn img {
+		display: block;
+		width: 100%;
+		max-height: 280px;
+		object-fit: cover;
+	}
+	.log-feed-expand {
+		position: absolute;
+		right: 10px;
+		bottom: 10px;
+		padding: 3px 10px;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		color: #fff;
+		background: rgba(0, 0, 0, 0.6);
+	}
 </style>
