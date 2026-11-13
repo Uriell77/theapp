@@ -3,6 +3,7 @@
 	import { Motion } from 'svelte-motion';
 	import { isKidsTheme, capitalizeWords } from '$lib/chapterUtils';
 	import { clearTaskTtsCache } from '$lib/ttsCache';
+	import { getSkinByValue } from '$lib/skins';
 	import BitacoraModal from './BitacoraModal.svelte';
 
 	interface TaskData {
@@ -82,6 +83,21 @@
 	});
 
 	let isLocked = $derived(isTimeLocked);
+
+	let unlockCountdown = $derived.by(() => {
+		if (!isTimeLocked || !currentMilestone) return '';
+		const diffMs = Math.max(0, currentMilestone - currentTime);
+		const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+		const days = Math.floor(totalHours / 24);
+		const hours = totalHours % 24;
+		const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+		if (days > 0) {
+			return `${days}d ${hours}h`;
+		}
+		return `0d ${hours}h ${minutes}m`;
+	});
+
+	let taskSkin = $derived(getSkinByValue(task?.tema));
 
 	const tematicasMap: Record<string, string> = {
 		'Alta Fantasía y Magia': 'Fantasía',
@@ -177,7 +193,10 @@
 					{#if isKids}
 						<span class="badge-kids font-kids">Infantil 🎈</span>
 					{:else}
-						<span class="badge-general font-modern-chapter">
+						<span
+							class="badge-general font-modern-chapter"
+							style="--card-tema-color: {taskSkin.primary};"
+						>
 							{tematicaEtiqueta} ⚔️
 						</span>
 					{/if}
@@ -321,8 +340,17 @@
 							<!-- Estado 2: Botón 0 y 1 Ocultos. Botón 2 Activo -->
 							<div class="action-form">
 								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-									<button use:motion class="button is-warning is-light is-small btn-unlock w-100" type="button" onclick={() => (isModalOpen = true)}>
+									<button
+										use:motion
+										class="button is-warning is-light is-small btn-unlock w-100"
+										type="button"
+										onclick={() => (isModalOpen = true)}
+										title={unlockCountdown ? `Se desbloquea automáticamente en ${unlockCountdown}` : 'Desbloquear capítulo'}
+									>
 										<span class="btn-text">🔓 Desbloquear</span>
+										{#if unlockCountdown}
+											<span class="unlock-countdown">⏳ {unlockCountdown}</span>
+										{/if}
 									</button>
 								</Motion>
 							</div>
@@ -451,12 +479,12 @@
 
 	.badge-general {
 		font-family: var(--font-hierarchy-ui);
-		background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
-		border: 1px solid color-mix(in srgb, var(--accent-primary) 40%, transparent);
-		color: var(--accent-primary);
+		background: color-mix(in srgb, var(--card-tema-color, var(--accent-primary)) 15%, transparent);
+		border: 1px solid color-mix(in srgb, var(--card-tema-color, var(--accent-primary)) 45%, transparent);
+		color: var(--card-tema-color, var(--accent-primary));
 		font-weight: 600;
 		letter-spacing: 0.02em;
-		box-shadow: 0 2px 10px var(--accent-glow);
+		box-shadow: 0 2px 10px color-mix(in srgb, var(--card-tema-color, var(--accent-primary)) 22%, transparent);
 	}
 
 	.btn-icon-delete {
@@ -705,6 +733,19 @@
 		box-shadow:
 			0 8px 22px rgba(255, 209, 102, 0.28),
 			inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+	}
+
+	.unlock-countdown {
+		font-size: 0.72rem;
+		font-weight: 700;
+		padding: 2px 7px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.28);
+		border: 1px solid rgba(255, 209, 102, 0.35);
+		color: #fff6d6;
+		letter-spacing: 0.02em;
+		flex-shrink: 0;
+		line-height: 1.2;
 	}
 
 	:global(.project-card .btn-primary:disabled),

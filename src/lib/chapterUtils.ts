@@ -1,6 +1,7 @@
 /**
  * Utilidades para el parseo, formato y tipografía de capítulos y temáticas
  */
+import { getSkinByValue } from '$lib/skins';
 
 export interface ParsedChapter {
 	title: string;
@@ -28,9 +29,11 @@ export interface GenreTypographyConfig {
 export function getGenreTypography(tema?: string | null): GenreTypographyConfig {
 	const t = (tema || '').toLowerCase();
 
+	let base: GenreTypographyConfig;
+
 	// 1. Infantil / Cuento de Hadas
 	if (isKidsTheme(tema)) {
-		return {
+		base = {
 			genreClass: 'genre-kids',
 			titleFont: "var(--font-genre-kids, 'Fredoka', cursive)",
 			bodyFont: "var(--font-book-warm, 'Lora', Georgia, serif)",
@@ -42,10 +45,8 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 			bodyColor: '#fff9eb',
 			ornament: '✦ 🎈 ✦'
 		};
-	}
-
-	// 2. Fantasía, Mitología, Medieval, Samurái, Alquimia (Épico / Clásico)
-	if (
+	} else if (
+		// 2. Fantasía, Mitología, Medieval, Samurái, Alquimia (Épico / Clásico)
 		t.includes('fantasía') ||
 		t.includes('fantasia') ||
 		t.includes('medieval') ||
@@ -57,7 +58,7 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 		t.includes('alquimia') ||
 		t.includes('arcana')
 	) {
-		return {
+		base = {
 			genreClass: 'genre-fantasy',
 			titleFont: "var(--font-genre-fantasy, 'Cinzel Decorative', 'Cinzel', serif)",
 			bodyFont: "var(--font-book-classic, 'Cormorant Garamond', 'Lora', Georgia, serif)",
@@ -69,11 +70,9 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 			bodyColor: '#f8f3e6',
 			ornament: '─── ❖ ───'
 		};
-	}
-
-	// 3. Steampunk (Victoriano Industrial)
-	if (t.includes('steampunk')) {
-		return {
+	} else if (t.includes('steampunk')) {
+		// 3. Steampunk (Victoriano Industrial)
+		base = {
 			genreClass: 'genre-steampunk',
 			titleFont: "var(--font-genre-mystery, 'Playfair Display', 'Cinzel', serif)",
 			bodyFont: "var(--font-book-classic, 'Cormorant Garamond', 'Lora', Georgia, serif)",
@@ -85,10 +84,8 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 			bodyColor: '#f7f0e4',
 			ornament: '─── ⚙ ───'
 		};
-	}
-
-	// 4. Ciencia Ficción, Cyberpunk, Espacio, Mechas, Superhéroes
-	if (
+	} else if (
+		// 4. Ciencia Ficción, Cyberpunk, Espacio, Mechas, Superhéroes
 		t.includes('cyberpunk') ||
 		t.includes('neón') ||
 		t.includes('neon') ||
@@ -98,7 +95,7 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 		t.includes('superhéroes') ||
 		t.includes('superheroes')
 	) {
-		return {
+		base = {
 			genreClass: 'genre-scifi',
 			titleFont: "var(--font-genre-scifi, 'Orbitron', 'Space Grotesk', sans-serif)",
 			bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
@@ -110,10 +107,8 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 			bodyColor: '#eef8fc',
 			ornament: '─── ◈ ───'
 		};
-	}
-
-	// 5. Terror Cósmico, Zombie, Post-Apocalíptico, Noir, Guerra, Salvaje Oeste, Espionaje, Desastre
-	if (
+	} else if (
+		// 5. Terror Cósmico, Zombie, Post-Apocalíptico, Noir, Guerra, Salvaje Oeste, Espionaje, Desastre
 		t.includes('terror') ||
 		t.includes('zombie') ||
 		t.includes('apocal') ||
@@ -125,7 +120,7 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 		t.includes('atraco') ||
 		t.includes('desastre')
 	) {
-		return {
+		base = {
 			genreClass: 'genre-thriller',
 			titleFont: "var(--font-genre-mystery, 'Playfair Display', 'Cinzel', serif)",
 			bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
@@ -137,21 +132,35 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 			bodyColor: '#f6f1ea',
 			ornament: '─── ✦ ───'
 		};
+	} else {
+		// 6. Comedia, Romance, Aprendizaje y General
+		base = {
+			genreClass: 'genre-editorial',
+			titleFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
+			bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
+			dropCapFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
+			accentColor: '#28f0c2',
+			accentGlow: 'rgba(40, 240, 194, 0.5)',
+			dropCapBg: 'linear-gradient(135deg, rgba(40, 240, 194, 0.22), rgba(17, 153, 142, 0.12))',
+			dropCapBorder: 'rgba(40, 240, 194, 0.6)',
+			bodyColor: '#f6f5f0',
+			ornament: '─── ❦ ───'
+		};
 	}
 
-	// 6. Comedia, Romance, Aprendizaje y General
-	return {
-		genreClass: 'genre-editorial',
-		titleFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
-		bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
-		dropCapFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
-		accentColor: '#28f0c2',
-		accentGlow: 'rgba(40, 240, 194, 0.5)',
-		dropCapBg: 'linear-gradient(135deg, rgba(40, 240, 194, 0.22), rgba(17, 153, 142, 0.12))',
-		dropCapBorder: 'rgba(40, 240, 194, 0.6)',
-		bodyColor: '#f6f5f0',
-		ornament: '─── ❦ ───'
-	};
+	const skin = getSkinByValue(tema);
+	if (skin.id !== 'default') {
+		return {
+			...base,
+			accentColor: skin.primary,
+			accentGlow: skin.glow.match(/rgba?\([^)]+\)/)?.[0] ?? skin.glassBorder,
+			dropCapBg: `linear-gradient(135deg, ${skin.glassBorder}, rgba(0, 0, 0, 0.25))`,
+			dropCapBorder: skin.primary,
+			bodyColor: skin.textMain
+		};
+	}
+
+	return base;
 }
 
 /**
