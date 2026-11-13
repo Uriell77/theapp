@@ -272,13 +272,13 @@
 	.bento-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr !important;
-		gap: 12px;
-		margin-bottom: 24px;
+		gap: 0.75rem;
+		margin-bottom: 0;
 	}
 
 	@media (max-width: 480px) {
 		.bento-grid {
-			gap: 8px;
+			gap: 0.75rem;
 		}
 	}
 
@@ -348,8 +348,8 @@
 	}
 
 	.ring-chart-dynamic {
-		width: 40px;
-		height: 40px;
+		width: 34px;
+		height: 34px;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -360,8 +360,8 @@
 	}
 
 	.ring-chart-inner {
-		width: 28px;
-		height: 28px;
+		width: 24px;
+		height: 24px;
 		background: #151f24;
 		border-radius: 50%;
 		display: flex;
@@ -370,7 +370,7 @@
 	}
 
 	.ring-chart-number {
-		font-size: 0.7rem;
+		font-size: 0.64rem;
 		font-weight: 700;
 		color: white;
 		line-height: 1;
@@ -441,7 +441,7 @@
 	}
 
 	:global(.bento-card) {
-		padding: 14px 12px !important;
+		padding: 0.9rem !important;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -452,7 +452,7 @@
 
 	@media (max-width: 480px) {
 		:global(.bento-card) {
-			padding: 12px 9px !important;
+			padding: 0.9rem !important;
 			border-radius: 16px !important;
 		}
 	}

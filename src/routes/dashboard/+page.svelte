@@ -493,12 +493,14 @@
 	</SlidingPanel>
 
 	{#if data.user}
-		<Estadistic datas={data} tasks={allTasks} />
+		{#if activeTab !== 'bitacora'}
+			<Estadistic datas={data} tasks={allTasks} />
+		{/if}
 
 		{#if activeTab === 'dashboard'}
 			<!-- ===== SECCIÓN PROYECTOS ACTIVOS ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
-				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
+				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.15rem; margin: 0;">
 					Mis Proyectos
 				</h2>
 				<span class="badge-pill">{activeTasksCount} {activeTasksCount === 1 ? 'activa' : 'activas'}</span>
@@ -523,7 +525,7 @@
 						<button
 							use:motion
 							class="btn-primary"
-							style="margin: 0 auto; padding: 10px 20px;"
+							style="margin: 0 auto;"
 							onclick={openCreateForm}
 						>
 							Crear tu primer proyecto
@@ -534,7 +536,7 @@
 
 		{:else if activeTab === 'victoria'}
 			<!-- ===== SALÓN DE LA VICTORIA ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
 				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
 					🏆 Salón de la Victoria
 				</h2>
@@ -567,7 +569,7 @@
 
 		{:else if activeTab === 'bitacora'}
 			<!-- ===== BITÁCORA GLOBAL ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
 				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
 					📸 Bitácora
 				</h2>
@@ -630,7 +632,7 @@
 
 		{:else if activeTab === 'archivo'}
 			<!-- ===== ARCHIVO: RETIRADAS TÁCTICAS ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
 				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
 					⛺ Retiradas Tácticas
 				</h2>
@@ -664,7 +666,7 @@
 
 		{:else if activeTab === 'ajustes'}
 			<!-- ===== SECCIÓN AJUSTES ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 mt-4">
+			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
 				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
 					⚙️ Ajustes
 				</h2>
@@ -706,7 +708,7 @@
 				}}
 				aria-label="Victoria"
 			>
-				<span style="font-size: 20px; line-height: 22px; height: 22px;">🏆</span>
+				<span style="font-size: 19px; line-height: 20px; height: 20px; margin-top: 0;">🏆</span>
 				<span>Victoria</span>
 			</button>
 
@@ -944,8 +946,8 @@ select:disabled {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 6px;
-	font-size: 0.7rem;
+	gap: 0;
+	font-size: 0.68rem;
 	text-decoration: none;
 	padding: 0;
 	position: relative;

@@ -247,7 +247,7 @@
 						title={unlocked ? `Ver historia del capítulo ${idx}` : `Capítulo ${idx} bloqueado`}
 						aria-label={unlocked ? `Ver historia del capítulo ${idx}` : `Capítulo ${idx} bloqueado`}
 					>
-						{idx}
+						{idx + 1}
 					</button>
 				{/each}
 			</div>
@@ -611,11 +611,12 @@
 	:global(.project-card .btn-outline),
 	:global(.project-card .btn-unlock) {
 		font-family: var(--font-hierarchy-ui);
-		font-size: clamp(0.72rem, 2.1vw, 0.8rem);
-		font-weight: 700;
+		font-size: 0.85rem;
+		font-weight: 600;
 		letter-spacing: 0.02em;
-		padding: 9px 12px;
-		min-height: 38px;
+		padding: 0.45rem 1.1rem;
+		min-height: 0;
+		height: auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -637,10 +638,8 @@
 	:global(.project-card .btn-primary) {
 		background: linear-gradient(135deg, #24ecc0 0%, #19d4a8 55%, #12a888 100%) !important;
 		color: #04241c !important;
-		border: 1px solid rgba(255, 255, 255, 0.32) !important;
-		box-shadow:
-			0 6px 18px rgba(25, 212, 168, 0.26),
-			inset 0 1px 1px rgba(255, 255, 255, 0.48) !important;
+		border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent) !important;
+		box-shadow: 0 3px 10px var(--accent-glow) !important;
 	}
 
 	:global(.project-card .btn-primary:hover:not(:disabled)) {

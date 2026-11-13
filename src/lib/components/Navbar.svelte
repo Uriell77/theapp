@@ -25,7 +25,7 @@
 	<!-- Top Profile Bar -->
 	<div class="profile-bar">
 		<div class="is-flex is-align-items-center gap-3">
-			<figure class="image is-44x44 mr-3" style="width: 44px; height: 44px; margin: 0;">
+			<figure class="image mr-3" style="width: 42px; height: 42px; margin: 0;">
 				<img 
 					class="is-rounded" 
 					src={user?.avatarUrl || '/emptyavatar.avif'} 
@@ -36,11 +36,11 @@
 							target.src = '/emptyavatar.avif';
 						}
 					}}
-					style="border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 50%; width: 44px; height: 44px; object-fit: cover; background: #1a2a30;"
+					style="border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 50%; width: 42px; height: 42px; object-fit: cover; background: #1a2a30;"
 				/>
 			</figure>
 			<div>
-				<div class="has-text-weight-bold has-text-white" style="font-size: 1.05rem; line-height: 1.2;">
+				<div class="has-text-weight-bold has-text-white" style="font-size: 1rem; line-height: 1.2;">
 					{user?.nombre_de_usuario || 'Usuario'}
 				</div>
 				<div style="color: var(--text-muted); font-size: 0.8rem;">
