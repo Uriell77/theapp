@@ -88,6 +88,7 @@
 </script>
 
 {#if isOpen}
+<section class="section">
 	<div class="modal is-active" role="presentation">
 		<div
 			class="modal-background"
@@ -198,6 +199,7 @@
 			</div>
 		</div>
 	</div>
+</section>
 {/if}
 
 <style>
@@ -210,6 +212,7 @@
 		padding: 0.75rem;
 		align-items: center;
 		justify-content: center;
+        z-index:20000
 	}
 
 	.modal-card {

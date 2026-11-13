@@ -192,9 +192,14 @@
 
 
 
+<<<<<<< HEAD
 	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask} {selectedChapter}>
+=======
+	<SlidingPanel class="" bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
+>>>>>>> 27efab6075c93308ff84c2f690d4f9ccb2db0bc0
 		{#if panelMode === 'form'}
 			<form
+                class="is-scroll"
 				method="POST"
 				action="?/createTask"
 				use:enhance={() => {
@@ -363,7 +368,7 @@
 
 				{#if milestones.length > 0}
 					<div
-						class="container is-scroll mb-3 p-4"
+						class="container mb-3 p-4"
 						style="background: rgba(14, 23, 29, 0.7); border: 1px solid var(--card-border); border-radius: 14px;"
 					>
 						<p class="is-size-7 has-text-weight-bold has-text-primary mb-3" style="text-transform: uppercase; letter-spacing: 0.05em;">
@@ -634,8 +639,8 @@
 <style>
 
 .is-scroll{
-   overflow: scroll;
-   max-height: 9rem;
+   overflow-y: auto; /* Muestra la barra de scroll vertical solo si hace falta */
+   max-height: 600px; /* Debes definir un límite de altura. Ajusta este valor a lo que necesites */
    padding-bottom: 1px;
    margin-bottom: 1px;
 }
