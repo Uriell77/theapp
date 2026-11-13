@@ -408,17 +408,46 @@
 		padding: clamp(14px, 3.5vw, 22px) !important;
 		background: linear-gradient(
 			135deg,
-			rgba(255, 255, 255, 0.07) 0%,
-			rgba(255, 255, 255, 0.02) 22%,
-			var(--skin-glass-bg, rgba(30, 45, 54, 0.65)) 55%,
-			color-mix(in srgb, var(--skin-bg-base, #10181c) 85%, transparent) 100%
+			color-mix(in srgb, var(--skin-primary, #26b08d) 12%, rgba(255, 255, 255, 0.05)) 0%,
+			color-mix(in srgb, var(--skin-primary, #26b08d) 4%, rgba(255, 255, 255, 0.015)) 24%,
+			var(--skin-glass-bg, rgba(30, 45, 54, 0.65)) 56%,
+			color-mix(in srgb, var(--skin-bg-base, #10181c) 88%, transparent) 100%
 		) !important;
 		border: 1px solid var(--skin-glass-border, rgba(255, 255, 255, 0.12)) !important;
 		border-radius: 18px !important;
-		box-shadow: 
-			0 12px 36px rgba(0, 0, 0, 0.35),
-			inset 0 1px 1px rgba(255, 255, 255, 0.22),
-			inset 0 -1px 0 rgba(255, 255, 255, 0.04) !important;
+		box-shadow:
+			0 12px 36px rgba(0, 0, 0, 0.38),
+			0 0 22px color-mix(in srgb, var(--skin-primary, #26b08d) 7%, transparent),
+			inset 0 1px 1px color-mix(in srgb, var(--skin-primary, #26b08d) 28%, rgba(255, 255, 255, 0.16)),
+			inset 0 -1px 1px color-mix(in srgb, var(--skin-secondary, #178267) 16%, rgba(255, 255, 255, 0.03)) !important;
+	}
+
+	:global(.project-card::before) {
+		background: linear-gradient(
+			115deg,
+			transparent 0%,
+			color-mix(in srgb, var(--skin-primary, #26b08d) 4%, transparent) 26%,
+			color-mix(in srgb, var(--skin-primary, #26b08d) 11%, rgba(255, 255, 255, 0.04)) 36%,
+			color-mix(in srgb, var(--skin-secondary, #178267) 5%, transparent) 46%,
+			transparent 58%
+		) !important;
+	}
+
+	:global(.project-card::after) {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 65%;
+		height: 55%;
+		background: radial-gradient(
+			ellipse at top right,
+			color-mix(in srgb, var(--skin-primary, #26b08d) 9%, transparent) 0%,
+			color-mix(in srgb, var(--skin-secondary, #178267) 3%, transparent) 45%,
+			transparent 75%
+		);
+		pointer-events: none;
+		z-index: 1;
 	}
 
 	.card-header-line {
@@ -577,17 +606,17 @@
 
 	:global(.project-card .timeline-step.active.is-current) {
 		box-shadow:
-			0 0 0 2px rgba(25, 212, 168, 0.28),
-			0 5px 14px rgba(25, 212, 168, 0.5),
-			inset 0 1px 1px rgba(255, 255, 255, 0.65);
+			0 0 0 2px color-mix(in srgb, var(--skin-primary, var(--accent-primary)) 28%, transparent),
+			0 5px 14px color-mix(in srgb, var(--skin-primary, var(--accent-primary)) 42%, transparent),
+			inset 0 1px 1px rgba(255, 255, 255, 0.45);
 	}
 
 	:global(.project-card .timeline-step.active:hover) {
 		transform: translateY(-2px) scale(1.1);
 		box-shadow:
-			0 6px 16px rgba(25, 212, 168, 0.65),
-			inset 0 1px 2px rgba(255, 255, 255, 0.75);
-		filter: brightness(1.08);
+			0 6px 16px color-mix(in srgb, var(--skin-primary, var(--accent-primary)) 52%, transparent),
+			inset 0 1px 2px rgba(255, 255, 255, 0.55);
+		filter: brightness(1.06);
 	}
 
 	:global(.project-card .timeline-step.active:active) {
@@ -671,10 +700,10 @@
 	}
 
 	:global(.project-card .btn-primary:hover:not(:disabled)) {
-		filter: brightness(1.07);
+		filter: brightness(1.06);
 		box-shadow:
-			0 8px 22px rgba(25, 212, 168, 0.42),
-			inset 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+			0 8px 20px color-mix(in srgb, var(--skin-primary, var(--accent-primary)) 32%, transparent),
+			inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
 	}
 
 	:global(.project-card .btn-outline) {
