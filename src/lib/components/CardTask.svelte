@@ -128,16 +128,6 @@
 		}
 	}
 
-<<<<<<< HEAD
-=======
-	function handleClickerClick(e: MouseEvent) {
-		if (isAbandoned || !hasViewed) {
-			if (onSelect) onSelect();
-			return;
-		}
-	}
-
->>>>>>> 27efab6075c93308ff84c2f690d4f9ccb2db0bc0
 	let progressPercent = $derived(
 		task && task.cantidad_de_niveles > 1
 			? Math.min(100, (statusNum / (task.cantidad_de_niveles - 1)) * 100).toFixed(1)
@@ -173,19 +163,6 @@
 			class:is-archived-card={isArchived}
 			id={`task-${task.id}`}
 		>
-<<<<<<< HEAD
-=======
-			<!-- BOTÓN 0: Superpuesto. Solo activo cuando se va a visualizar o en abandono -->
-			{#if isAbandoned || !hasViewed}
-				<button
-					type="button"
-					class="clicker-btn"
-					onclick={handleClickerClick}
-					aria-label={isAbandoned ? 'Visualizar historia alternativa' : `Visualizar cinemática de ${task.title}`}
-				></button>
-			{/if}
-
->>>>>>> 27efab6075c93308ff84c2f690d4f9ccb2db0bc0
 			<!-- Header del Card: Título + Badge de categoría + Botón de eliminar -->
 			<div class="card-header-line">
 				<h3 class="card-title has-text-weight-bold has-text-white {isKids ? 'font-kids' : 'font-modern-chapter'}">
@@ -203,7 +180,6 @@
 
 					<!-- Botón de eliminación rápida (Solo archivadas) -->
 					{#if isArchived}
-<<<<<<< HEAD
 						<form
 							method="POST"
 							action="?/deleteTask"
@@ -235,12 +211,6 @@
 									<polyline points="3 6 5 6 21 6"></polyline>
 									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
 								</svg>
-=======
-						<form class="" method="POST" action="?/deleteTask" use:enhance={() => { return async ({ update }) => { await update(); }; }}>
-							<input class="" type="hidden" name="taskId" value={task.id} />
-							<button type="submit" class="btn-icon-delete" title="Eliminar tarea" aria-label="Eliminar tarea" onclick={(e) => { if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) { e.preventDefault(); } }}>
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
->>>>>>> 27efab6075c93308ff84c2f690d4f9ccb2db0bc0
 							</button>
 						</form>
 					{:else}
@@ -389,27 +359,6 @@
 {/if}
 
 <style>
-<<<<<<< HEAD
-=======
-    /* ... TODO EL CÓDIGO CSS ORIGINAL SE MANTIENE INTACTO ... */
-	.clicker-btn {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		z-index: 10;
-	}
-
-	.clicker-btn:disabled,
-	.clicker-btn.is-locked {
-		cursor: pointer;
-	}
-
->>>>>>> 27efab6075c93308ff84c2f690d4f9ccb2db0bc0
 	:global(.project-card) {
 		position: relative;
 		overflow: hidden;

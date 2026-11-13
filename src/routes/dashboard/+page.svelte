@@ -192,11 +192,7 @@
 
 
 
-<<<<<<< HEAD
 	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask} {selectedChapter}>
-=======
-	<SlidingPanel class="" bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
->>>>>>> 27efab6075c93308ff84c2f690d4f9ccb2db0bc0
 		{#if panelMode === 'form'}
 			<form
                 class="is-scroll"
