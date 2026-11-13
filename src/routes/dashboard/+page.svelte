@@ -11,6 +11,7 @@
 	import SeccionAjustes from '$lib/components/SeccionAjustes.svelte';
 	import { page } from '$app/state';
 	import { playClick } from '$lib/audio';
+	import { syncSkin } from '$lib/skins';
 
 	const tematicasAgrupadas = [
     {
@@ -75,6 +76,11 @@
 	// Victoria: completadas al 100%  ·  Archivo (Retiradas Tácticas): abandonadas
 	let victoryTasks = $derived(allTasks.filter((t: any) => isTaskCompleted(t)));
 	let retreatTasks = $derived(allTasks.filter((t: any) => parseInt(t.status, 10) === -1));
+
+	// Skin automático: tema dominante de los proyectos (si el modo es 'auto')
+	$effect(() => {
+		syncSkin(allTasks);
+	});
 
 	// Vista activa: 'dashboard' | 'victoria' | 'bitacora' | 'archivo' | 'ajustes'
 	type ViewId = 'dashboard' | 'victoria' | 'bitacora' | 'archivo' | 'ajustes';

@@ -382,10 +382,10 @@
 			135deg,
 			rgba(255, 255, 255, 0.07) 0%,
 			rgba(255, 255, 255, 0.02) 22%,
-			rgba(30, 45, 54, 0.65) 50%,
-			rgba(16, 24, 28, 0.78) 100%
+			var(--skin-glass-bg, rgba(30, 45, 54, 0.65)) 55%,
+			color-mix(in srgb, var(--skin-bg-base, #10181c) 85%, transparent) 100%
 		) !important;
-		border: 1px solid rgba(255, 255, 255, 0.12) !important;
+		border: 1px solid var(--skin-glass-border, rgba(255, 255, 255, 0.12)) !important;
 		border-radius: 18px !important;
 		box-shadow: 
 			0 12px 36px rgba(0, 0, 0, 0.35),
@@ -451,12 +451,12 @@
 
 	.badge-general {
 		font-family: var(--font-hierarchy-ui);
-		background: linear-gradient(135deg, rgba(25, 212, 168, 0.16), rgba(25, 212, 168, 0.05));
-		border: 1px solid rgba(25, 212, 168, 0.4);
-		color: #19d4a8;
+		background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+		border: 1px solid color-mix(in srgb, var(--accent-primary) 40%, transparent);
+		color: var(--accent-primary);
 		font-weight: 600;
 		letter-spacing: 0.02em;
-		box-shadow: 0 2px 10px rgba(25, 212, 168, 0.1);
+		box-shadow: 0 2px 10px var(--accent-glow);
 	}
 
 	.btn-icon-delete {
@@ -534,12 +534,12 @@
 
 	:global(.project-card .timeline-step.active) {
 		cursor: pointer;
-		background: linear-gradient(135deg, #28f0c2 0%, #19d4a8 55%, #11998e 100%);
+		background: linear-gradient(135deg, var(--skin-primary, var(--accent-primary)) 0%, var(--skin-secondary, #10ac84) 100%);
 		color: #04241c;
 		font-weight: 800;
 		border: 1px solid rgba(255, 255, 255, 0.45);
 		box-shadow:
-			0 4px 12px rgba(25, 212, 168, 0.35),
+			var(--skin-glow),
 			inset 0 1px 1px rgba(255, 255, 255, 0.55);
 		transition:
 			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
@@ -636,7 +636,7 @@
 	}
 
 	:global(.project-card .btn-primary) {
-		background: linear-gradient(135deg, #24ecc0 0%, #19d4a8 55%, #12a888 100%) !important;
+		background: linear-gradient(135deg, var(--skin-primary, var(--accent-primary)) 0%, var(--skin-secondary, #10ac84) 100%) !important;
 		color: #04241c !important;
 		border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent) !important;
 		box-shadow: 0 3px 10px var(--accent-glow) !important;
@@ -676,7 +676,7 @@
 	}
 
 	.btn-archive {
-		background: linear-gradient(135deg, #24ecc0 0%, #19d4a8 50%, #11998e 100%) !important;
+		background: linear-gradient(135deg, var(--skin-primary, var(--accent-primary)) 0%, var(--skin-secondary, #10ac84) 100%) !important;
 	}
 
 	:global(.project-card .btn-unlock) {

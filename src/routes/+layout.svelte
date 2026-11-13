@@ -4,7 +4,7 @@
 	import { updated } from '$app/state';
 	import { invalidateAll, beforeNavigate } from '$app/navigation';
 	import '../Styles/theme.css';
-	import { applySkin, SKIN_STORAGE_KEY } from '$lib/skins';
+	import { applySkin, getStoredSkin } from '$lib/skins';
 	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
@@ -12,7 +12,7 @@
 	onMount(() => {
 		if (!browser) return;
 
-		applySkin(localStorage.getItem(SKIN_STORAGE_KEY) || 'default');
+		applySkin(getStoredSkin());
 
 		let isRefreshing = false;
 		let hadController = !!navigator.serviceWorker?.controller;

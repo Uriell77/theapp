@@ -4,8 +4,17 @@
 	import { Motion } from 'svelte-motion';
 	import { playClick } from '$lib/audio';
 	import { untrack } from 'svelte';
-	import { SKINS, SKIN_STORAGE_KEY, applySkin, getTemaGroup, type SkinId } from '$lib/skins';
-	import { devState } from '$lib/devState.svelte';
+	import {
+		ALL_SKINS,
+		SKIN_MODE_KEY,
+		SKIN_STORAGE_KEY,
+		applySkin,
+		computeAutoSkin,
+		getSkinByValue,
+		getSkinMode,
+		type SkinMode
+	} from '$lib/skins';
+	import { SKIN_AUTO_CACHE_KEY } from '$lib/skins';
 
 	let { user }: { user: any } = $props();
 
@@ -78,51 +87,42 @@
 	}
 
 	// ───────── ARMERÍA DE SKINS ─────────
-	// Victorias (proyectos 100%) por grupo temático y por tema
-	let victoriesByGroup = $derived.by(() => {
-		const counts: Record<string, number> = {};
-		for (const t of user?.tasks ?? []) {
-			const status = parseInt(t.status, 10);
-			if (status === -1 || status < t.cantidad_de_niveles - 1) continue;
-			const group = getTemaGroup(t.tema);
-			if (group) counts[group] = (counts[group] ?? 0) + 1;
-		}
-		return counts;
+	// Sin restricciones: todos los skins disponibles en esta fase
+	let skinMode = $state<SkinMode>('auto');
+	let manualSkinValue = $state('default');
+
+	let autoSkin = $derived(computeAutoSkin(user?.tasks ?? []));
+	let effectiveSkin = $derived(skinMode === 'auto' ? autoSkin : getSkinByValue(manualSkinValue));
+
+	let skinGroups = $derived.by(() => {
+		const groups: Record<string, typeof ALL_SKINS> = {};
+		for (const sk of ALL_SKINS) (groups[sk.grupo] ??= []).push(sk);
+		return Object.entries(groups);
 	});
-
-	let victoriesByTema = $derived.by(() => {
-		const counts: Record<string, number> = {};
-		for (const t of user?.tasks ?? []) {
-			const status = parseInt(t.status, 10);
-			if (status === -1 || status < t.cantidad_de_niveles - 1) continue;
-			counts[t.tema] = (counts[t.tema] ?? 0) + 1;
-		}
-		return counts;
-	});
-
-	let dominantGroup = $derived(
-		Object.entries(victoriesByGroup).sort((a, b) => b[1] - a[1])[0] ?? null
-	);
-
-	let activeSkin = $state<SkinId>('default');
-
-	function isSkinUnlocked(skin: (typeof SKINS)[number]) {
-		return devState.isDevMode || skin.group === null || (victoriesByGroup[skin.group] ?? 0) >= 1;
-	}
 
 	$effect(() => {
-		const saved = localStorage.getItem(SKIN_STORAGE_KEY) as SkinId | null;
-		if (saved && SKINS.some((k) => k.id === saved)) {
-			untrack(() => (activeSkin = saved));
-		}
+		skinMode = getSkinMode();
+		manualSkinValue = localStorage.getItem(SKIN_STORAGE_KEY) || 'default';
 	});
 
-	function selectSkin(skin: (typeof SKINS)[number]) {
-		if (!isSkinUnlocked(skin)) return;
+	function commitSkin() {
+		localStorage.setItem(SKIN_MODE_KEY, skinMode);
+		localStorage.setItem(SKIN_STORAGE_KEY, manualSkinValue);
+		localStorage.setItem(SKIN_AUTO_CACHE_KEY, autoSkin.valor);
+		applySkin(effectiveSkin);
+	}
+
+	function setAutoMode() {
 		playClick();
-		activeSkin = skin.id;
-		localStorage.setItem(SKIN_STORAGE_KEY, skin.id);
-		applySkin(skin.id);
+		skinMode = 'auto';
+		commitSkin();
+	}
+
+	function selectSkin(valor: string) {
+		playClick();
+		skinMode = 'manual';
+		manualSkinValue = valor;
+		commitSkin();
 	}
 </script>
 
@@ -443,44 +443,43 @@
 	<section class="glass-panel armory mt-5">
 		<div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
 			<h3 class="has-text-weight-bold has-text-white" style="font-size: 1.1rem; margin: 0;">🛡️ Armería de Skins</h3>
-			{#if devState.isDevMode}<span class="badge-tag">DEV</span>{/if}
+			<span class="badge-tag">{effectiveSkin.etiqueta}</span>
 		</div>
-		<p class="armory-hint">
-			{#if dominantGroup}
-				Afinidad dominante: <strong>{dominantGroup[0]}</strong> ({dominantGroup[1]}
-				{dominantGroup[1] === 1 ? 'victoria' : 'victorias'}).
-			{:else}
-				Completa proyectos al 100% para desbloquear nuevas apariencias.
-			{/if}
-		</p>
-		{#if Object.keys(victoriesByTema).length > 0}
-			<div class="armory-tags">
-				{#each Object.entries(victoriesByTema) as [tema, n]}
-					<span class="tag is-dark is-rounded">{tema} · {n}</span>
+
+		<button
+			type="button"
+			class="skin-auto"
+			class:active={skinMode === 'auto'}
+			onclick={setAutoMode}
+		>
+			<span class="skin-auto-icon">✨</span>
+			<span class="skin-auto-text">
+				<strong>Modo Automático (Dinámico)</strong>
+				<small>
+					Usa el skin de tu temática más frecuente:
+					{autoSkin.id === 'default' ? 'aún sin proyectos (Estándar)' : autoSkin.etiqueta}
+				</small>
+			</span>
+			<span class="skin-check">{skinMode === 'auto' ? '✔' : ''}</span>
+		</button>
+
+		{#each skinGroups as [grupo, skins] (grupo)}
+			<h4 class="armory-group">{grupo}</h4>
+			<div class="armory-grid">
+				{#each skins as skin (skin.id)}
+					<button
+						type="button"
+						class="skin-card"
+						class:active={skinMode === 'manual' && manualSkinValue === skin.valor}
+						onclick={() => selectSkin(skin.valor)}
+						aria-label="Skin {skin.etiqueta}"
+					>
+						<div class="skin-swatch" style="background: linear-gradient(135deg, {skin.primary}, {skin.secondary}); box-shadow: {skin.glow};"></div>
+						<strong class="skin-name">{skin.etiqueta}</strong>
+					</button>
 				{/each}
 			</div>
-		{/if}
-
-		<div class="armory-grid">
-			{#each SKINS as skin (skin.id)}
-				{@const unlocked = isSkinUnlocked(skin)}
-				<button
-					type="button"
-					class="skin-card"
-					class:active={activeSkin === skin.id}
-					class:locked={!unlocked}
-					disabled={!unlocked}
-					onclick={() => selectSkin(skin)}
-					aria-label="Skin {skin.name}"
-				>
-					<div class="skin-swatch" style="background: linear-gradient(135deg, {skin.swatch[0]}, {skin.swatch[1]});">
-						<span>{unlocked ? skin.icon : '🔒'}</span>
-					</div>
-					<strong class="skin-name">{skin.name}</strong>
-					<small class="skin-desc">{unlocked ? (activeSkin === skin.id ? 'Equipado' : skin.desc) : skin.desc}</small>
-				</button>
-			{/each}
-		</div>
+		{/each}
 	</section>
 </div>
 
@@ -678,67 +677,85 @@
 	.armory {
 		padding: 16px;
 	}
-	.armory-hint {
+	.armory-group {
 		color: var(--text-muted);
-		font-size: 0.82rem;
-		margin-bottom: 10px;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		margin: 14px 0 6px;
 	}
-	.armory-hint strong {
-		color: var(--accent-primary);
-	}
-	.armory-tags {
+	.skin-auto {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		margin-bottom: 12px;
-	}
-	.armory-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
+		align-items: center;
 		gap: 10px;
-	}
-	.skin-card {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 4px;
-		padding: 10px;
+		width: 100%;
+		padding: 10px 12px;
 		text-align: left;
 		color: var(--text-main);
 		background: rgba(0, 0, 0, 0.25);
 		border: 1px solid var(--card-border);
 		border-radius: 14px;
 		cursor: pointer;
+	}
+	.skin-auto.active {
+		border-color: var(--accent-primary);
+		box-shadow: 0 0 14px var(--accent-glow);
+	}
+	.skin-auto-icon {
+		font-size: 1.3rem;
+	}
+	.skin-auto-text {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+	}
+	.skin-auto-text strong {
+		font-size: 0.85rem;
+	}
+	.skin-auto-text small {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+	}
+	.skin-check {
+		color: var(--accent-primary);
+		font-weight: 700;
+	}
+	.armory-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+	}
+	.skin-card {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 6px;
+		padding: 8px;
+		text-align: center;
+		color: var(--text-main);
+		background: rgba(0, 0, 0, 0.25);
+		border: 1px solid var(--card-border);
+		border-radius: 12px;
+		cursor: pointer;
 		transition: all 0.2s ease;
 	}
-	.skin-card:hover:not(.locked) {
+	.skin-card:hover {
 		transform: translateY(-2px);
-		border-color: var(--accent-primary);
 	}
 	.skin-card.active {
 		border-color: var(--accent-primary);
-		box-shadow: 0 0 16px var(--accent-glow);
-	}
-	.skin-card.locked {
-		opacity: 0.5;
-		cursor: not-allowed;
+		box-shadow: 0 0 14px var(--accent-glow);
 	}
 	.skin-swatch {
-		width: 100%;
-		height: 44px;
-		border-radius: 10px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 1.3rem;
+		height: 30px;
+		border-radius: 8px;
 	}
 	.skin-name {
-		font-size: 0.85rem;
-		color: var(--text-main);
-	}
-	.skin-desc {
 		font-size: 0.68rem;
-		color: var(--text-muted);
-		line-height: 1.3;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
