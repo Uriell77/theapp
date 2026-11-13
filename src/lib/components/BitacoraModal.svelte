@@ -139,8 +139,8 @@
 						<div class="control">
 							<textarea
 								id="logTextArea"
-								class="textarea has-background-black-ter has-text-white"
-								rows="8"
+								class="textarea has-background-black-ter has-text-white "
+								rows="5"
 								placeholder="Describe detalladamente qué acciones tomaste, qué aprendiste o los retos superados para completar este nivel..."
 								bind:value={logText}
 								disabled={isSubmitting}
@@ -177,7 +177,7 @@
 				</form>
 			</section>
 
-			<footer class="modal-card-foot has-background-black-bis is-justify-content-flex-end">
+			<div class="modal-card-foot has-background-black-bis is-justify-content-flex-end">
 				<button
 					class="button is-ghost has-text-grey-light"
 					type="button"
@@ -195,7 +195,7 @@
 				>
 					Registrar y Desbloquear
 				</button>
-			</footer>
+			</div>
 		</div>
 	</div>
 {/if}
@@ -284,7 +284,7 @@
 	:global(.textarea) {
 		box-sizing: border-box;
 		max-width: 100%;
-		min-height: 140px;
+		min-height: 100px;
 		resize: vertical;
 		font-family: inherit;
 	}

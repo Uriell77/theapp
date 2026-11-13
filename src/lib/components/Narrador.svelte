@@ -1,14 +1,23 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { Motion } from 'svelte-motion';
+	import { getCachedTtsAudio, saveCachedTtsAudio } from '$lib/ttsCache';
 
 	interface Props {
 		text?: string;
 		active?: boolean;
 		autoPlay?: boolean;
+		taskId?: number | string;
+		chapterKey?: number | string;
 	}
 
-	let { text = '', active = false, autoPlay = true }: Props = $props();
+	let {
+		text = '',
+		active = false,
+		autoPlay = true,
+		taskId,
+		chapterKey
+	}: Props = $props();
 
 	// Estados
 	let isLoading = $state(false);
@@ -108,6 +117,34 @@
 		isLoading = false;
 	}
 
+	function playAudioBlob(blob: Blob): Promise<void> {
+		usingFallback = false;
+		currentObjectUrl = URL.createObjectURL(blob);
+		audioEl = new Audio(currentObjectUrl);
+
+		audioEl.onplay = () => {
+			isSpeaking = true;
+			isPaused = false;
+			isLoading = false;
+		};
+		audioEl.onpause = () => {
+			isPaused = true;
+		};
+		audioEl.onended = () => {
+			isSpeaking = false;
+			isPaused = false;
+			revokeUrl();
+			audioEl = null;
+		};
+		audioEl.onerror = () => {
+			console.error('[Narrador] Error reproduciendo el audio de Gemini.');
+			hasError = true;
+			stopSpeech();
+		};
+
+		return audioEl.play();
+	}
+
 	async function speakText() {
 		if (!text) return;
 
@@ -116,6 +153,14 @@
 		isLoading = true;
 
 		try {
+			// 1. Intentar recuperar el audio previamente generado desde la memoria del navegador
+			const cachedBlob = await getCachedTtsAudio(taskId, chapterKey, text);
+			if (cachedBlob) {
+				await playAudioBlob(cachedBlob);
+				return;
+			}
+
+			// 2. Si no existe en memoria, solicitar a la API de Gemini TTS
 			const res = await fetch('/api/tts', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -135,32 +180,12 @@
 				throw new Error(`Error ${res.status}: ${await res.text()}`);
 			}
 
-			usingFallback = false;
 			const blob = await res.blob();
-			currentObjectUrl = URL.createObjectURL(blob);
-			audioEl = new Audio(currentObjectUrl);
 
-			audioEl.onplay = () => {
-				isSpeaking = true;
-				isPaused = false;
-				isLoading = false;
-			};
-			audioEl.onpause = () => {
-				isPaused = true;
-			};
-			audioEl.onended = () => {
-				isSpeaking = false;
-				isPaused = false;
-				revokeUrl();
-				audioEl = null;
-			};
-			audioEl.onerror = () => {
-				console.error('[Narrador] Error reproduciendo el audio de Gemini.');
-				hasError = true;
-				stopSpeech();
-			};
+			// 3. Guardar el audio generado por Gemini en la memoria del navegador para futuras reproducciones
+			await saveCachedTtsAudio(taskId, chapterKey, text, blob);
 
-			await audioEl.play();
+			await playAudioBlob(blob);
 		} catch (err) {
 			console.error('[Narrador] Error al obtener TTS de Gemini:', err);
 			hasError = true;

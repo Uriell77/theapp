@@ -82,6 +82,7 @@
 	let isPanelOpen = $state(false);
 	let panelMode = $state<'form' | 'details'>('form');
 	let selectedTaskId = $state<number | null>(null);
+	let selectedChapter = $state<number | null>(null);
 	let selectedTask = $derived(allTasks.find((t: any) => t.id === selectedTaskId) || null);
 	let viewedTasks = $state<Record<string, string>>({});
 
@@ -147,15 +148,20 @@
 	function openCreateForm() {
 		panelMode = 'form';
 		selectedTaskId = null;
+		selectedChapter = null;
 		isPanelOpen = true;
 	}
 
-	function openTaskDetails(taskId: number) {
+	function openTaskDetails(taskId: number, chapterIndex?: number) {
 		panelMode = 'details';
 		selectedTaskId = taskId;
 		const task = allTasks.find((t: any) => t.id === taskId);
 		if (task) {
-			viewedTasks[String(taskId)] = String(task.status);
+			const targetChapter = chapterIndex !== undefined ? chapterIndex : Number(task.status);
+			selectedChapter = targetChapter;
+			if (String(targetChapter) === String(task.status)) {
+				viewedTasks[String(taskId)] = String(task.status);
+			}
 		}
 		isPanelOpen = true;
 	}
@@ -186,7 +192,7 @@
 
 
 
-	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask}>
+	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask} {selectedChapter}>
 		{#if panelMode === 'form'}
 			<form
 				method="POST"
@@ -444,7 +450,7 @@
 							task={Task}
 							hasViewed={viewedTasks[String(Task.id)] !== undefined &&
 								String(viewedTasks[String(Task.id)]) === String(Task.status)}
-							onSelect={() => openTaskDetails(Task.id)}
+							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
 						/>
 					{/each}
 				</div>
@@ -484,7 +490,7 @@
 						<CardTask
 							task={Task}
 							hasViewed={true}
-							onSelect={() => openTaskDetails(Task.id)}
+							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
 						/>
 					{/each}
 				</div>

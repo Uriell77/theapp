@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { Motion } from 'svelte-motion';
 	import { isKidsTheme, capitalizeWords } from '$lib/chapterUtils';
+	import { clearTaskTtsCache } from '$lib/ttsCache';
 	import BitacoraModal from './BitacoraModal.svelte';
 
 	interface TaskData {
@@ -19,7 +20,7 @@
 	interface Props {
 		task: TaskData;
 		hasViewed?: boolean;
-		onSelect?: () => void;
+		onSelect?: (chapterIndex: number) => void;
 	}
 
 	let { task = $bindable(), hasViewed = false, onSelect }: Props = $props();
@@ -106,37 +107,32 @@
 		task?.tema ? tematicasMap[task.tema] || capitalizeWords(task.tema) : 'Tema no especificado'
 	);
 
+	function isChapterUnlocked(idx: number): boolean {
+		if (isAbandoned) return false;
+		if (isArchived) return true;
+		return idx <= statusNum;
+	}
+
+	function handleChapterClick(idx: number) {
+		if (!isChapterUnlocked(idx)) return;
+		if (onSelect) {
+			onSelect(idx);
+		}
+	}
+
 	function handleAdvanceClick(e: MouseEvent) {
 		if (isAbandoned) {
 			return;
 		}
 		if (!hasViewed) {
 			e.preventDefault();
-			if (onSelect) onSelect();
+			if (onSelect) onSelect(statusNum);
 			return;
 		}
 		if (isLocked) {
 			e.preventDefault();
 			isModalOpen = true;
 			return;
-		}
-	}
-
-	function handleClickerClick(e: MouseEvent) {
-		if (isAbandoned || isLastLevel) {
-			return;
-		}
-		if (!hasViewed && onSelect) {
-			onSelect();
-			return;
-		}
-		if (isLocked) {
-			e.preventDefault();
-			isModalOpen = true;
-			return;
-		}
-		if (onSelect) {
-			onSelect();
 		}
 	}
 
@@ -175,16 +171,6 @@
 			class:is-archived-card={isArchived}
 			id={`task-${task.id}`}
 		>
-			<!-- Botón transparente para abrir panel de detalles o modal con Time-Gating -->
-			<button
-				type="button"
-				class="clicker-btn"
-				class:is-locked={isLocked}
-				disabled={isLastLevel && !isAbandoned}
-				onclick={handleClickerClick}
-				aria-label={isLocked ? 'Nivel bloqueado por tiempo' : `Ver detalles de ${task.title}`}
-			></button>
-
 			<!-- Header del Card: Título + Badge de categoría + Botón de eliminar -->
 			<div class="card-header-line">
 				<h3
@@ -208,7 +194,11 @@
 							method="POST"
 							action="?/deleteTask"
 							use:enhance={() => {
-								return async ({ update }) => {
+								const idToRemove = task.id;
+								return async ({ result, update }) => {
+									if (result.type === 'success') {
+										await clearTaskTtsCache(idToRemove);
+									}
 									await update();
 								};
 							}}
@@ -222,6 +212,8 @@
 								onclick={(e) => {
 									if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) {
 										e.preventDefault();
+									} else {
+										clearTaskTtsCache(task.id);
 									}
 								}}
 							>
@@ -252,16 +244,27 @@
 			<!-- Progress Timeline -->
 			<div class="progress-timeline" style="--total-steps: {task.cantidad_de_niveles};">
 				<div
-					class="tooltip-progress"
+					class="tooltip-progress has-text-weight-bold"
 					style="left: calc(14px + (100% - 28px) * {stepRatio}); transform: translateX(-{stepPercent}%); --arrow-left: {Math.max(14, Math.min(86, Number(stepPercent)))}%;"
 				>
-					{statusNum === -1 ? `1 de ${task.cantidad_de_niveles} (0.0%)` : `${statusNum + 1} de ${task.cantidad_de_niveles} (${progressPercent}%)`}
+					{statusNum === -1 ? `(0.0%)` : ` (${progressPercent}%)`}
 				</div>
 
 				{#each Array(task.cantidad_de_niveles) as _, idx}
-					<div class="timeline-step" class:active={statusNum !== -1 && idx <= statusNum}>
+					{@const unlocked = isChapterUnlocked(idx)}
+					{@const isCurrent = !isAbandoned && idx === statusNum}
+					<button
+						type="button"
+						class="timeline-step"
+						class:active={unlocked}
+						class:is-current={isCurrent}
+						disabled={!unlocked}
+						onclick={() => handleChapterClick(idx)}
+						title={unlocked ? `Ver historia del capítulo ${idx}` : `Capítulo ${idx} bloqueado`}
+						aria-label={unlocked ? `Ver historia del capítulo ${idx}` : `Capítulo ${idx} bloqueado`}
+					>
 						{idx}
-					</div>
+					</button>
 				{/each}
 			</div>
 
@@ -425,23 +428,6 @@
 {/if}
 
 <style>
-	.clicker-btn {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		z-index: 10;
-	}
-
-	.clicker-btn:disabled,
-	.clicker-btn.is-locked {
-		cursor: pointer;
-	}
-
 	:global(.project-card) {
 		position: relative;
 		overflow: hidden;
@@ -467,19 +453,21 @@
 	.card-header-line {
 		display: flex;
 		justify-content: space-between;
-		align-items: flex-start;
-		gap: 8px 12px;
-		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: nowrap;
 		position: relative;
 		z-index: 12;
+		width: 100%;
 	}
 
 	.card-title {
-		font-size: clamp(1.05rem, 3.5vw, 1.25rem);
+		font-family: var(--font-hierarchy-heading);
+		font-size: clamp(1rem, 3.2vw, 1.22rem);
 		line-height: 1.3;
-		margin-bottom: 4px;
+		margin: 0;
 		text-transform: capitalize;
-		flex: 1 1 180px;
+		flex: 1 1 auto;
 		min-width: 0;
 		overflow-wrap: break-word;
 		word-break: break-word;
@@ -488,49 +476,58 @@
 	.card-header-actions {
 		display: flex;
 		align-items: center;
+		justify-content: flex-end;
 		gap: 6px;
 		flex-shrink: 0;
+		margin-left: auto;
 		position: relative;
 		z-index: 20;
 	}
 
 	.badge-kids,
 	.badge-general {
-		padding: 3px 8px;
-		border-radius: 12px;
-		font-size: clamp(0.68rem, 2vw, 0.74rem);
+		padding: 4px 10px;
+		border-radius: 999px;
+		font-size: clamp(0.66rem, 1.9vw, 0.74rem);
 		white-space: nowrap;
 		max-width: 100%;
 		display: inline-flex;
 		align-items: center;
 		line-height: 1.2;
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
 	}
 
 	.badge-kids {
-		background: rgba(255, 209, 102, 0.15);
-		border: 1px solid rgba(255, 209, 102, 0.35);
+		background: linear-gradient(135deg, rgba(255, 209, 102, 0.2), rgba(255, 209, 102, 0.08));
+		border: 1px solid rgba(255, 209, 102, 0.42);
 		color: #ffd166;
-		font-weight: 600;
+		font-weight: 700;
+		box-shadow: 0 2px 10px rgba(255, 209, 102, 0.12);
 	}
 
 	.badge-general {
-		border: 1px solid rgba(25, 212, 168, 0.35);
+		font-family: var(--font-hierarchy-ui);
+		background: linear-gradient(135deg, rgba(25, 212, 168, 0.16), rgba(25, 212, 168, 0.05));
+		border: 1px solid rgba(25, 212, 168, 0.4);
 		color: #19d4a8;
+		font-weight: 600;
 		letter-spacing: 0.02em;
+		box-shadow: 0 2px 10px rgba(25, 212, 168, 0.1);
 	}
 
 	.btn-icon-delete {
 		background: rgba(231, 102, 102, 0.12);
-		border: 1px solid rgba(231, 102, 102, 0.25);
+		border: 1px solid rgba(231, 102, 102, 0.28);
 		color: #e76666;
-		border-radius: 8px;
-		width: 26px;
-		height: 26px;
+		border-radius: 9px;
+		width: 28px;
+		height: 28px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
-		transition: all 0.2s;
+		transition: all 0.2s ease;
 		flex-shrink: 0;
 	}
 
@@ -538,27 +535,97 @@
 		background: rgba(231, 102, 102, 0.28);
 		color: #ffffff;
 		transform: scale(1.08);
+		box-shadow: 0 4px 12px rgba(231, 102, 102, 0.25);
 	}
 
 	.progress-timeline {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: clamp(2px, 0.7vw, 6px);
 		position: relative;
-		margin: 32px 0 20px 0;
+		z-index: 20;
+		margin: 34px 0 22px 0;
 		width: 100%;
 		max-width: 100%;
 		box-sizing: border-box;
 	}
 
 	:global(.project-card .timeline-step) {
-		width: clamp(16px, calc((100% - 24px) / var(--total-steps, 10)), 28px);
-		height: clamp(16px, calc((100% - 24px) / var(--total-steps, 10)), 28px);
+		flex: 0 1
+			clamp(
+				18px,
+				calc((100% - (var(--total-steps, 12) - 1) * 4px) / var(--total-steps, 12)),
+				30px
+			);
+		width: clamp(
+			18px,
+			calc((100% - (var(--total-steps, 12) - 1) * 4px) / var(--total-steps, 12)),
+			30px
+		);
+		height: clamp(
+			18px,
+			calc((100% - (var(--total-steps, 12) - 1) * 4px) / var(--total-steps, 12)),
+			30px
+		);
 		aspect-ratio: 1 / 1;
-		min-width: 16px;
-		min-height: 16px;
-		font-size: clamp(0.55rem, 1.8vw, 0.78rem);
-		flex-shrink: 0;
+		min-width: 0;
+		min-height: 0;
+		border-radius: 9px;
+		font-size: clamp(0.56rem, 1.65vw, 0.78rem);
+		font-weight: 700;
+		padding: 0;
+		font-family: var(--font-hierarchy-ui);
+		line-height: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		background: linear-gradient(145deg, rgba(42, 59, 69, 0.9), rgba(22, 34, 41, 0.95));
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: rgba(154, 166, 173, 0.6);
+		box-shadow:
+			0 2px 6px rgba(0, 0, 0, 0.28),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	:global(.project-card .timeline-step.active) {
+		cursor: pointer;
+		background: linear-gradient(135deg, #28f0c2 0%, #19d4a8 55%, #11998e 100%);
+		color: #04241c;
+		font-weight: 800;
+		border: 1px solid rgba(255, 255, 255, 0.45);
+		box-shadow:
+			0 4px 12px rgba(25, 212, 168, 0.35),
+			inset 0 1px 1px rgba(255, 255, 255, 0.55);
+		transition:
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.2s ease,
+			filter 0.2s ease;
+	}
+
+	:global(.project-card .timeline-step.active.is-current) {
+		box-shadow:
+			0 0 0 2px rgba(25, 212, 168, 0.28),
+			0 5px 14px rgba(25, 212, 168, 0.5),
+			inset 0 1px 1px rgba(255, 255, 255, 0.65);
+	}
+
+	:global(.project-card .timeline-step.active:hover) {
+		transform: translateY(-2px) scale(1.1);
+		box-shadow:
+			0 6px 16px rgba(25, 212, 168, 0.65),
+			inset 0 1px 2px rgba(255, 255, 255, 0.75);
+		filter: brightness(1.08);
+	}
+
+	:global(.project-card .timeline-step.active:active) {
+		transform: translateY(0) scale(0.95);
+	}
+
+	:global(.project-card .timeline-step:disabled) {
+		cursor: not-allowed;
+		opacity: 0.65;
 	}
 
 	:global(.project-card .tooltip-progress) {
@@ -566,27 +633,136 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		font-size: clamp(0.65rem, 2vw, 0.72rem);
+		top:-1.5rem;
+
+	}
+
+	.tooltip-progress{
+		font-size: clamp(0.50rem, 1vw, 0.32rem);
+
 	}
 
 	.card-actions {
-		display: flex;
-		gap: 8px;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 135px), 1fr));
+		gap: 10px;
 		margin-top: 18px;
 		position: relative;
 		z-index: 20;
-		flex-wrap: wrap;
 		width: 100%;
+		max-width: 100%;
 		box-sizing: border-box;
 	}
 
 	.action-form {
-		flex: 1 1 130px;
 		min-width: 0;
+		width: 100%;
 		max-width: 100%;
 	}
 
 	.w-100 {
 		width: 100% !important;
+	}
+
+	:global(.project-card .btn-primary),
+	:global(.project-card .btn-outline),
+	:global(.project-card .btn-unlock) {
+		font-family: var(--font-hierarchy-ui);
+		font-size: clamp(0.72rem, 2.1vw, 0.8rem);
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		padding: 9px 12px;
+		min-height: 38px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		box-sizing: border-box;
+		border-radius: 12px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease,
+			background 0.2s ease,
+			border-color 0.2s ease,
+			color 0.2s ease,
+			filter 0.2s ease;
+	}
+
+	:global(.project-card .btn-primary) {
+		background: linear-gradient(135deg, #24ecc0 0%, #19d4a8 55%, #12a888 100%) !important;
+		color: #04241c !important;
+		border: 1px solid rgba(255, 255, 255, 0.32) !important;
+		box-shadow:
+			0 6px 18px rgba(25, 212, 168, 0.26),
+			inset 0 1px 1px rgba(255, 255, 255, 0.48) !important;
+	}
+
+	:global(.project-card .btn-primary:hover:not(:disabled)) {
+		filter: brightness(1.07);
+		box-shadow:
+			0 8px 22px rgba(25, 212, 168, 0.42),
+			inset 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+	}
+
+	:global(.project-card .btn-outline) {
+		background: linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.055) 0%,
+			rgba(255, 255, 255, 0.018) 100%
+		) !important;
+		border: 1px solid rgba(255, 255, 255, 0.16) !important;
+		color: #b8c7ce !important;
+		box-shadow:
+			0 4px 12px rgba(0, 0, 0, 0.22),
+			inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+	}
+
+	:global(.project-card .btn-outline:hover:not(:disabled)) {
+		background: linear-gradient(
+			135deg,
+			rgba(231, 102, 102, 0.16) 0%,
+			rgba(231, 102, 102, 0.06) 100%
+		) !important;
+		border-color: rgba(231, 102, 102, 0.45) !important;
+		color: #ff9e9e !important;
+		box-shadow:
+			0 6px 16px rgba(231, 102, 102, 0.18),
+			inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+	}
+
+	.btn-archive {
+		background: linear-gradient(135deg, #24ecc0 0%, #19d4a8 50%, #11998e 100%) !important;
+	}
+
+	:global(.project-card .btn-unlock) {
+		background: linear-gradient(
+			135deg,
+			rgba(255, 209, 102, 0.22) 0%,
+			rgba(245, 158, 11, 0.12) 100%
+		) !important;
+		border: 1px solid rgba(255, 209, 102, 0.48) !important;
+		color: #ffd166 !important;
+		border-radius: 12px !important;
+		font-weight: 700 !important;
+		box-shadow:
+			0 6px 18px rgba(255, 209, 102, 0.16),
+			inset 0 1px 1px rgba(255, 255, 255, 0.22) !important;
+	}
+
+	:global(.project-card .btn-unlock:hover:not(:disabled)) {
+		background: linear-gradient(
+			135deg,
+			rgba(255, 209, 102, 0.32) 0%,
+			rgba(245, 158, 11, 0.22) 100%
+		) !important;
+		border-color: rgba(255, 209, 102, 0.7) !important;
+		color: #fff2c2 !important;
+		box-shadow:
+			0 8px 22px rgba(255, 209, 102, 0.28),
+			inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
 	}
 
 	:global(.project-card .btn-primary:disabled),
@@ -602,37 +778,10 @@
 	}
 
 	:global(.project-card .btn-outline:disabled) {
-		opacity: 0.4 !important;
+		opacity: 0.38 !important;
 		cursor: not-allowed !important;
 		filter: grayscale(0.85) !important;
 		pointer-events: none !important;
-	}
-
-	:global(.project-card .btn-primary),
-	:global(.project-card .btn-outline),
-	:global(.project-card .btn-unlock) {
-		font-size: clamp(0.7rem, 2.2vw, 0.78rem);
-		padding: 8px 10px;
-		min-height: 36px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		box-sizing: border-box;
-		border-radius: 12px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.btn-archive {
-		background: linear-gradient(135deg, #19d4a8 0%, #11998e 100%) !important;
-	}
-
-	.btn-unlock {
-		border-radius: 12px !important;
-		font-weight: 700 !important;
-		box-shadow: 0 0 10px rgba(255, 209, 102, 0.25) !important;
 	}
 
 	.btn-text {

@@ -8,6 +8,174 @@ export interface ParsedChapter {
 	fullFormatted: string;
 }
 
+export interface GenreTypographyConfig {
+	genreClass: string;
+	titleFont: string;
+	bodyFont: string;
+	dropCapFont: string;
+	accentColor: string;
+	accentGlow: string;
+	dropCapBg: string;
+	dropCapBorder: string;
+	bodyColor: string;
+	ornament: string;
+}
+
+/**
+ * Devuelve la configuración tipográfica y cromática evocadora según el género/temática de la historia
+ * para dar la sensación de lectura de libro en el SlidingPanel.
+ */
+export function getGenreTypography(tema?: string | null): GenreTypographyConfig {
+	const t = (tema || '').toLowerCase();
+
+	// 1. Infantil / Cuento de Hadas
+	if (isKidsTheme(tema)) {
+		return {
+			genreClass: 'genre-kids',
+			titleFont: "var(--font-genre-kids, 'Fredoka', cursive)",
+			bodyFont: "var(--font-book-warm, 'Lora', Georgia, serif)",
+			dropCapFont: "var(--font-genre-kids, 'Fredoka', cursive)",
+			accentColor: '#ffd166',
+			accentGlow: 'rgba(255, 209, 102, 0.5)',
+			dropCapBg: 'linear-gradient(135deg, rgba(255, 209, 102, 0.25), rgba(255, 159, 67, 0.12))',
+			dropCapBorder: 'rgba(255, 209, 102, 0.6)',
+			bodyColor: '#fff9eb',
+			ornament: '✦ 🎈 ✦'
+		};
+	}
+
+	// 2. Fantasía, Mitología, Medieval, Samurái, Alquimia (Épico / Clásico)
+	if (
+		t.includes('fantasía') ||
+		t.includes('fantasia') ||
+		t.includes('medieval') ||
+		t.includes('mitología') ||
+		t.includes('mitologia') ||
+		t.includes('olimpo') ||
+		t.includes('samurái') ||
+		t.includes('samurai') ||
+		t.includes('alquimia') ||
+		t.includes('arcana')
+	) {
+		return {
+			genreClass: 'genre-fantasy',
+			titleFont: "var(--font-genre-fantasy, 'Cinzel Decorative', 'Cinzel', serif)",
+			bodyFont: "var(--font-book-classic, 'Cormorant Garamond', 'Lora', Georgia, serif)",
+			dropCapFont: "var(--font-genre-fantasy, 'Cinzel Decorative', 'Cinzel', serif)",
+			accentColor: '#ffd670',
+			accentGlow: 'rgba(255, 214, 112, 0.55)',
+			dropCapBg: 'linear-gradient(135deg, rgba(255, 214, 112, 0.24), rgba(180, 120, 30, 0.14))',
+			dropCapBorder: 'rgba(255, 214, 112, 0.65)',
+			bodyColor: '#f8f3e6',
+			ornament: '─── ❖ ───'
+		};
+	}
+
+	// 3. Steampunk (Victoriano Industrial)
+	if (t.includes('steampunk')) {
+		return {
+			genreClass: 'genre-steampunk',
+			titleFont: "var(--font-genre-mystery, 'Playfair Display', 'Cinzel', serif)",
+			bodyFont: "var(--font-book-classic, 'Cormorant Garamond', 'Lora', Georgia, serif)",
+			dropCapFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
+			accentColor: '#ffb74d',
+			accentGlow: 'rgba(255, 183, 77, 0.5)',
+			dropCapBg: 'linear-gradient(135deg, rgba(255, 183, 77, 0.24), rgba(160, 90, 20, 0.14))',
+			dropCapBorder: 'rgba(255, 183, 77, 0.6)',
+			bodyColor: '#f7f0e4',
+			ornament: '─── ⚙ ───'
+		};
+	}
+
+	// 4. Ciencia Ficción, Cyberpunk, Espacio, Mechas, Superhéroes
+	if (
+		t.includes('cyberpunk') ||
+		t.includes('neón') ||
+		t.includes('neon') ||
+		t.includes('espacial') ||
+		t.includes('espacio') ||
+		t.includes('mechas') ||
+		t.includes('superhéroes') ||
+		t.includes('superheroes')
+	) {
+		return {
+			genreClass: 'genre-scifi',
+			titleFont: "var(--font-genre-scifi, 'Orbitron', 'Space Grotesk', sans-serif)",
+			bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
+			dropCapFont: "var(--font-genre-scifi, 'Orbitron', sans-serif)",
+			accentColor: '#38f2ff',
+			accentGlow: 'rgba(56, 242, 255, 0.55)',
+			dropCapBg: 'linear-gradient(135deg, rgba(56, 242, 255, 0.22), rgba(25, 212, 168, 0.12))',
+			dropCapBorder: 'rgba(56, 242, 255, 0.62)',
+			bodyColor: '#eef8fc',
+			ornament: '─── ◈ ───'
+		};
+	}
+
+	// 5. Terror Cósmico, Zombie, Post-Apocalíptico, Noir, Guerra, Salvaje Oeste, Espionaje, Desastre
+	if (
+		t.includes('terror') ||
+		t.includes('zombie') ||
+		t.includes('apocal') ||
+		t.includes('noir') ||
+		t.includes('detective') ||
+		t.includes('guerra') ||
+		t.includes('oeste') ||
+		t.includes('espionaje') ||
+		t.includes('atraco') ||
+		t.includes('desastre')
+	) {
+		return {
+			genreClass: 'genre-thriller',
+			titleFont: "var(--font-genre-mystery, 'Playfair Display', 'Cinzel', serif)",
+			bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
+			dropCapFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
+			accentColor: '#ff8563',
+			accentGlow: 'rgba(255, 133, 99, 0.52)',
+			dropCapBg: 'linear-gradient(135deg, rgba(255, 133, 99, 0.24), rgba(180, 50, 40, 0.14))',
+			dropCapBorder: 'rgba(255, 133, 99, 0.62)',
+			bodyColor: '#f6f1ea',
+			ornament: '─── ✦ ───'
+		};
+	}
+
+	// 6. Comedia, Romance, Aprendizaje y General
+	return {
+		genreClass: 'genre-editorial',
+		titleFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
+		bodyFont: "var(--font-book-editorial, 'Lora', Georgia, serif)",
+		dropCapFont: "var(--font-genre-mystery, 'Playfair Display', serif)",
+		accentColor: '#28f0c2',
+		accentGlow: 'rgba(40, 240, 194, 0.5)',
+		dropCapBg: 'linear-gradient(135deg, rgba(40, 240, 194, 0.22), rgba(17, 153, 142, 0.12))',
+		dropCapBorder: 'rgba(40, 240, 194, 0.6)',
+		bodyColor: '#f6f5f0',
+		ornament: '─── ❦ ───'
+	};
+}
+
+/**
+ * Separa la primera letra (incluyendo signos de apertura como ¡ ¿ " «) del resto del texto
+ * para renderizar una letra capitular (Drop Cap) estilo libro clásico.
+ */
+export function splitDropCap(text?: string | null): { initial: string; rest: string } {
+	const clean = (text || '').trim();
+	if (!clean) return { initial: '', rest: '' };
+
+	const match = clean.match(/^([¡¿"«'—\s]*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9])([\s\S]*)$/);
+	if (match) {
+		return {
+			initial: match[1].trim(),
+			rest: match[2]
+		};
+	}
+
+	return {
+		initial: clean.charAt(0),
+		rest: clean.slice(1)
+	};
+}
+
 /**
  * Determina si la temática corresponde a aprendizaje infantil
  */
