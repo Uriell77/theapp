@@ -258,6 +258,19 @@ function getRgbString(colorTag: string): string {
                         alpha: Math.random() * 0.6 + 0.2
                     });
                 }
+            } else if (effect === 'victory-gold') {
+                for (let i = 0; i < 90; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: Math.random() * 2.6 + 0.8,
+                        speedY: -(Math.random() * 0.9 + 0.3),
+                        speedX: (Math.random() - 0.5) * 0.5,
+                        twinkleSpeed: Math.random() * 0.07 + 0.02,
+                        phase: Math.random() * Math.PI * 2,
+                        alpha: Math.random() * 0.7 + 0.3
+                    });
+                }
             } else {
                 // space-cockpit / nebula-dust / default
                 for (let i = 0; i < 80; i++) {
@@ -394,6 +407,21 @@ function getRgbString(colorTag: string): string {
                 grad.addColorStop(0.6, '#1b1411');
                 grad.addColorStop(1, '#090706');
                 ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+            } else if (current.effect === 'victory-gold') {
+                const grad = ctx.createLinearGradient(0, 0, 0, height);
+                grad.addColorStop(0, '#1d1403');
+                grad.addColorStop(0.6, '#2a1c05');
+                grad.addColorStop(1, '#120b02');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+
+                const sunGlow = ctx.createRadialGradient(width * 0.5, height * 0.15, 10, width * 0.5, height * 0.15, width * 0.8);
+                const sunPulse = Math.sin(time * 1.6) * 0.05 + 0.2;
+                sunGlow.addColorStop(0, `rgba(255, 210, 90, ${sunPulse})`);
+                sunGlow.addColorStop(0.5, `rgba(200, 120, 20, ${sunPulse * 0.4})`);
+                sunGlow.addColorStop(1, 'transparent');
+                ctx.fillStyle = sunGlow;
                 ctx.fillRect(0, 0, width, height);
             } else {
                 ctx.fillStyle = '#05060b';
@@ -700,6 +728,28 @@ function getRgbString(colorTag: string): string {
                     ctx.fillStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${p.alpha})`;
                     ctx.fill();
                     ctx.restore();
+                });
+            } else if (current.effect === 'victory-gold') {
+                // Chispas doradas ascendentes (cinemática de victoria)
+                particles.forEach(p => {
+                    p.phase += p.twinkleSpeed;
+                    p.x += (p.speedX + Math.sin(p.phase) * 0.3) * speedMult;
+                    p.y += p.speedY * speedMult;
+
+                    if (p.y < -10) {
+                        p.y = height + 10;
+                        p.x = Math.random() * width;
+                    }
+
+                    const a = p.alpha * (0.5 + 0.5 * Math.sin(p.phase));
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius * 2.6, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 190, 60, ${a * 0.18})`;
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 228, 130, ${a})`;
+                    ctx.fill();
                 });
             } else {
                 // space-cockpit / nebula / polvo estelar

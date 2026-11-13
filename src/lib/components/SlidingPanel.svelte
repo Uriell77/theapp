@@ -2,7 +2,9 @@
 	import Visualizer from './Visualizer.svelte';
 	import SoundEngine from './SoundEngine.svelte';
 	import Narrador from './Narrador.svelte';
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { supabase } from '$lib/supabaseClient';
 	import { fly, fade } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { Motion } from 'svelte-motion';
@@ -18,12 +20,15 @@
 		mode = 'form',
 		taskData,
 		selectedChapter = null,
+		startInVictory = false,
 		children
 	}: {
 		isOpen: boolean;
 		mode: 'form' | 'details';
 		taskData?: any;
 		selectedChapter?: number | null;
+		/** Abre directamente el Salón de la Victoria (tarea ya completada) */
+		startInVictory?: boolean;
 		children?: Snippet;
 	} = $props();
 
@@ -35,7 +40,202 @@
 			: Number(taskData?.status ?? 0)
 	);
 
+	// ───────── SALÓN DE LA VICTORIA ─────────
+	const DEFAULT_EFFECT_CONFIG =
+		'effect:space-cockpit;color:deep-space-blue;speed:normal;lighting:none;mood:intro';
+	const VICTORY_EFFECT_CONFIG =
+		'effect:victory-gold;color:fantasy-gold;speed:slow;lighting:lens-flare;mood:victory';
 
+	let isVictoryMode = $state(false);
+	let victoryTab = $state<'bitacora' | 'libro'>('bitacora');
+	let projectLogs = $state<any[]>([]);
+	let logIdx = $state(0);
+	let victoryLoading = $state(false);
+	let isSaving = $state(false);
+
+	let levelData = $derived(taskData?.levels?.[0]);
+	let totalLevels = $derived(Number(taskData?.cantidad_de_niveles ?? 0));
+	let isAbandoned = $derived(String(taskData?.status) === '-1');
+	let isCompleted = $derived(!isAbandoned && Number(taskData?.status ?? 0) >= totalLevels - 1);
+	let canClaimVictory = $derived(
+		mode === 'details' &&
+			!!taskData &&
+			isCompleted &&
+			!isVictoryMode &&
+			Number(activeChapter) >= totalLevels - 1
+	);
+
+	function safeJson(raw: any): any {
+		try {
+			return raw ? JSON.parse(raw) : null;
+		} catch {
+			return null;
+		}
+	}
+
+	function buildEffectConfig(c: any, fallback: string): string {
+		return c?.effect
+			? `effect:${c.effect};color:${c.color};speed:${c.speed};lighting:${c.lighting};mood:${c.mood}`
+			: fallback;
+	}
+
+	// Saga completa: prólogo (primer registro) + todos los capítulos en orden
+	let bookEntries = $derived.by(() => {
+		const content: any[] = levelData?.content ?? [];
+		return content.map((raw, i) => {
+			const p = parseChapter(String(raw || ''));
+			return {
+				index: i,
+				eyebrow: i === 0 ? 'Prólogo' : '',
+				title: p.title,
+				body: p.body || ''
+			};
+		});
+	});
+
+	let view = $derived.by(() => {
+		if (!taskData) return null;
+
+		if (isVictoryMode) {
+			const narration =
+				victoryTab === 'libro'
+					? bookEntries.map((e) => `${e.title}. ${e.body}`).join(' ')
+					: `${taskData.title}. ` +
+						projectLogs.map((l) => `Nivel ${l.level}. ${l.log_text}`).join(' ');
+			return {
+				kind: 'victory' as const,
+				effect: 'victory-gold',
+				mood: 'victory',
+				effectConfig: VICTORY_EFFECT_CONFIG,
+				narration,
+				key: `victory-${victoryTab}`,
+				autoPlay: false,
+				title: '',
+				body: ''
+			};
+		}
+
+		if (isAbandoned) {
+			const raw = String(
+				levelData?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.'
+			);
+			const p = parseChapter(raw);
+			const c = safeJson(levelData?.vista?.[1]);
+			return {
+				kind: 'story' as const,
+				effect: c?.effect || 'ash-storm',
+				mood: c?.mood || 'defeat',
+				effectConfig: buildEffectConfig(
+					c,
+					'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'
+				),
+				narration: `${p.title || ''}. ${p.body || ''}`,
+				key: 'defeat',
+				autoPlay: true,
+				title: p.title,
+				body: p.body || p.title
+			};
+		}
+
+		const content: any[] = levelData?.content ?? [];
+		if (!content.length) return null;
+		const hasActive = content[activeChapter] !== undefined;
+		const idx = hasActive ? activeChapter : 0;
+		const p = parseChapter(String(content[idx] || ''));
+		const c = hasActive ? safeJson(levelData?.cinematica?.[activeChapter]) ?? {} : null;
+		return {
+			kind: 'story' as const,
+			effect: c?.effect ?? 'space-cockpit',
+			mood: c?.mood ?? 'intro',
+			effectConfig: c?.effect ? buildEffectConfig(c, DEFAULT_EFFECT_CONFIG) : DEFAULT_EFFECT_CONFIG,
+			narration: `${p.title || ''}. ${p.body || ''}`,
+			key: idx,
+			autoPlay: true,
+			title: p.title,
+			body: p.body || p.title
+		};
+	});
+
+	let viewDropCap = $derived(splitDropCap(view?.body));
+
+	async function enterVictory() {
+		if (!taskData) return;
+		isVictoryMode = true;
+		victoryTab = 'bitacora';
+		logIdx = 0;
+		victoryLoading = true;
+		try {
+			const { data, error } = await supabase
+				.from('project_logs')
+				.select('*')
+				.eq('project_id', String(taskData.id))
+				.order('level', { ascending: true });
+			if (error) throw error;
+			projectLogs = data ?? [];
+		} catch (err) {
+			console.error('Error al cargar project_logs:', err);
+			projectLogs = [];
+		} finally {
+			victoryLoading = false;
+		}
+	}
+
+	async function saveToHall() {
+		if (!taskData || isSaving) return;
+		isSaving = true;
+		try {
+			const fd = new FormData();
+			fd.append('taskId', String(taskData.id));
+			const res = await fetch('/dashboard?/archiveTask', {
+				method: 'POST',
+				body: fd,
+				headers: { 'x-sveltekit-action': 'true' }
+			});
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			await invalidateAll();
+			isOpen = false;
+		} catch (err) {
+			console.error('Error al guardar en el Salón de la Victoria:', err);
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	function shiftLog(delta: number) {
+		if (!projectLogs.length) return;
+		logIdx = (logIdx + delta + projectLogs.length) % projectLogs.length;
+	}
+
+	function formatLogDate(value: string) {
+		const d = new Date(value);
+		return isNaN(d.getTime())
+			? ''
+			: d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+	}
+
+	// Reset al cerrar / apertura directa en modo victoria
+	$effect(() => {
+		if (!isOpen) {
+			isVictoryMode = false;
+			victoryTab = 'bitacora';
+			projectLogs = [];
+			logIdx = 0;
+			return;
+		}
+		if (mode === 'details' && startInVictory && taskData && isCompleted) {
+			untrack(() => {
+				if (!isVictoryMode) enterVictory();
+			});
+		}
+	});
+
+	// Carrusel automático de la bitácora
+	$effect(() => {
+		if (!isVictoryMode || victoryTab !== 'bitacora' || projectLogs.length < 2) return;
+		void logIdx;
+		const timer = setInterval(() => shiftLog(1), 7000);
+		return () => clearInterval(timer);
+	});
 
 
 // Acción de Svelte para el efecto
@@ -140,137 +340,151 @@
 										Temática: <strong style="color: {genreConfig.accentColor};">{taskData.tema}</strong>
 									</span>
 									<span class="meta-tag {isKids ? 'font-kids' : ''}">
-										Capítulo: <strong style="color: {genreConfig.accentColor};">
-											{taskData.status === '-1' ? 'Abandonada' : `${Number(activeChapter) + 1} / ${taskData.cantidad_de_niveles}`}
+										{isVictoryMode ? 'Estado' : 'Capítulo'}: <strong style="color: {genreConfig.accentColor};">
+											{isVictoryMode
+												? '🏆 Victoria'
+												: isAbandoned
+													? 'Abandonada'
+													: `${Number(activeChapter) + 1} / ${taskData.cantidad_de_niveles}`}
 										</strong>
 									</span>
 								</div>
 							</div>
 
-							{#if taskData.status === '-1'}
-								{@const defeatRaw = String(taskData.levels?.[0]?.vista?.[0] || 'Final Alternativo: Retirada Táctica. Misión abandonada.')}
-								{@const parsedDefeat = parseChapter(defeatRaw)}
-								{@const defeatText = parsedDefeat.body || parsedDefeat.title}
-								{@const defeatDropCap = splitDropCap(defeatText)}
-								{@const defeatCinematicaRaw = taskData.levels?.[0]?.vista?.[1]}
-								{@const defeatCinematicaParsed = defeatCinematicaRaw ? (() => { try { return JSON.parse(defeatCinematicaRaw); } catch { return null; } })() : null}
-								{@const defeatEffectConfig = defeatCinematicaParsed ? `effect:${defeatCinematicaParsed.effect};color:${defeatCinematicaParsed.color};speed:${defeatCinematicaParsed.speed};lighting:${defeatCinematicaParsed.lighting};mood:${defeatCinematicaParsed.mood}` : 'effect:ash-storm;color:apocalyptic-rust;speed:slow;lighting:vignette-dark;mood:defeat'}
-								<div class="narrative-container flex-grow overflow-hidden px-2 pb-2">
-									<SoundEngine effect={defeatCinematicaParsed?.effect || 'ash-storm'} mood={defeatCinematicaParsed?.mood || 'defeat'} active={isOpen}>
-										<Visualizer effectConfig={defeatEffectConfig}>
-											<article class="book-folio-sheet levelcontent">
-												<header class="book-folio-header">
-													<Narrador text={`${parsedDefeat.title || ''}. ${parsedDefeat.body || ''}`} active={isOpen} taskId={taskData.id} chapterKey="defeat" />
-													{#if parsedDefeat.title}
-														<h4 class="book-chapter-title">
-															{parsedDefeat.title.endsWith('.') ? parsedDefeat.title : `${parsedDefeat.title}.`}
-														</h4>
-														<div class="book-ornament-divider" aria-hidden="true">{genreConfig.ornament}</div>
-													{/if}
-												</header>
-												<div class="book-page-scroll">
-													<p class="book-story-paragraph">
-														{#if defeatDropCap.initial}
-															<span class="book-drop-cap" aria-hidden="true">{defeatDropCap.initial}</span>
-														{/if}
-														<span class="book-story-stream" use:typewriter={{ text: defeatDropCap.rest, speed: 42 }}></span>
-													</p>
-												</div>
-											</article>
-										</Visualizer>
-									</SoundEngine>
+							{#if isVictoryMode}
+								<div class="tabs is-centered is-toggle is-small victory-tabs mb-2">
+									<ul>
+										<li class:is-active={victoryTab === 'bitacora'}>
+											<a role="button" tabindex="0" onclick={() => (victoryTab = 'bitacora')} onkeydown={(e) => e.key === 'Enter' && (victoryTab = 'bitacora')}>
+												📸 Tu Viaje Real (Bitácora)
+											</a>
+										</li>
+										<li class:is-active={victoryTab === 'libro'}>
+											<a role="button" tabindex="0" onclick={() => (victoryTab = 'libro')} onkeydown={(e) => e.key === 'Enter' && (victoryTab = 'libro')}>
+												📖 Crónica Completa (Libro)
+											</a>
+										</li>
+									</ul>
 								</div>
-							{:else}
-								{#if taskData.levels && taskData.levels.length > 0}
-									{#each taskData.levels as level (level.id)}
-										<div class="narrative-container flex-grow overflow-hidden px-2 pb-2">
-											<!-- Narrativa del Capítulo Seleccionado -->
-											{#if level.content && level.content[activeChapter] !== undefined}
-												{@const currentRaw = String(level.content[activeChapter] || '')}
-												{@const parsed = parseChapter(currentRaw)}
-												{@const storyText = parsed.body || parsed.title}
-												{@const dropCap = splitDropCap(storyText)}
-												{#if level.cinematica && level.cinematica[activeChapter]}
-													{@const parsedCinematica = (() => { try { return JSON.parse(level.cinematica[activeChapter]); } catch { return {}; } })()}
-													<SoundEngine effect={parsedCinematica.effect} mood={parsedCinematica.mood} active={isOpen}>
-														<Visualizer effectConfig={`effect:${parsedCinematica.effect};color:${parsedCinematica.color};speed:${parsedCinematica.speed};lighting:${parsedCinematica.lighting};mood:${parsedCinematica.mood}`}>
-															<article class="book-folio-sheet levelcontent">
-																<header class="book-folio-header">
-																	<Narrador text={`${parsed.title || ''}. ${parsed.body || ''}`} active={isOpen} taskId={taskData.id} chapterKey={activeChapter} />
-																	{#if parsed.title}
-																		<h4 class="book-chapter-title">
-																			{parsed.title.endsWith('.') ? parsed.title : `${parsed.title}.`}
-																		</h4>
-																		<div class="book-ornament-divider" aria-hidden="true">{genreConfig.ornament}</div>
-																	{/if}
-																</header>
-																<div class="book-page-scroll">
-																	<p class="book-story-paragraph">
-																		{#if dropCap.initial}
-																			<span class="book-drop-cap" aria-hidden="true">{dropCap.initial}</span>
-																		{/if}
-																		<span class="book-story-stream" use:typewriter={{ text: dropCap.rest, speed: 42 }}></span>
-																	</p>
-																</div>
-															</article>
-														</Visualizer>
-													</SoundEngine>
-												{:else}
-													<SoundEngine effect="space-cockpit" mood="intro" active={isOpen}>
-														<Visualizer>
-															<article class="book-folio-sheet levelcontent">
-																<header class="book-folio-header">
-																	<Narrador text={`${parsed.title || ''}. ${parsed.body || ''}`} active={isOpen} taskId={taskData.id} chapterKey={activeChapter} />
-																	{#if parsed.title}
-																		<h4 class="book-chapter-title">
-																			{parsed.title.endsWith('.') ? parsed.title : `${parsed.title}.`}
-																		</h4>
-																		<div class="book-ornament-divider" aria-hidden="true">{genreConfig.ornament}</div>
-																	{/if}
-																</header>
-																<div class="book-page-scroll">
-																	<p class="book-story-paragraph">
-																		{#if dropCap.initial}
-																			<span class="book-drop-cap" aria-hidden="true">{dropCap.initial}</span>
-																		{/if}
-																		<span class="book-story-stream" use:typewriter={{ text: dropCap.rest, speed: 42 }}></span>
-																	</p>
-																</div>
-															</article>
-														</Visualizer>
-													</SoundEngine>
-												{/if}
-											{:else if level.content && level.content[0] !== undefined}
-												{@const parsed0 = parseChapter(level.content[0])}
-												{@const story0Text = parsed0.body || parsed0.title}
-												{@const dropCap0 = splitDropCap(story0Text)}
-												<article class="book-folio-sheet levelcontent">
+							{/if}
+
+							<div class="narrative-container flex-grow overflow-hidden px-2 pb-2">
+								{#if view}
+									<SoundEngine effect={view.effect} mood={view.mood} active={isOpen}>
+										{#snippet controls()}
+											{#key view.key}
+												<Narrador
+													text={view.narration}
+													active={isOpen}
+													autoPlay={view.autoPlay}
+													taskId={taskData.id}
+													chapterKey={view.key}
+												/>
+											{/key}
+										{/snippet}
+										<Visualizer effectConfig={view.effectConfig}>
+											<article class="book-folio-sheet levelcontent">
+												{#if view.kind === 'victory' && victoryTab === 'bitacora'}
 													<header class="book-folio-header">
-														<Narrador text={`${parsed0.title || ''}. ${parsed0.body || ''}`} active={isOpen} taskId={taskData.id} chapterKey={0} />
-														{#if parsed0.title}
+														<h4 class="book-chapter-title">🏆 {taskData.title}</h4>
+														<div class="book-ornament-divider" aria-hidden="true">{genreConfig.ornament}</div>
+													</header>
+													<div class="book-page-scroll">
+														{#if victoryLoading}
+															<p class="book-story-paragraph">Cargando tu bitácora…</p>
+														{:else if projectLogs.length === 0}
+															<p class="book-story-paragraph">Aún no hay registros de bitácora para esta misión.</p>
+														{:else}
+															{#key logIdx}
+																{@const log = projectLogs[logIdx]}
+																<div class="log-slide" in:fade={{ duration: 450 }}>
+																	<div class="log-media">
+																		{#if log.media_url}
+																			<img class="ken-burns" src={log.media_url} alt="Evidencia del nivel {log.level}" />
+																		{:else}
+																			<div class="ken-burns log-media-fallback" aria-hidden="true">🏆</div>
+																		{/if}
+																	</div>
+																	<div class="log-meta is-flex is-align-items-center is-justify-content-space-between">
+																		<span class="tag is-warning is-light">🔓 Nivel {log.level} desbloqueado</span>
+																		<time class="log-date">{formatLogDate(log.created_at)}</time>
+																	</div>
+																	<p class="book-story-paragraph log-text">{log.log_text}</p>
+																</div>
+															{/key}
+															<div class="log-nav is-flex is-align-items-center is-justify-content-center">
+																<button type="button" class="log-nav-btn" aria-label="Registro anterior" onclick={() => shiftLog(-1)}>‹</button>
+																{#each projectLogs as _, i}
+																	<button type="button" class="log-dot" class:active={i === logIdx} aria-label="Ir al registro {i + 1}" onclick={() => (logIdx = i)}></button>
+																{/each}
+																<button type="button" class="log-nav-btn" aria-label="Registro siguiente" onclick={() => shiftLog(1)}>›</button>
+															</div>
+														{/if}
+													</div>
+												{:else if view.kind === 'victory'}
+													<div class="book-page-scroll">
+														{#each bookEntries as entry, i (entry.index)}
+															{#if i > 0}
+																<div class="book-ornament-divider book-chapter-break" aria-hidden="true">{genreConfig.ornament}</div>
+															{/if}
+															{#if entry.eyebrow}
+																<div class="book-ornament-divider">{entry.eyebrow}</div>
+															{/if}
+															{#if entry.title}
+																<h4 class="book-chapter-title">{entry.title.endsWith('.') ? entry.title : `${entry.title}.`}</h4>
+															{/if}
+															<p class="book-story-paragraph">{entry.body}</p>
+														{:else}
+															<p class="book-story-paragraph">No hay narrativa asociada a esta tarea.</p>
+														{/each}
+														<div class="book-ornament-divider book-chapter-break" aria-hidden="true">{genreConfig.ornament} FIN {genreConfig.ornament}</div>
+													</div>
+												{:else}
+													<header class="book-folio-header">
+														{#if view.title}
 															<h4 class="book-chapter-title">
-																{parsed0.title.endsWith('.') ? parsed0.title : `${parsed0.title}.`}
+																{view.title.endsWith('.') ? view.title : `${view.title}.`}
 															</h4>
 															<div class="book-ornament-divider" aria-hidden="true">{genreConfig.ornament}</div>
 														{/if}
 													</header>
 													<div class="book-page-scroll">
 														<p class="book-story-paragraph">
-															{#if dropCap0.initial}
-																<span class="book-drop-cap" aria-hidden="true">{dropCap0.initial}</span>
+															{#if viewDropCap.initial}
+																<span class="book-drop-cap" aria-hidden="true">{viewDropCap.initial}</span>
 															{/if}
-															<span class="book-story-stream" use:typewriter={{ text: dropCap0.rest, speed: 42 }}></span>
+															<span class="book-story-stream" use:typewriter={{ text: viewDropCap.rest, speed: 42 }}></span>
 														</p>
 													</div>
-												</article>
-											{/if}
-										</div>
-									{/each}
+												{/if}
+											</article>
+										</Visualizer>
+									</SoundEngine>
 								{:else}
 									<div class="p-4">
 										<p style="color: var(--text-muted, #9aa6ad);">No hay narrativa asociada a esta tarea.</p>
 									</div>
 								{/if}
+							</div>
+
+							{#if canClaimVictory}
+								<div class="victory-footer px-2 pb-3">
+									<button type="button" class="button is-medium is-fullwidth victory-claim-btn" onclick={enterVictory}>
+										🏆 Reclamar Victoria y Ver Epílogo
+									</button>
+								</div>
+							{:else if isVictoryMode && !taskData.isArchived}
+								<div class="victory-footer px-2 pb-3">
+									<button
+										type="button"
+										class="button is-medium is-fullwidth victory-save-btn"
+										class:is-loading={isSaving}
+										disabled={isSaving}
+										onclick={saveToHall}
+									>
+										Guardar en el Salón de la Victoria
+									</button>
+								</div>
 							{/if}
 						</div>
 					{/if}
@@ -444,7 +658,9 @@
 			0 14px 38px rgba(0, 0, 0, 0.65),
 			inset 14px 0 24px -12px rgba(0, 0, 0, 0.7),
 			inset 0 1px 0 rgba(255, 255, 255, 0.14);
-		overflow-y: auto;
+		/* El scroll vive solo en .book-page-scroll; los controles de audio quedan fijos */
+		overflow: hidden;
+		min-height: 0;
 	}
 
 	.book-folio-header {
@@ -481,7 +697,136 @@
 
 	.book-page-scroll {
 		flex: 1;
+		min-height: 0;
 		width: 100%;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+	}
+
+	.book-folio-header {
+		flex-shrink: 0;
+	}
+
+	.book-chapter-break {
+		text-align: center;
+		margin: 0.5rem 0 1.25rem 0;
+		font-size: 1rem;
+	}
+
+	/* === SALÓN DE LA VICTORIA === */
+	.victory-tabs :global(a) {
+		font-size: 0.78rem;
+	}
+
+	.victory-tabs :global(li.is-active a) {
+		background: linear-gradient(135deg, #ffd670, #19d4a8);
+		border-color: transparent;
+		color: #1a1203;
+		font-weight: 700;
+	}
+
+	.victory-footer {
+		flex-shrink: 0;
+	}
+
+	:global(.victory-claim-btn) {
+		background: linear-gradient(135deg, #ffd670 0%, #f2a900 45%, #19d4a8 100%);
+		border: none;
+		color: #1a1203;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		box-shadow: 0 0 22px rgba(255, 214, 112, 0.55);
+		animation: victory-pulse 2s ease-in-out infinite;
+	}
+
+	:global(.victory-save-btn) {
+		background: linear-gradient(135deg, #19d4a8, #0f9d7a);
+		border: 1px solid rgba(255, 214, 112, 0.6);
+		color: #fff;
+		font-weight: 700;
+	}
+
+	@keyframes victory-pulse {
+		0%, 100% { box-shadow: 0 0 14px rgba(255, 214, 112, 0.35); }
+		50% { box-shadow: 0 0 30px rgba(255, 214, 112, 0.75); }
+	}
+
+	.log-slide {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.log-media {
+		position: relative;
+		width: 100%;
+		height: clamp(160px, 32vh, 280px);
+		overflow: hidden;
+		border-radius: 14px;
+		border: 1px solid rgba(255, 214, 112, 0.35);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+	}
+
+	.ken-burns {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		animation: ken-burns 9s ease-in-out infinite alternate;
+		transform-origin: center;
+	}
+
+	.log-media-fallback {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 4rem;
+		background: radial-gradient(circle at 50% 40%, rgba(255, 214, 112, 0.35), rgba(30, 20, 5, 0.9));
+	}
+
+	@keyframes ken-burns {
+		from { transform: scale(1) translate(0, 0); }
+		to { transform: scale(1.18) translate(-2%, -2%); }
+	}
+
+	.log-date {
+		font-size: 0.75rem;
+		color: var(--genre-body-color, #f8f3e6);
+		opacity: 0.8;
+	}
+
+	.log-text {
+		margin-bottom: 0.75rem;
+	}
+
+	.log-nav {
+		gap: 8px;
+		padding: 0.3rem 0 1rem;
+	}
+
+	.log-nav-btn {
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 214, 112, 0.4);
+		color: #ffd670;
+		border-radius: 50%;
+		width: 28px;
+		height: 28px;
+		cursor: pointer;
+	}
+
+	.log-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		border: none;
+		padding: 0;
+		background: rgba(255, 255, 255, 0.3);
+		cursor: pointer;
+	}
+
+	.log-dot.active {
+		background: #ffd670;
+		box-shadow: 0 0 8px rgba(255, 214, 112, 0.8);
 	}
 
 	.book-story-paragraph {

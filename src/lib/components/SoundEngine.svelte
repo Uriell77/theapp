@@ -140,6 +140,8 @@
 		showHud?: boolean;
 		/** Si debe mostrarse en línea */
 		inline?: boolean;
+		/** Controles extra (ej. Narrador) que se alinean en la barra fija junto al HUD de audio */
+		controls?: Snippet;
 		/** Componente hijo a envolver (típicamente Visualizer) */
 		children?: Snippet;
 	}
@@ -156,6 +158,7 @@
 		loop = true,
 		showHud = true,
 		inline = false,
+		controls,
 		children
 	}: Props = $props();
 
@@ -400,13 +403,8 @@
 	});
 </script>
 
-<div class="sound-engine-wrapper">
-	<!-- Contenido envuelto (Visualizer) -->
-	{@render children?.()}
-
-	<!-- Control HUD sutil de atmósfera sonora -->
-	{#if showHud}
-		<div class="sound-engine-hud" class:inline-hud={inline} class:is-hidden-error={hasError} onmouseenter={() => showVolume = true} onmouseleave={() => showVolume = false} role="region" aria-label="Controles de audio">
+{#snippet hud(isInline: boolean)}
+		<div class="sound-engine-hud" class:inline-hud={isInline} class:is-hidden-error={hasError} onmouseenter={() => showVolume = true} onmouseleave={() => showVolume = false} role="region" aria-label="Controles de audio">
 			<div class="sound-controls-group" class:expanded={showVolume}>
 				{#if showVolume}
 					<div class="volume-slider-container">
@@ -451,6 +449,27 @@
 				</button>
 			</div>
 		</div>
+{/snippet}
+
+<div class="sound-engine-wrapper" class:has-controls={!!controls}>
+	{#if controls}
+		<!-- Barra fija: Narrador + HUD de audio alineados en el mismo eje horizontal -->
+		<div class="controls-bar is-flex is-align-items-center is-justify-content-space-between">
+			<div class="controls-bar-left is-flex is-align-items-center">
+				{@render controls()}
+			</div>
+			{#if showHud}
+				{@render hud(true)}
+			{/if}
+		</div>
+	{/if}
+
+	<!-- Contenido envuelto (Visualizer) -->
+	{@render children?.()}
+
+	<!-- Control HUD sutil de atmósfera sonora -->
+	{#if showHud && !controls}
+		{@render hud(inline)}
 	{/if}
 </div>
 
@@ -459,6 +478,21 @@
 		position: relative;
 		width: 100%;
 		display: block;
+	}
+
+	.sound-engine-wrapper.has-controls {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.controls-bar {
+		flex-shrink: 0;
+		gap: 10px;
+		padding: 0.15rem 0.2rem 0.55rem 0.2rem;
+		position: relative;
+		z-index: 20;
 	}
 
 	.sound-engine-hud {

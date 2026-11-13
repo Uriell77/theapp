@@ -66,9 +66,14 @@
 		allTasks = [...rawTasks].sort((a: any, b: any) => Number(b.id) - Number(a.id));
 	});
 
+	const isTaskCompleted = (t: any) =>
+		parseInt(t.status, 10) !== -1 && parseInt(t.status, 10) >= t.cantidad_de_niveles - 1;
+
 	// Separar activas / archivadas
 	let tasks = $derived(allTasks.filter((t: any) => !t.isArchived));
 	let archivedTasks = $derived(allTasks.filter((t: any) => t.isArchived));
+	let victoryTasks = $derived(archivedTasks.filter((t: any) => isTaskCompleted(t)));
+	let retreatTasks = $derived(archivedTasks.filter((t: any) => !isTaskCompleted(t)));
 
 	// Pestaña activa del nav: 'dashboard' | 'archivo' | 'ajustes'
 	let activeTab = $state<'dashboard' | 'archivo' | 'ajustes'>(
@@ -83,6 +88,10 @@
 	let panelMode = $state<'form' | 'details'>('form');
 	let selectedTaskId = $state<number | null>(null);
 	let selectedChapter = $state<number | null>(null);
+	let startInVictory = $state(false);
+
+	// Salón de la Victoria (100%) vs Retiradas Tácticas (abandonadas) dentro del Archivo
+	let archiveTab = $state<'victoria' | 'retiradas'>('victoria');
 	let selectedTask = $derived(allTasks.find((t: any) => t.id === selectedTaskId) || null);
 	let viewedTasks = $state<Record<string, string>>({});
 
@@ -149,12 +158,25 @@
 		panelMode = 'form';
 		selectedTaskId = null;
 		selectedChapter = null;
+		startInVictory = false;
+		isPanelOpen = true;
+	}
+
+	function openVictory(taskId: number) {
+		const task = allTasks.find((t: any) => t.id === taskId);
+		if (!task) return;
+		panelMode = 'details';
+		selectedTaskId = taskId;
+		selectedChapter = Math.max(0, task.cantidad_de_niveles - 1);
+		viewedTasks[String(taskId)] = String(task.status);
+		startInVictory = true;
 		isPanelOpen = true;
 	}
 
 	function openTaskDetails(taskId: number, chapterIndex?: number) {
 		panelMode = 'details';
 		selectedTaskId = taskId;
+		startInVictory = false;
 		const task = allTasks.find((t: any) => t.id === taskId);
 		if (task) {
 			const targetChapter = chapterIndex !== undefined ? chapterIndex : Number(task.status);
@@ -192,7 +214,7 @@
 
 
 
-	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask} {selectedChapter}>
+	<SlidingPanel bind:isOpen={isPanelOpen} mode={panelMode} taskData={selectedTask} {selectedChapter} {startInVictory}>
 		{#if panelMode === 'form'}
 			<form
                 class="is-scroll"
@@ -452,6 +474,7 @@
 							hasViewed={viewedTasks[String(Task.id)] !== undefined &&
 								String(viewedTasks[String(Task.id)]) === String(Task.status)}
 							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
+							onVictory={() => openVictory(Task.id)}
 						/>
 					{/each}
 				</div>
@@ -482,28 +505,52 @@
 				</span>
 			</div>
 
-			{#if archivedTasks.length > 0}
-				<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
-					Tus proyectos completados están guardados aquí. Puedes restaurarlos al dashboard o eliminarlos definitivamente.
-				</p>
-				<div>
-					{#each archivedTasks as Task (Task.id)}
-						<CardTask
-							task={Task}
-							hasViewed={true}
-							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
-						/>
-					{/each}
-				</div>
-			{:else}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<div style="font-size: 2.5rem; margin-bottom: 12px;">📭</div>
-					<p class="has-text-grey-light mb-2" style="font-weight: 600;">El archivo está vacío</p>
-					<p class="has-text-grey-light" style="font-size: 0.85rem;">
-						Cuando completes un proyecto y lo archives, aparecerá aquí.
+			<div class="tabs is-centered is-boxed is-small mb-3">
+				<ul>
+					<li class:is-active={archiveTab === 'victoria'}>
+						<a role="button" tabindex="0" onclick={() => (archiveTab = 'victoria')} onkeydown={(e) => e.key === 'Enter' && (archiveTab = 'victoria')}>
+							🏆 Salón de la Victoria ({victoryTasks.length})
+						</a>
+					</li>
+					<li class:is-active={archiveTab === 'retiradas'}>
+						<a role="button" tabindex="0" onclick={() => (archiveTab = 'retiradas')} onkeydown={(e) => e.key === 'Enter' && (archiveTab = 'retiradas')}>
+							⛺ Retiradas Tácticas ({retreatTasks.length})
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			{#each [archiveTab === 'victoria' ? victoryTasks : retreatTasks] as list}
+				{#if list.length > 0}
+					<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+						{archiveTab === 'victoria'
+							? 'Misiones completadas al 100%. Revive la bitácora de tu viaje o relee la crónica completa cuando quieras.'
+							: 'Misiones abandonadas. Puedes restaurarlas al dashboard o eliminarlas definitivamente.'}
 					</p>
-				</div>
-			{/if}
+					<div>
+						{#each list as Task (Task.id)}
+							<CardTask
+								task={Task}
+								hasViewed={true}
+								onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
+								onVictory={() => openVictory(Task.id)}
+							/>
+						{/each}
+					</div>
+				{:else}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<div style="font-size: 2.5rem; margin-bottom: 12px;">{archiveTab === 'victoria' ? '🏆' : '⛺'}</div>
+						<p class="has-text-grey-light mb-2" style="font-weight: 600;">
+							{archiveTab === 'victoria' ? 'El Salón de la Victoria está vacío' : 'No hay retiradas tácticas'}
+						</p>
+						<p class="has-text-grey-light" style="font-size: 0.85rem;">
+							{archiveTab === 'victoria'
+								? 'Completa un proyecto al 100% y guárdalo para verlo aquí.'
+								: 'Los proyectos abandonados archivados aparecerán aquí.'}
+						</p>
+					</div>
+				{/if}
+			{/each}
 
 		{:else if activeTab === 'ajustes'}
 			<!-- ===== SECCIÓN AJUSTES ===== -->

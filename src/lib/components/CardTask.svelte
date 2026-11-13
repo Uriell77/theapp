@@ -21,9 +21,11 @@
 		task: TaskData;
 		hasViewed?: boolean;
 		onSelect?: (chapterIndex: number) => void;
+		/** Abre el SlidingPanel directamente en el Salón de la Victoria */
+		onVictory?: () => void;
 	}
 
-	let { task = $bindable(), hasViewed = false, onSelect }: Props = $props();
+	let { task = $bindable(), hasViewed = false, onSelect, onVictory }: Props = $props();
 
 	let isModalOpen = $state(false);
 	let currentTime = $state(Date.now());
@@ -69,6 +71,8 @@
 	});
 
 	let isLastLevel = $derived(task ? statusNum >= task.cantidad_de_niveles - 1 : false);
+	// Completada al 100%: último nivel alcanzado y no abandonada
+	let isCompleted = $derived(isLastLevel && !isAbandoned);
 
 	let isTimeLocked = $derived.by(() => {
 		if (isAbandoned) return false;
@@ -251,6 +255,15 @@
 			<!-- Action Buttons -->
 			<div class="card-actions">
 				{#if isArchived}
+					{#if isCompleted}
+						<div class="action-form">
+							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+								<button use:motion class="btn-primary btn-archive w-100" type="button" onclick={() => onVictory?.()}>
+									<span class="btn-text">🏆 Ver Victoria</span>
+								</button>
+							</Motion>
+						</div>
+					{/if}
 					<form method="POST" action="?/unarchiveTask" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
@@ -260,15 +273,14 @@
 							</button>
 						</Motion>
 					</form>
-				{:else if isLastLevel && !isAbandoned}
-					<form method="POST" action="?/archiveTask" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
-						<input type="hidden" name="taskId" value={task.id} />
+				{:else if isCompleted}
+					<div class="action-form">
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-							<button use:motion class="btn-primary btn-archive w-100" type="submit">
-								<span class="btn-text">Archivar Proyecto 📦</span>
+							<button use:motion class="btn-primary btn-archive w-100" type="button" onclick={() => onVictory?.()}>
+								<span class="btn-text">🏆 Ver Victoria</span>
 							</button>
 						</Motion>
-					</form>
+					</div>
 				{:else}
 					
 					<!-- Manejo estricto de Estados según requerimientos -->
