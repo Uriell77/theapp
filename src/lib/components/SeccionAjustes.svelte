@@ -441,7 +441,7 @@
 	</div>
 	<!-- 🛡️ Armería de Skins -->
 	<section class="glass-panel armory mt-5">
-		<div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
+		<div class="armory-header is-flex is-justify-content-space-between is-align-items-center mb-2">
 			<h3 class="has-text-weight-bold has-text-white" style="font-size: 1.1rem; margin: 0;">🛡️ Armería de Skins</h3>
 			<span class="badge-tag">{effectiveSkin.etiqueta}</span>
 		</div>
@@ -665,6 +665,10 @@
 		padding: 2px 8px;
 		border-radius: 8px;
 		text-transform: uppercase;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.helper-text {
@@ -676,9 +680,18 @@
 
 	.armory {
 		padding: 16px;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	.armory-header {
+		flex-wrap: wrap;
+		gap: 6px;
+		min-width: 0;
 	}
 	.armory-group {
-		color: var(--text-muted);
+		color: rgba(255, 255, 255, 0.85);
 		font-size: 0.7rem;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
@@ -689,9 +702,12 @@
 		align-items: center;
 		gap: 10px;
 		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
 		padding: 10px 12px;
 		text-align: left;
-		color: var(--text-main);
+		color: #ffffff;
 		background: rgba(0, 0, 0, 0.25);
 		border: 1px solid var(--card-border);
 		border-radius: 14px;
@@ -711,11 +727,14 @@
 		min-width: 0;
 	}
 	.skin-auto-text strong {
+		color: #ffffff;
 		font-size: 0.85rem;
 	}
 	.skin-auto-text small {
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: rgba(255, 255, 255, 0.85);
+		overflow-wrap: anywhere;
+		white-space: normal;
 	}
 	.skin-check {
 		color: var(--accent-primary);
@@ -723,8 +742,16 @@
 	}
 	.armory-grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 8px;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+	@media (max-width: 380px) {
+		.armory-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 	.skin-card {
 		display: flex;
@@ -732,8 +759,12 @@
 		align-items: stretch;
 		gap: 6px;
 		padding: 8px;
+		min-width: 0;
+		max-width: 100%;
+		box-sizing: border-box;
+		overflow: hidden;
 		text-align: center;
-		color: var(--text-main);
+		color: #ffffff;
 		background: rgba(0, 0, 0, 0.25);
 		border: 1px solid var(--card-border);
 		border-radius: 12px;
@@ -752,6 +783,10 @@
 		border-radius: 8px;
 	}
 	.skin-name {
+		display: block;
+		width: 100%;
+		min-width: 0;
+		color: #ffffff;
 		font-size: 0.68rem;
 		line-height: 1.2;
 		overflow: hidden;
