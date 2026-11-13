@@ -508,13 +508,15 @@
 			<div class="tabs is-centered is-boxed is-small mb-3">
 				<ul>
 					<li class:is-active={archiveTab === 'victoria'}>
+						<!-- svelte-ignore a11y_missing_attribute -->
 						<a role="button" tabindex="0" onclick={() => (archiveTab = 'victoria')} onkeydown={(e) => e.key === 'Enter' && (archiveTab = 'victoria')}>
-							🏆 Salón de la Victoria ({victoryTasks.length})
+							🏆 Victorias ({victoryTasks.length})
 						</a>
 					</li>
 					<li class:is-active={archiveTab === 'retiradas'}>
+						<!-- svelte-ignore a11y_missing_attribute -->
 						<a role="button" tabindex="0" onclick={() => (archiveTab = 'retiradas')} onkeydown={(e) => e.key === 'Enter' && (archiveTab = 'retiradas')}>
-							⛺ Retiradas Tácticas ({retreatTasks.length})
+							⛺ Retiradas ({retreatTasks.length})
 						</a>
 					</li>
 				</ul>
