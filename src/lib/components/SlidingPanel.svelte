@@ -504,7 +504,7 @@
 	.book-drop-cap {
 		float: left;
 		font-family: var(--genre-dropcap-font);
-		font-size: clamp(2.85rem, 7vw, 3.6rem);
+		font-size: clamp(2.35rem, 7vw, 3.6rem);
 		font-weight: 800;
 		line-height: 0.86;
 		color: var(--genre-accent, #ffd670);
