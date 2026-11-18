@@ -98,6 +98,7 @@
 	});
 
 	let taskSkin = $derived(getSkinByValue(task?.tema));
+	let themeSymbolId = $derived(isKids ? 'infantil' : taskSkin.id);
 
 	const tematicasMap: Record<string, string> = {
 		'Alta Fantasía y Magia': 'Fantasía',
@@ -190,16 +191,103 @@
 				</h3>
 
 				<div class="card-header-actions is-justify-content-flex-end is-flex">
-					{#if isKids}
-						<span class="badge-kids font-kids">Infantil 🎈</span>
-					{:else}
-						<span
-							class="badge-general font-modern-chapter"
-							style="--card-tema-color: {taskSkin.primary};"
-						>
-							{tematicaEtiqueta} ⚔️
-						</span>
-					{/if}
+					<span
+						class="badge-theme-symbol"
+						role="img"
+						title={isKids ? 'Infantil' : tematicaEtiqueta}
+						aria-label={isKids ? 'Tema: Infantil' : `Tema: ${tematicaEtiqueta}`}
+						style="--badge-c1: {isKids ? '#ffd166' : taskSkin.primary}; --badge-c2: {isKids ? '#f97316' : taskSkin.secondary}; --badge-bg: {isKids ? 'linear-gradient(135deg, rgba(255, 209, 102, 0.24), rgba(249, 115, 22, 0.2))' : taskSkin.badgeBg}; --badge-border: {isKids ? 'rgba(255, 209, 102, 0.6)' : taskSkin.badgeBorder};"
+					>
+						<svg class="theme-symbol-svg" viewBox="0 0 64 64" width="18" height="18" fill="none" aria-hidden="true">
+							{#if themeSymbolId === 'infantil'}
+								<ellipse cx="32" cy="24" rx="14" ry="17" fill="var(--badge-c1)" fill-opacity="0.32" stroke="var(--badge-c1)" stroke-width="3.5" />
+								<path d="M27 16c2-3 5-4 8-3" stroke="var(--badge-c2)" stroke-width="3" stroke-linecap="round" />
+								<path d="M32 41l-3 5h6l-3-5z" fill="var(--badge-c2)" />
+								<path d="M32 46c-3 5 4 8 0 13" stroke="var(--badge-c2)" stroke-width="3" stroke-linecap="round" />
+							{:else if themeSymbolId === 'fantasia'}
+								<polygon points="32,6 45,24 38,54 26,54 19,24" fill="var(--badge-c1)" fill-opacity="0.28" stroke="var(--badge-c1)" stroke-width="3.5" stroke-linejoin="round" />
+								<path d="M32 6v48M19 24h26" stroke="var(--badge-c2)" stroke-width="2.5" />
+								<path d="M10 14l4 4M54 14l-4 4" stroke="var(--badge-c2)" stroke-width="3" stroke-linecap="round" />
+							{:else if themeSymbolId === 'medieval'}
+								<path d="M14 50L50 14M42 12l10 2-2 10M12 42l10 10" stroke="var(--badge-c2)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+								<path d="M50 50L14 14M22 12l-10 2 2 10M52 42L42 52" stroke="var(--badge-c1)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+							{:else if themeSymbolId === 'olimpo'}
+								<path d="M14 46a10 10 0 0 1-2-19.8A13 13 0 0 1 39 22a11 11 0 0 1 11 19H14z" fill="var(--badge-c2)" fill-opacity="0.26" stroke="var(--badge-c2)" stroke-width="3.2" stroke-linejoin="round" />
+								<path d="M36 9l-8 15h9l-7 15" stroke="var(--badge-c1)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+							{:else if themeSymbolId === 'samurai'}
+								<circle cx="32" cy="22" r="11" fill="var(--badge-c1)" fill-opacity="0.85" />
+								<path d="M11 22h42M15 31h34M22 22v30M42 22v30" stroke="#f5efe6" stroke-width="3.2" stroke-linecap="round" />
+								<path d="M54 10v44M54 22l6-4M54 36l6-4" stroke="var(--badge-c2)" stroke-width="3.2" stroke-linecap="round" />
+							{:else if themeSymbolId === 'alquimia'}
+								<path d="M25 10h14M28 10v14L13 48a4 4 0 0 0 3.5 6h31a4 4 0 0 0 3.5-6L36 24V10" stroke="var(--badge-c1)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" />
+								<path d="M17 42h30" stroke="var(--badge-c2)" stroke-width="3.5" stroke-linecap="round" />
+								<circle cx="30" cy="34" r="3" fill="var(--badge-c2)" />
+							{:else if themeSymbolId === 'ciberespacio'}
+								<rect x="19" y="19" width="26" height="26" rx="4" stroke="var(--badge-c1)" stroke-width="3.5" />
+								<rect x="27" y="27" width="10" height="10" rx="1.5" fill="var(--badge-c2)" />
+								<path d="M26 9v10M38 9v10M26 45v10M38 45v10M9 26h10M9 38h10M45 26h10M45 38h10" stroke="var(--badge-c1)" stroke-width="3.2" stroke-linecap="round" />
+							{:else if themeSymbolId === 'steampunk'}
+								<circle cx="32" cy="32" r="13" stroke="var(--badge-c1)" stroke-width="3.5" />
+								<circle cx="32" cy="32" r="5.5" fill="var(--badge-c2)" fill-opacity="0.4" stroke="var(--badge-c2)" stroke-width="2.5" />
+								<path d="M32 9v7M32 48v7M9 32h7M48 32h7M15 15l5 5M44 44l5 5M49 15l-5 5M20 44l-5 5" stroke="var(--badge-c1)" stroke-width="4.2" stroke-linecap="round" />
+							{:else if themeSymbolId === 'espacio'}
+								<circle cx="32" cy="32" r="14" fill="var(--badge-c1)" fill-opacity="0.32" stroke="var(--badge-c1)" stroke-width="3.5" />
+								<ellipse cx="32" cy="32" rx="28" ry="9" transform="rotate(-22 32 32)" stroke="var(--badge-c2)" stroke-width="3.2" />
+								<circle cx="13" cy="14" r="2.5" fill="var(--badge-c1)" />
+								<circle cx="51" cy="50" r="2.5" fill="var(--badge-c2)" />
+							{:else if themeSymbolId === 'mechas'}
+								<polygon points="32,7 55,20 55,44 32,57 9,44 9,20" stroke="var(--badge-c1)" stroke-width="3.5" stroke-linejoin="round" />
+								<path d="M17 28h30l-6 10H23z" fill="var(--badge-c2)" fill-opacity="0.5" stroke="var(--badge-c2)" stroke-width="3" stroke-linejoin="round" />
+								<path d="M32 7v11M9 20l10 6M55 20l-10 6" stroke="var(--badge-c1)" stroke-width="2.8" />
+							{:else if themeSymbolId === 'superheroes'}
+								<polygon points="36,6 13,36 30,36 25,58 51,26 34,26" fill="var(--badge-c1)" stroke="var(--badge-c2)" stroke-width="3.2" stroke-linejoin="round" />
+							{:else if themeSymbolId === 'postapocaliptico'}
+								<circle cx="32" cy="32" r="22" stroke="var(--badge-c1)" stroke-width="3.5" />
+								<circle cx="32" cy="32" r="5" fill="var(--badge-c2)" />
+								<path d="M32 25L21 12M32 25L43 12M25 36l-13 5M39 36l13 5M32 39v15" stroke="var(--badge-c2)" stroke-width="4.2" stroke-linecap="round" />
+							{:else if themeSymbolId === 'zombie'}
+								<circle cx="32" cy="21" r="11" stroke="var(--badge-c1)" stroke-width="3.2" />
+								<circle cx="21" cy="40" r="11" stroke="var(--badge-c1)" stroke-width="3.2" />
+								<circle cx="43" cy="40" r="11" stroke="var(--badge-c1)" stroke-width="3.2" />
+								<circle cx="32" cy="34" r="5.5" fill="var(--badge-c2)" />
+							{:else if themeSymbolId === 'espionaje'}
+								<circle cx="32" cy="32" r="22" stroke="var(--badge-c1)" stroke-width="3.2" />
+								<circle cx="32" cy="32" r="12" stroke="var(--badge-c2)" stroke-width="3" />
+								<path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="var(--badge-c1)" stroke-width="3.2" stroke-linecap="round" />
+								<circle cx="32" cy="32" r="3.5" fill="var(--badge-c1)" />
+							{:else if themeSymbolId === 'golpe_maestro'}
+								<polygon points="18,14 46,14 56,28 32,54 8,28" fill="var(--badge-c1)" fill-opacity="0.22" stroke="var(--badge-c1)" stroke-width="3.5" stroke-linejoin="round" />
+								<path d="M8 28h48M18 14l8 14 6 26 6-26 8-14" stroke="var(--badge-c2)" stroke-width="2.6" stroke-linejoin="round" />
+							{:else if themeSymbolId === 'noir'}
+								<path d="M11 33c11 4 31 4 42 0M17 33l4-16c5-3 17-3 22 0l4 16" fill="var(--badge-c1)" fill-opacity="0.24" stroke="var(--badge-c1)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+								<circle cx="39" cy="45" r="7.5" stroke="#e4e4e7" stroke-width="3" />
+								<path d="M45 51l7 7" stroke="var(--badge-c2)" stroke-width="4" stroke-linecap="round" />
+							{:else if themeSymbolId === 'salvaje_oeste'}
+								<polygon points="32,8 38,22 54,22 41,32 46,47 32,38 18,47 23,32 10,22 26,22" fill="var(--badge-c1)" fill-opacity="0.28" stroke="var(--badge-c1)" stroke-width="3.2" stroke-linejoin="round" />
+								<circle cx="32" cy="29" r="5" fill="var(--badge-c2)" fill-opacity="0.55" stroke="var(--badge-c2)" stroke-width="2.5" />
+							{:else if themeSymbolId === 'terror_cosmico'}
+								<path d="M8 32c6-12 16-18 24-18s18 6 24 18c-6 12-16 18-24 18S14 44 8 32z" fill="var(--badge-c1)" fill-opacity="0.18" stroke="var(--badge-c1)" stroke-width="3.2" />
+								<circle cx="32" cy="32" r="8" stroke="var(--badge-c1)" stroke-width="2.8" />
+								<ellipse cx="32" cy="32" rx="3" ry="6.5" fill="var(--badge-c2)" />
+							{:else if themeSymbolId === 'guerra'}
+								<path d="M14 21l18-10 18 10M14 47l18-10 18 10" stroke="var(--badge-c1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+								<path d="M14 34l18-10 18 10" stroke="var(--badge-c2)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+							{:else if themeSymbolId === 'desastre_natural'}
+								<rect x="16" y="18" width="32" height="36" rx="6" fill="var(--badge-c2)" fill-opacity="0.16" stroke="var(--badge-c2)" stroke-width="3.2" />
+								<path d="M24 18v-4a8 8 0 0 1 16 0v4M16 32h32" stroke="var(--badge-c2)" stroke-width="3" />
+								<rect x="27" y="28" width="10" height="8" rx="2" fill="var(--badge-c1)" />
+							{:else if themeSymbolId === 'comedia_romantica'}
+								<path d="M32 52S10 38 10 22a11 11 0 0 1 22-3 11 11 0 0 1 22 3c0 16-22 30-22 30z" fill="var(--badge-c1)" fill-opacity="0.85" stroke="var(--badge-c2)" stroke-width="2.5" />
+								<path d="M47 11v6M44 14h6" stroke="var(--badge-c2)" stroke-width="2.8" stroke-linecap="round" />
+							{:else if themeSymbolId === 'caos_comedia'}
+								<polygon points="32,6 38,20 54,14 45,28 58,36 43,40 48,54 34,46 22,56 23,41 8,40 19,30 12,16 26,21" fill="var(--badge-c1)" stroke="var(--badge-c2)" stroke-width="3" stroke-linejoin="round" />
+							{:else}
+								<circle cx="32" cy="32" r="23" stroke="var(--badge-c1)" stroke-width="3.2" />
+								<polygon points="32,12 38,32 32,52 26,32" fill="var(--badge-c1)" />
+								<circle cx="32" cy="32" r="4" fill="var(--badge-c2)" />
+							{/if}
+						</svg>
+					</span>
 
 					<!-- Botón de eliminación rápida (Solo archivadas) -->
 					{#if isArchived}
@@ -484,36 +572,32 @@
 		z-index: 20;
 	}
 
-	.badge-kids,
-	.badge-general {
-		padding: 4px 10px;
-		border-radius: 999px;
-		font-size: clamp(0.66rem, 1.9vw, 0.74rem);
-		white-space: nowrap;
-		max-width: 100%;
+	.badge-theme-symbol {
+		width: 30px;
+		height: 30px;
+		border-radius: 10px;
 		display: inline-flex;
 		align-items: center;
-		line-height: 1.2;
+		justify-content: center;
+		flex-shrink: 0;
+		background: var(--badge-bg, rgba(20, 28, 36, 0.78));
+		border: 1px solid var(--badge-border, color-mix(in srgb, var(--badge-c1, var(--accent-primary)) 55%, var(--badge-c2, var(--accent-primary))));
+		box-shadow:
+			0 2px 10px color-mix(in srgb, var(--badge-c1, var(--accent-primary)) 22%, transparent),
+			inset 0 1px 0 rgba(255, 255, 255, 0.14);
 		backdrop-filter: blur(6px);
 		-webkit-backdrop-filter: blur(6px);
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
 	}
 
-	.badge-kids {
-		background: linear-gradient(135deg, rgba(255, 209, 102, 0.2), rgba(255, 209, 102, 0.08));
-		border: 1px solid rgba(255, 209, 102, 0.42);
-		color: #ffd166;
-		font-weight: 700;
-		box-shadow: 0 2px 10px rgba(255, 209, 102, 0.12);
+	.badge-theme-symbol:hover {
+		transform: scale(1.06);
+		box-shadow: 0 3px 12px color-mix(in srgb, var(--badge-c1, var(--accent-primary)) 34%, transparent);
 	}
 
-	.badge-general {
-		font-family: var(--font-hierarchy-ui);
-		background: color-mix(in srgb, var(--card-tema-color, var(--accent-primary)) 15%, transparent);
-		border: 1px solid color-mix(in srgb, var(--card-tema-color, var(--accent-primary)) 45%, transparent);
-		color: var(--card-tema-color, var(--accent-primary));
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		box-shadow: 0 2px 10px color-mix(in srgb, var(--card-tema-color, var(--accent-primary)) 22%, transparent);
+	.theme-symbol-svg {
+		display: block;
+		flex-shrink: 0;
 	}
 
 	.btn-icon-delete {

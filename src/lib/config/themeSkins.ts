@@ -244,6 +244,8 @@ export interface SkinTokens {
 	glow: string;
 	fontHeading: string;
 	fontBody: string;
+	badgeBg: string;
+	badgeBorder: string;
 }
 
 interface SkinMeta {
@@ -254,6 +256,8 @@ interface SkinMeta {
 	bgTop: string;
 	textMain?: string;
 	textMuted?: string;
+	badgeBg?: string;
+	badgeBorder?: string;
 }
 
 /** Construye la configuración completa de un skin combinando su paleta maestra y metadatos UI. */
@@ -279,7 +283,12 @@ function buildSkinTokens(meta: SkinMeta): SkinTokens {
 		textMuted: meta.textMuted ?? '#94a3b8',
 		glow: palette.glow,
 		fontHeading: palette.fontHeading,
-		fontBody: palette.fontBody
+		fontBody: palette.fontBody,
+		badgeBg:
+			meta.badgeBg ??
+			`linear-gradient(135deg, color-mix(in srgb, ${palette.accent} 22%, rgba(10, 14, 20, 0.88)) 0%, color-mix(in srgb, ${meta.secondary} 26%, rgba(10, 14, 20, 0.92)) 100%)`,
+		badgeBorder:
+			meta.badgeBorder ?? `color-mix(in srgb, ${palette.accent} 58%, ${meta.secondary})`
 	};
 }
 
@@ -297,22 +306,26 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'fantasia',
 		valor: 'Alta Fantasía y Magia',
 		grupo: 'Fantasía y Mitología',
-		secondary: '#7c3aed',
+		secondary: '#db2777',
 		bgTop: '#261442'
 	},
 	{
 		id: 'medieval',
 		valor: 'Cruzada Medieval',
 		grupo: 'Fantasía y Mitología',
-		secondary: '#991b1b',
-		bgTop: '#2f1916'
+		secondary: '#cbd5e1',
+		bgTop: '#2f1916',
+		badgeBg: 'linear-gradient(135deg, rgba(203, 213, 225, 0.22) 0%, rgba(185, 28, 28, 0.34) 100%)',
+		badgeBorder: 'rgba(203, 213, 225, 0.6)'
 	},
 	{
 		id: 'olimpo',
 		valor: 'Mitología Griega y el Olimpo',
 		grupo: 'Fantasía y Mitología',
 		secondary: '#38bdf8',
-		bgTop: '#1c2b47'
+		bgTop: '#1c2b47',
+		badgeBg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.24) 0%, rgba(56, 189, 248, 0.24) 100%)',
+		badgeBorder: 'rgba(251, 191, 36, 0.6)'
 	},
 	{
 		id: 'samurai',
@@ -327,7 +340,7 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'alquimia',
 		valor: 'Alquimia y Magia Arcana',
 		grupo: 'Fantasía y Mitología',
-		secondary: '#047857',
+		secondary: '#10b981',
 		bgTop: '#133025'
 	},
 	// --- CIENCIA FICCIÓN ---
@@ -349,7 +362,7 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'espacio',
 		valor: 'Guerra Espacial de Naves',
 		grupo: 'Ciencia Ficción',
-		secondary: '#4338ca',
+		secondary: '#9333ea',
 		bgTop: '#111b40'
 	},
 	{
@@ -363,14 +376,14 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'superheroes',
 		valor: 'Superhéroes y Cómics',
 		grupo: 'Ciencia Ficción',
-		secondary: '#dc2626',
+		secondary: '#ef4444',
 		bgTop: '#172347'
 	},
 	{
 		id: 'postapocaliptico',
 		valor: 'Supervivencia Post-Apocalíptica',
 		grupo: 'Ciencia Ficción',
-		secondary: '#b45309',
+		secondary: '#facc15',
 		bgTop: '#301d10'
 	},
 	// --- SUPERVIVENCIA Y ACCIÓN ---
@@ -378,8 +391,10 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'zombie',
 		valor: 'Apocalipsis Zombie',
 		grupo: 'Supervivencia y Acción',
-		secondary: '#3f6212',
-		bgTop: '#1d2b14'
+		secondary: '#dc2626',
+		bgTop: '#1d2b14',
+		badgeBg: 'linear-gradient(135deg, rgba(163, 230, 53, 0.22) 0%, rgba(220, 38, 38, 0.28) 100%)',
+		badgeBorder: 'rgba(163, 230, 53, 0.58)'
 	},
 	{
 		id: 'espionaje',
@@ -402,13 +417,15 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		secondary: '#52525b',
 		bgTop: '#1f1f23',
 		textMain: '#f4f4f5',
-		textMuted: '#a1a1aa'
+		textMuted: '#a1a1aa',
+		badgeBg: 'linear-gradient(135deg, #27272a 0%, #09090b 100%)',
+		badgeBorder: '#a1a1aa'
 	},
 	{
 		id: 'salvaje_oeste',
 		valor: 'El Salvaje Oeste',
 		grupo: 'Supervivencia y Acción',
-		secondary: '#92400e',
+		secondary: '#b45309',
 		bgTop: '#2e1f14',
 		textMain: '#f4eadb',
 		textMuted: '#c8b399'
@@ -424,7 +441,7 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'guerra',
 		valor: 'Guerra Mundia',
 		grupo: 'Supervivencia y Acción',
-		secondary: '#4d7c0f',
+		secondary: '#65a30d',
 		bgTop: '#24301a',
 		textMain: '#f0ead6',
 		textMuted: '#b8b89c'
@@ -443,14 +460,14 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 		id: 'comedia_romantica',
 		valor: 'Comedia Romántica y Torpeza Adorable',
 		grupo: 'Humor y Vida Cotidiana',
-		secondary: '#ec4899',
+		secondary: '#fbbf24',
 		bgTop: '#331826'
 	},
 	{
 		id: 'caos_comedia',
 		valor: 'Comedia Absurda y Caos Cotidiano',
 		grupo: 'Humor y Vida Cotidiana',
-		secondary: '#f97316',
+		secondary: '#ec4899',
 		bgTop: '#302212'
 	}
 ];

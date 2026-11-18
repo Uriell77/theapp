@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { Motion } from 'svelte-motion';
 	import { capitalizeWords } from '$lib/chapterUtils';
+	import { getSkinByValue } from '$lib/skins';
 
 	interface Props {
 		children?: Snippet;
@@ -62,13 +63,21 @@
 
 		return Object.entries(themeCounts)
 			.map(([themeKey, count], index) => {
-				const originalTheme = validProjects.find(t => t?.tema?.toLowerCase().trim() === themeKey)?.tema || themeKey;
-				const color = themeColors[themeKey] || defaultColors[index % defaultColors.length];
+				const originalTheme =
+					validProjects.find((t) => t?.tema?.toLowerCase().trim() === themeKey)?.tema || themeKey;
+				const skin = getSkinByValue(originalTheme);
+				const fallbackColor = themeColors[themeKey] || defaultColors[index % defaultColors.length];
+				const color = skin.id !== 'estandar' ? skin.primary : fallbackColor;
+				const indicatorBg =
+					skin.id !== 'estandar'
+						? `linear-gradient(135deg, ${skin.primary} 0%, ${skin.secondary} 100%)`
+						: fallbackColor;
 				return {
 					key: themeKey,
 					label: capitalizeWords(originalTheme),
 					count,
 					color,
+					indicatorBg,
 					tooltip: `Total de proyectos sobre ${capitalizeWords(originalTheme)}: ${count}`
 				};
 			})
@@ -209,7 +218,7 @@
 							title={cat.tooltip}
 						>
 							<span class="is-flex is-align-items-center" style="min-width: 0; overflow: hidden;">
-								<span class="stat-indicator" style="background: {cat.color};"></span>
+								<span class="stat-indicator" style="background: {cat.indicatorBg};"></span>
 								<span class="stat-label">{cat.label}</span>
 							</span>
 							<span class="stat-count">{cat.count}</span>
