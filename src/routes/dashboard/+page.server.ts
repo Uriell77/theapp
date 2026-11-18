@@ -656,23 +656,36 @@ FORMATO JSON OBLIGATORIO:
 		let defeatChapter = '';
 		let defeatCinematica: any = null;
 
+		/** Determina si el error de la API de IA corresponde a saturación o límite de cuota. */
+		function isSaturationError(err: any): boolean {
+			const msg = typeof err?.message === 'string' ? err.message : '';
+			return (
+				err?.status === 503 ||
+				err?.status === 429 ||
+				msg.includes('503') ||
+				msg.includes('429') ||
+				msg.includes('UNAVAILABLE') ||
+				msg.includes('RESOURCE_EXHAUSTED')
+			);
+		}
+
 		try {
 			const prompt = promptFinal;
 
-			// --- INICIO DE REEMPLAZO ---
-			// Priorizamos los modelos que confirmamos tienen cuota disponible actualmente.
+			// Priorizamos modelos de distintos pools antes de los alias -latest.
 			const availableModels = [
 				'gemini-3.5-flash',
 				'gemini-3.5-flash-lite',
-				'gemini-flash-latest',
 				'gemini-3.8-flash',
-				'gemini-1.5-flash'
+				'gemini-flash-latest',
+				'gemini-flash-lite-latest'
 			];
 			let result;
 			let lastError: any = null;
+			let saturationError: any = null;
 
 			for (const modelName of availableModels) {
-				let retries = 2;
+				let retries = 3;
 				while (retries > 0) {
 					try {
 						console.log(`Intentando generar narrativa con el modelo: ${modelName}...`);
@@ -688,19 +701,32 @@ FORMATO JSON OBLIGATORIO:
 							console.log(`¡Éxito usando ${modelName}!`);
 							break;
 						}
+						break;
 					} catch (aiError: any) {
-						lastError = aiError;
-						console.warn(`[Aviso] El modelo ${modelName} falló:`, aiError.message);
+						const errMsg = typeof aiError?.message === 'string' ? aiError.message : '';
+						console.warn(`[Aviso] El modelo ${modelName} falló:`, aiError?.message);
 
-						// Si es un error 404 (Not Found), pasamos al siguiente modelo inmediatamente
-						if (aiError.status === 404) {
+						const isNotFound =
+							aiError?.status === 404 ||
+							errMsg.includes('404') ||
+							errMsg.includes('NOT_FOUND');
+
+						// Si es un error 404 (Not Found), pasamos al siguiente modelo inmediatamente sin pisar errores previos
+						if (isNotFound) {
+							if (!lastError) lastError = aiError;
 							break;
 						}
 
+						const isModelSaturated = isSaturationError(aiError);
+						if (isModelSaturated) {
+							saturationError = aiError;
+						}
+						lastError = aiError;
+
 						// Solo reintentar si el servidor de Google está saturado (429 o 503)
-						if ((aiError.status === 503 || aiError.status === 429) && retries > 1) {
+						if (isModelSaturated && retries > 1) {
 							retries--;
-							const delay = 2000 * (3 - retries); // Exponencial simple
+							const delay = 2000 * (3 - retries); // 2000ms, luego 4000ms
 							console.log(
 								`Reintentando ${modelName} en ${delay}ms... (${retries} intentos restantes)`
 							);
@@ -717,9 +743,8 @@ FORMATO JSON OBLIGATORIO:
 				console.error(
 					'Error final: No se pudo obtener respuesta de ningún modelo configurado.'
 				);
-				throw lastError || new Error('Respuesta vacía del modelo de IA');
+				throw saturationError || lastError || new Error('Respuesta vacía del modelo de IA');
 			}
-			// --- FIN DE REEMPLAZO ---
 
 			let rawText = result.text.trim();
 			if (rawText.startsWith('```json')) {
@@ -753,7 +778,7 @@ FORMATO JSON OBLIGATORIO:
 			}
 		} catch (aiError: any) {
 			console.error('Error generando historia con IA:', aiError);
-			const isSaturated = aiError?.status === 429 || aiError?.status === 503;
+			const isSaturated = isSaturationError(aiError);
 			return fail(isSaturated ? 503 : 500, {
 				title,
 				tema,

@@ -1,4 +1,12 @@
-import { DEFAULT_SKIN, THEME_SKINS, type SkinTokens } from '$lib/config/themeSkins';
+import {
+	DEFAULT_SKIN,
+	SKIN_PALETTES,
+	THEME_SKINS,
+	type SkinPaletteKey,
+	type SkinTokens
+} from '$lib/config/themeSkins';
+
+export { SKIN_PALETTES, type SkinPaletteKey, type SkinTokens };
 
 export type SkinMode = 'auto' | 'manual';
 
@@ -8,6 +16,18 @@ export const SKIN_AUTO_CACHE_KEY = 'user_skin_auto'; // último skin automático
 
 export const ALL_SKINS: SkinTokens[] = [DEFAULT_SKIN, ...Object.values(THEME_SKINS)];
 
+const LEGACY_SKIN_ALIASES: Record<string, SkinPaletteKey> = {
+	default: 'estandar',
+	estandar: 'estandar',
+	cyberpunk: 'ciberespacio',
+	atraco: 'golpe_maestro',
+	oeste: 'salvaje_oeste',
+	lovecraft: 'terror_cosmico',
+	desastre: 'desastre_natural',
+	romantica: 'comedia_romantica',
+	caos: 'caos_comedia'
+};
+
 const norm = (s: string) =>
 	s
 		.normalize('NFD')
@@ -16,13 +36,26 @@ const norm = (s: string) =>
 		.trim();
 
 export function getSkinByValue(valor?: string | null): SkinTokens {
-	if (!valor || valor === 'default') return DEFAULT_SKIN;
+	if (!valor) return DEFAULT_SKIN;
 	if (THEME_SKINS[valor]) return THEME_SKINS[valor];
+
 	const n = norm(valor);
-	const match = Object.values(THEME_SKINS).find(
-		(s) => norm(s.valor) === n || norm(s.valor).startsWith(n) || n.startsWith(norm(s.valor))
+	const aliasId = LEGACY_SKIN_ALIASES[n] ?? n;
+	if (aliasId === 'estandar') return DEFAULT_SKIN;
+
+	const exactMatch = Object.values(THEME_SKINS).find(
+		(s) => s.id === aliasId || norm(s.valor) === n || norm(s.etiqueta) === n
 	);
-	return match ?? DEFAULT_SKIN;
+	if (exactMatch) return exactMatch;
+
+	const prefixMatch = Object.values(THEME_SKINS).find(
+		(s) =>
+			norm(s.valor).startsWith(n) ||
+			n.startsWith(norm(s.valor)) ||
+			norm(s.etiqueta).startsWith(n) ||
+			n.startsWith(norm(s.etiqueta))
+	);
+	return prefixMatch ?? DEFAULT_SKIN;
 }
 
 /** Tema más frecuente entre los proyectos (empate: el más reciente, tasks vienen id desc). */
@@ -30,7 +63,7 @@ export function computeAutoSkin(tasks: { tema?: string | null }[] = []): SkinTok
 	const counts = new Map<string, number>();
 	for (const t of tasks) {
 		const skin = getSkinByValue(t.tema);
-		if (skin.id === 'default') continue;
+		if (skin.id === 'estandar') continue;
 		counts.set(skin.valor, (counts.get(skin.valor) ?? 0) + 1);
 	}
 	let best: string | null = null;
@@ -54,11 +87,21 @@ export function getStoredSkin(): SkinTokens {
 	return getSkinByValue(localStorage.getItem(SKIN_AUTO_CACHE_KEY));
 }
 
-export function applySkin(skin: SkinTokens) {
+export function applySkin(skinOrKey: SkinTokens | string) {
 	if (typeof document === 'undefined') return;
+	const skin = typeof skinOrKey === 'string' ? getSkinByValue(skinOrKey) : skinOrKey;
 	const root = document.documentElement;
-	const glowColor = skin.glow.match(/rgba?\([^)]+\)/)?.[0] ?? skin.primary;
+	const glowColor = skin.glow.match(/rgba?\([^)]+\)/)?.[0] ?? skin.glow;
+	const skinBoxGlow = skin.glow.includes('px') ? skin.glow : `0 0 16px ${glowColor}`;
+
 	const vars: Record<string, string> = {
+		'--bg-main': skin.bgMain,
+		'--bg-card': skin.bgCard,
+		'--accent-primary': skin.accent,
+		'--accent-glow': glowColor,
+		'--font-heading': skin.fontHeading,
+		'--font-body': skin.fontBody,
+		// Tokens completos del tema y compatibilidad
 		'--skin-bg-base': skin.bgBase,
 		'--skin-bg-gradient': skin.bgGradient,
 		'--skin-glass-bg': skin.glassBg,
@@ -68,17 +111,19 @@ export function applySkin(skin: SkinTokens) {
 		'--skin-accent': skin.accent,
 		'--skin-text-main': skin.textMain,
 		'--skin-text-muted': skin.textMuted,
-		'--skin-glow': skin.glow,
-		// Variables globales existentes de la app
-		'--bg-main': skin.bgBase,
+		'--skin-glow': skinBoxGlow,
+		'--bg-color': skin.bgMain,
 		'--bg-gradient': skin.bgGradient,
-		'--bg-card': skin.glassBg,
+		'--card-bg': skin.bgCard,
 		'--card-border': skin.glassBorder,
-		'--accent-primary': skin.primary,
-		'--accent-glow': glowColor,
 		'--text-main': skin.textMain,
-		'--text-muted': skin.textMuted
+		'--text-muted': skin.textMuted,
+		'--font-hierarchy-display': skin.fontHeading,
+		'--font-hierarchy-heading': skin.fontHeading,
+		'--font-hierarchy-body': skin.fontBody,
+		'--font-hierarchy-ui': skin.fontHeading
 	};
+
 	for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
 	root.setAttribute('data-theme', skin.id);
 }

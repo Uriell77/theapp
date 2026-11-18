@@ -1,8 +1,237 @@
+export const SKIN_PALETTES = {
+	estandar: {
+		label: 'Estándar',
+		gradient: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #064e3b 100%)',
+		bgMain: '#0f171a',
+		bgCard: 'rgba(26, 46, 53, 0.65)',
+		accent: '#34d399',
+		glow: 'rgba(52, 211, 153, 0.35)',
+		fontHeading: "'Inter', sans-serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	fantasia: {
+		label: 'Fantasía',
+		gradient: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #db2777 100%)',
+		bgMain: '#130d21',
+		bgCard: 'rgba(38, 22, 66, 0.65)',
+		accent: '#c084fc',
+		glow: 'rgba(192, 132, 252, 0.35)',
+		fontHeading: "'Cinzel', serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	medieval: {
+		label: 'Medieval',
+		gradient: 'linear-gradient(135deg, #991b1b 0%, #b91c1c 45%, #d97706 100%)',
+		bgMain: '#1a1110',
+		bgCard: 'rgba(48, 24, 22, 0.65)',
+		accent: '#f59e0b',
+		glow: 'rgba(245, 158, 11, 0.35)',
+		fontHeading: "'MedievalSharp', cursive",
+		fontBody: "'Inter', sans-serif"
+	},
+	olimpo: {
+		label: 'Olimpo',
+		gradient: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 40%, #38bdf8 100%)',
+		bgMain: '#0f172a',
+		bgCard: 'rgba(30, 41, 59, 0.65)',
+		accent: '#fbbf24',
+		glow: 'rgba(251, 191, 36, 0.4)',
+		fontHeading: "'Cinzel', serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	samurai: {
+		label: 'Samurái',
+		gradient: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 48%, #65a30d 100%)',
+		bgMain: '#130d0b',
+		bgCard: 'rgba(36, 22, 18, 0.7)',
+		accent: '#ef4444',
+		glow: 'rgba(220, 38, 38, 0.35)',
+		fontHeading: "'Reggae One', system-ui",
+		fontBody: "'Inter', sans-serif"
+	},
+	alquimia: {
+		label: 'Alquimia',
+		gradient: 'linear-gradient(135deg, #10b981 0%, #047857 45%, #eab308 100%)',
+		bgMain: '#0b1914',
+		bgCard: 'rgba(18, 46, 36, 0.65)',
+		accent: '#facc15',
+		glow: 'rgba(250, 204, 21, 0.35)',
+		fontHeading: "'Cinzel', serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	ciberespacio: {
+		label: 'Ciberespacio',
+		gradient: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 45%, #ec4899 100%)',
+		bgMain: '#090d1a',
+		bgCard: 'rgba(17, 25, 54, 0.65)',
+		accent: '#22d3ee',
+		glow: 'rgba(236, 72, 153, 0.4)',
+		fontHeading: "'Orbitron', sans-serif",
+		fontBody: "'Share Tech Mono', monospace"
+	},
+	steampunk: {
+		label: 'Steampunk',
+		gradient: 'linear-gradient(135deg, #d97706 0%, #92400e 55%, #0d9488 100%)',
+		bgMain: '#18120c',
+		bgCard: 'rgba(46, 32, 19, 0.65)',
+		accent: '#fbbf24',
+		glow: 'rgba(217, 119, 6, 0.35)',
+		fontHeading: "'Rye', serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	espacio: {
+		label: 'Espacio',
+		gradient: 'linear-gradient(135deg, #1e3a8a 0%, #4338ca 50%, #9333ea 100%)',
+		bgMain: '#060914',
+		bgCard: 'rgba(15, 23, 52, 0.65)',
+		accent: '#818cf8',
+		glow: 'rgba(129, 140, 248, 0.35)',
+		fontHeading: "'Orbitron', sans-serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	mechas: {
+		label: 'Mechas',
+		gradient: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 45%, #f97316 100%)',
+		bgMain: '#0b1520',
+		bgCard: 'rgba(18, 37, 56, 0.65)',
+		accent: '#38bdf8',
+		glow: 'rgba(249, 115, 22, 0.35)',
+		fontHeading: "'Chakra Petch', sans-serif",
+		fontBody: "'Chakra Petch', sans-serif"
+	},
+	superheroes: {
+		label: 'Superhéroes',
+		gradient: 'linear-gradient(135deg, #2563eb 0%, #dc2626 60%, #facc15 100%)',
+		bgMain: '#0d1324',
+		bgCard: 'rgba(23, 35, 68, 0.65)',
+		accent: '#60a5fa',
+		glow: 'rgba(239, 68, 68, 0.35)',
+		fontHeading: "'Bangers', system-ui",
+		fontBody: "'Inter', sans-serif"
+	},
+	postapocaliptico: {
+		label: 'Post-Apocalipsis',
+		gradient: 'linear-gradient(135deg, #ea580c 0%, #b45309 50%, #facc15 100%)',
+		bgMain: '#1a110a',
+		bgCard: 'rgba(48, 28, 16, 0.65)',
+		accent: '#fb923c',
+		glow: 'rgba(234, 88, 12, 0.35)',
+		fontHeading: "'Chakra Petch', sans-serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	zombie: {
+		label: 'Zombie',
+		gradient: 'linear-gradient(135deg, #84cc16 0%, #3f6212 50%, #991b1b 100%)',
+		bgMain: '#10170d',
+		bgCard: 'rgba(27, 41, 20, 0.65)',
+		accent: '#a3e635',
+		glow: 'rgba(132, 204, 22, 0.35)',
+		fontHeading: "'Special Elite', system-ui",
+		fontBody: "'Inter', sans-serif"
+	},
+	espionaje: {
+		label: 'Espionaje',
+		gradient: 'linear-gradient(135deg, #22c55e 0%, #15803d 45%, #091912 100%)',
+		bgMain: '#07120c',
+		bgCard: 'rgba(14, 36, 24, 0.65)',
+		accent: '#4ade80',
+		glow: 'rgba(74, 222, 128, 0.35)',
+		fontHeading: "'Share Tech Mono', monospace",
+		fontBody: "'Share Tech Mono', monospace"
+	},
+	golpe_maestro: {
+		label: 'Golpe Maestro',
+		gradient: 'linear-gradient(135deg, #facc15 0%, #b45309 45%, #dc2626 100%)',
+		bgMain: '#16110b',
+		bgCard: 'rgba(41, 28, 18, 0.65)',
+		accent: '#fde047',
+		glow: 'rgba(250, 204, 21, 0.35)',
+		fontHeading: "'Orbitron', sans-serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	noir: {
+		label: 'Noir',
+		gradient: 'linear-gradient(135deg, #e4e4e7 0%, #71717a 50%, #18181b 100%)',
+		bgMain: '#09090b',
+		bgCard: 'rgba(24, 24, 27, 0.75)',
+		accent: '#d4d4d8',
+		glow: 'rgba(212, 212, 216, 0.28)',
+		fontHeading: "'Special Elite', monospace",
+		fontBody: "'Special Elite', monospace"
+	},
+	salvaje_oeste: {
+		label: 'Salvaje Oeste',
+		gradient: 'linear-gradient(135deg, #b45309 0%, #78350f 50%, #d6b283 100%)',
+		bgMain: '#18110b',
+		bgCard: 'rgba(46, 31, 19, 0.7)',
+		accent: '#e0a96d',
+		glow: 'rgba(224, 169, 109, 0.35)',
+		fontHeading: "'Rye', serif",
+		fontBody: "'Special Elite', serif"
+	},
+	terror_cosmico: {
+		label: 'Terror Cósmico',
+		gradient: 'linear-gradient(135deg, #0d9488 0%, #115e59 45%, #9333ea 100%)',
+		bgMain: '#091318',
+		bgCard: 'rgba(17, 36, 46, 0.65)',
+		accent: '#2dd4bf',
+		glow: 'rgba(147, 51, 234, 0.4)',
+		fontHeading: "'Cormorant Unicase', serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	guerra: {
+		label: 'Guerra',
+		gradient: 'linear-gradient(135deg, #4d7c0f 0%, #3f6212 45%, #d6c59a 100%)',
+		bgMain: '#0f140c',
+		bgCard: 'rgba(28, 38, 22, 0.72)',
+		accent: '#d6c59a',
+		glow: 'rgba(214, 197, 154, 0.32)',
+		fontHeading: "'Chakra Petch', sans-serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	desastre_natural: {
+		label: 'Desastre Natural',
+		gradient: 'linear-gradient(135deg, #78350f 0%, #ea580c 50%, #e0f2fe 100%)',
+		bgMain: '#14100d',
+		bgCard: 'rgba(38, 28, 21, 0.72)',
+		accent: '#f97316',
+		glow: 'rgba(249, 115, 22, 0.38)',
+		fontHeading: "'Chakra Petch', sans-serif",
+		fontBody: "'Inter', sans-serif"
+	},
+	comedia_romantica: {
+		label: 'Comedia Romántica',
+		gradient: 'linear-gradient(135deg, #f43f5e 0%, #ec4899 50%, #fbbf24 100%)',
+		bgMain: '#1c1017',
+		bgCard: 'rgba(51, 24, 38, 0.65)',
+		accent: '#fb7185',
+		glow: 'rgba(251, 113, 133, 0.35)',
+		fontHeading: "'Pacifico', cursive",
+		fontBody: "'Inter', sans-serif"
+	},
+	caos_comedia: {
+		label: 'Caos y Comedia',
+		gradient: 'linear-gradient(135deg, #facc15 0%, #f97316 50%, #ec4899 100%)',
+		bgMain: '#1a140c',
+		bgCard: 'rgba(48, 34, 18, 0.65)',
+		accent: '#facc15',
+		glow: 'rgba(250, 204, 21, 0.35)',
+		fontHeading: "'Bangers', system-ui",
+		fontBody: "'Inter', sans-serif"
+	}
+} as const;
+
+export type SkinPaletteKey = keyof typeof SKIN_PALETTES;
+
 export interface SkinTokens {
-	id: string;
+	id: SkinPaletteKey;
 	valor: string;
 	grupo: string;
+	label: string;
 	etiqueta: string;
+	gradient: string;
+	bgMain: string;
+	bgCard: string;
 	bgBase: string;
 	bgGradient: string;
 	glassBg: string;
@@ -13,364 +242,219 @@ export interface SkinTokens {
 	textMain: string;
 	textMuted: string;
 	glow: string;
+	fontHeading: string;
+	fontBody: string;
 }
 
-export const DEFAULT_SKIN: SkinTokens = {
-	id: 'default',
+interface SkinMeta {
+	id: SkinPaletteKey;
+	valor: string;
+	grupo: string;
+	secondary: string;
+	bgTop: string;
+	textMain?: string;
+	textMuted?: string;
+}
+
+/** Construye la configuración completa de un skin combinando su paleta maestra y metadatos UI. */
+function buildSkinTokens(meta: SkinMeta): SkinTokens {
+	const palette = SKIN_PALETTES[meta.id];
+	return {
+		id: meta.id,
+		valor: meta.valor,
+		grupo: meta.grupo,
+		label: palette.label,
+		etiqueta: palette.label,
+		gradient: palette.gradient,
+		bgMain: palette.bgMain,
+		bgCard: palette.bgCard,
+		bgBase: palette.bgMain,
+		bgGradient: `radial-gradient(circle at top right, ${meta.bgTop} 0%, ${palette.bgMain} 100%)`,
+		glassBg: palette.bgCard,
+		glassBorder: `color-mix(in srgb, ${palette.accent} 28%, transparent)`,
+		primary: palette.accent,
+		secondary: meta.secondary,
+		accent: palette.accent,
+		textMain: meta.textMain ?? '#f1f5f9',
+		textMuted: meta.textMuted ?? '#94a3b8',
+		glow: palette.glow,
+		fontHeading: palette.fontHeading,
+		fontBody: palette.fontBody
+	};
+}
+
+export const DEFAULT_SKIN: SkinTokens = buildSkinTokens({
+	id: 'estandar',
 	valor: 'default',
 	grupo: 'Sistema',
-	etiqueta: 'Estándar',
-	bgBase: '#0d1413',
-	bgGradient: 'radial-gradient(circle at top right, #142421 0%, #090e0d 100%)',
-	glassBg: 'rgba(19, 30, 28, 0.72)',
-	glassBorder: 'rgba(38, 176, 141, 0.24)',
-	primary: '#26b08d',
-	secondary: '#178267',
-	accent: '#4a9eb8',
-	textMain: '#eaeff2',
-	textMuted: '#8fa1b0',
-	glow: '0 0 15px rgba(38, 176, 141, 0.22)'
-};
+	secondary: '#059669',
+	bgTop: '#132a27'
+});
 
-export const THEME_SKINS: Record<string, SkinTokens> = {
+const THEME_SKIN_DEFS: SkinMeta[] = [
 	// --- FANTASÍA Y MITOLOGÍA ---
-	'Alta Fantasía y Magia': {
+	{
 		id: 'fantasia',
 		valor: 'Alta Fantasía y Magia',
 		grupo: 'Fantasía y Mitología',
-		etiqueta: 'Fantasía',
-		bgBase: '#0c0a14',
-		bgGradient: 'radial-gradient(circle at top right, #1e1633 0%, #08060e 100%)',
-		glassBg: 'rgba(20, 16, 34, 0.74)',
-		glassBorder: 'rgba(157, 124, 196, 0.25)',
-		primary: '#9d7cc4',
-		secondary: '#73539c',
-		accent: '#c29d61',
-		textMain: '#ede9f5',
-		textMuted: '#a39bb5',
-		glow: '0 0 16px rgba(157, 124, 196, 0.24)'
+		secondary: '#7c3aed',
+		bgTop: '#261442'
 	},
-	'Cruzada Medieval': {
+	{
 		id: 'medieval',
 		valor: 'Cruzada Medieval',
 		grupo: 'Fantasía y Mitología',
-		etiqueta: 'Medieval',
-		bgBase: '#110f0d',
-		bgGradient: 'radial-gradient(circle at top right, #241b15 0%, #0a0908 100%)',
-		glassBg: 'rgba(26, 21, 18, 0.76)',
-		glassBorder: 'rgba(189, 140, 74, 0.26)',
-		primary: '#bd8c4a',
-		secondary: '#8c5830',
-		accent: '#9e4747',
-		textMain: '#edeae4',
-		textMuted: '#a69f95',
-		glow: '0 0 15px rgba(189, 140, 74, 0.22)'
+		secondary: '#991b1b',
+		bgTop: '#2f1916'
 	},
-	'Mitología Griega y el Olimpo': {
+	{
 		id: 'olimpo',
 		valor: 'Mitología Griega y el Olimpo',
 		grupo: 'Fantasía y Mitología',
-		etiqueta: 'Olimpo',
-		bgBase: '#0b111a',
-		bgGradient: 'radial-gradient(circle at top right, #17283d 0%, #070b12 100%)',
-		glassBg: 'rgba(16, 26, 40, 0.74)',
-		glassBorder: 'rgba(199, 166, 93, 0.26)',
-		primary: '#c7a65d',
-		secondary: '#4a7c9b',
-		accent: '#d4c39a',
-		textMain: '#edf1f5',
-		textMuted: '#9ab0c4',
-		glow: '0 0 16px rgba(199, 166, 93, 0.23)'
+		secondary: '#38bdf8',
+		bgTop: '#1c2b47'
 	},
-	'Dinastía Samurái': {
+	{
 		id: 'samurai',
 		valor: 'Dinastía Samurái',
 		grupo: 'Fantasía y Mitología',
-		etiqueta: 'Samurái',
-		bgBase: '#110a0c',
-		bgGradient: 'radial-gradient(circle at top right, #281217 0%, #090506 100%)',
-		glassBg: 'rgba(26, 15, 18, 0.76)',
-		glassBorder: 'rgba(196, 86, 98, 0.26)',
-		primary: '#c45662',
-		secondary: '#943843',
-		accent: '#b88b4a',
-		textMain: '#f2eaec',
-		textMuted: '#b39ca0',
-		glow: '0 0 16px rgba(196, 86, 98, 0.24)'
+		secondary: '#65a30d',
+		bgTop: '#2c1512',
+		textMain: '#f5efe6',
+		textMuted: '#c9b99a'
 	},
-	'Alquimia y Magia Arcana': {
+	{
 		id: 'alquimia',
 		valor: 'Alquimia y Magia Arcana',
 		grupo: 'Fantasía y Mitología',
-		etiqueta: 'Alquimia',
-		bgBase: '#091211',
-		bgGradient: 'radial-gradient(circle at top right, #122926 0%, #050b0a 100%)',
-		glassBg: 'rgba(14, 28, 26, 0.74)',
-		glassBorder: 'rgba(69, 163, 148, 0.26)',
-		primary: '#45a394',
-		secondary: '#2d7569',
-		accent: '#bd8b46',
-		textMain: '#e8f2f0',
-		textMuted: '#91afa9',
-		glow: '0 0 16px rgba(69, 163, 148, 0.24)'
+		secondary: '#047857',
+		bgTop: '#133025'
 	},
 	// --- CIENCIA FICCIÓN ---
-	'Cyberpunk y Neón': {
-		id: 'cyberpunk',
+	{
+		id: 'ciberespacio',
 		valor: 'Cyberpunk y Neón',
 		grupo: 'Ciencia Ficción',
-		etiqueta: 'Ciberespacio',
-		bgBase: '#090a14',
-		bgGradient: 'radial-gradient(circle at top right, #1c1433 0%, #05060c 100%)',
-		glassBg: 'rgba(16, 16, 32, 0.75)',
-		glassBorder: 'rgba(74, 168, 191, 0.28)',
-		primary: '#4aa8bf',
-		secondary: '#9e4b77',
-		accent: '#c49a45',
-		textMain: '#ebeef5',
-		textMuted: '#949eb8',
-		glow: '0 0 16px rgba(74, 168, 191, 0.26)'
+		secondary: '#ec4899',
+		bgTop: '#1a143d'
 	},
-	'Steampunk': {
+	{
 		id: 'steampunk',
 		valor: 'Steampunk',
 		grupo: 'Ciencia Ficción',
-		etiqueta: 'Steampunk',
-		bgBase: '#130f0b',
-		bgGradient: 'radial-gradient(circle at top right, #2b1e13 0%, #0a0806 100%)',
-		glassBg: 'rgba(30, 22, 15, 0.76)',
-		glassBorder: 'rgba(196, 138, 69, 0.26)',
-		primary: '#c48a45',
-		secondary: '#8c5a2b',
-		accent: '#52948b',
-		textMain: '#f0e8dc',
-		textMuted: '#b0a18f',
-		glow: '0 0 15px rgba(196, 138, 69, 0.23)'
+		secondary: '#0d9488',
+		bgTop: '#2e1f12'
 	},
-	'Guerra Espacial de Naves': {
+	{
 		id: 'espacio',
 		valor: 'Guerra Espacial de Naves',
 		grupo: 'Ciencia Ficción',
-		etiqueta: 'Espacio',
-		bgBase: '#070b12',
-		bgGradient: 'radial-gradient(circle at top right, #112036 0%, #04060a 100%)',
-		glassBg: 'rgba(13, 22, 36, 0.74)',
-		glassBorder: 'rgba(82, 149, 196, 0.26)',
-		primary: '#5295c4',
-		secondary: '#36678c',
-		accent: '#c27846',
-		textMain: '#eaf0f6',
-		textMuted: '#8fa4b8',
-		glow: '0 0 16px rgba(82, 149, 196, 0.24)'
+		secondary: '#4338ca',
+		bgTop: '#111b40'
 	},
-	'Combate de Mechas Gigantes': {
+	{
 		id: 'mechas',
 		valor: 'Combate de Mechas Gigantes',
 		grupo: 'Ciencia Ficción',
-		etiqueta: 'Mechas',
-		bgBase: '#0a0e14',
-		bgGradient: 'radial-gradient(circle at top right, #182330 0%, #06080c 100%)',
-		glassBg: 'rgba(18, 25, 34, 0.76)',
-		glassBorder: 'rgba(201, 122, 62, 0.26)',
-		primary: '#c97a3e',
-		secondary: '#417e8c',
-		accent: '#8765a6',
-		textMain: '#eceff2',
-		textMuted: '#93a0ad',
-		glow: '0 0 16px rgba(201, 122, 62, 0.24)'
+		secondary: '#f97316',
+		bgTop: '#13283d'
 	},
-	'Superhéroes y Cómics': {
+	{
 		id: 'superheroes',
 		valor: 'Superhéroes y Cómics',
 		grupo: 'Ciencia Ficción',
-		etiqueta: 'Superhéroes',
-		bgBase: '#090e1a',
-		bgGradient: 'radial-gradient(circle at top right, #162342 0%, #050811 100%)',
-		glassBg: 'rgba(15, 23, 44, 0.74)',
-		glassBorder: 'rgba(91, 137, 199, 0.27)',
-		primary: '#5b89c7',
-		secondary: '#9e4242',
-		accent: '#c4a24d',
-		textMain: '#edf1f7',
-		textMuted: '#98a8c2',
-		glow: '0 0 16px rgba(91, 137, 199, 0.24)'
+		secondary: '#dc2626',
+		bgTop: '#172347'
 	},
-	'Supervivencia Post-Apocalíptica': {
+	{
 		id: 'postapocaliptico',
 		valor: 'Supervivencia Post-Apocalíptica',
 		grupo: 'Ciencia Ficción',
-		etiqueta: 'Mundo Post-Apocaliptico',
-		bgBase: '#130e0a',
-		bgGradient: 'radial-gradient(circle at top right, #2b1d12 0%, #0a0806 100%)',
-		glassBg: 'rgba(28, 21, 15, 0.76)',
-		glassBorder: 'rgba(196, 134, 62, 0.26)',
-		primary: '#c4863e',
-		secondary: '#964f26',
-		accent: '#5c8fa3',
-		textMain: '#f0eae1',
-		textMuted: '#b09f8d',
-		glow: '0 0 15px rgba(196, 134, 62, 0.23)'
+		secondary: '#b45309',
+		bgTop: '#301d10'
 	},
 	// --- SUPERVIVENCIA Y ACCIÓN ---
-	'Apocalipsis Zombie': {
+	{
 		id: 'zombie',
 		valor: 'Apocalipsis Zombie',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Zombie',
-		bgBase: '#0b0f0a',
-		bgGradient: 'radial-gradient(circle at top right, #192416 0%, #060906 100%)',
-		glassBg: 'rgba(18, 25, 16, 0.76)',
-		glassBorder: 'rgba(122, 158, 66, 0.26)',
-		primary: '#7a9e42',
-		secondary: '#8f3939',
-		accent: '#b89748',
-		textMain: '#ebf0e8',
-		textMuted: '#9bab94',
-		glow: '0 0 15px rgba(122, 158, 66, 0.22)'
+		secondary: '#3f6212',
+		bgTop: '#1d2b14'
 	},
-	'Espionaje Táctico Moderno': {
+	{
 		id: 'espionaje',
 		valor: 'Espionaje Táctico Moderno',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Espionaje',
-		bgBase: '#080d11',
-		bgGradient: 'radial-gradient(circle at top right, #102029 0%, #040709 100%)',
-		glassBg: 'rgba(13, 23, 30, 0.76)',
-		glassBorder: 'rgba(56, 153, 122, 0.26)',
-		primary: '#38997a',
-		secondary: '#2d6b7a',
-		accent: '#b54a56',
-		textMain: '#e9eff2',
-		textMuted: '#8fa1ab',
-		glow: '0 0 15px rgba(56, 153, 122, 0.23)'
+		secondary: '#15803d',
+		bgTop: '#0d2618'
 	},
-	'Atraco de Guante Blanco y Estafa Maestra': {
-		id: 'atraco',
+	{
+		id: 'golpe_maestro',
 		valor: 'Atraco de Guante Blanco y Estafa Maestra',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Golpe Maestro',
-		bgBase: '#0b0a0e',
-		bgGradient: 'radial-gradient(circle at top right, #1f1926 0%, #060508 100%)',
-		glassBg: 'rgba(20, 18, 26, 0.76)',
-		glassBorder: 'rgba(199, 158, 74, 0.26)',
-		primary: '#c79e4a',
-		secondary: '#943b52',
-		accent: '#498c74',
-		textMain: '#f0edf2',
-		textMuted: '#a6a0ad',
-		glow: '0 0 15px rgba(199, 158, 74, 0.23)'
+		secondary: '#dc2626',
+		bgTop: '#2b1e12'
 	},
-	'Detective Noir': {
+	{
 		id: 'noir',
 		valor: 'Detective Noir',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Noir',
-		bgBase: '#09090b',
-		bgGradient: 'radial-gradient(circle at top right, #18171c 0%, #040405 100%)',
-		glassBg: 'rgba(18, 18, 22, 0.78)',
-		glassBorder: 'rgba(186, 186, 194, 0.22)',
-		primary: '#babac2',
-		secondary: '#8f3546',
-		accent: '#b58542',
-		textMain: '#ededf0',
-		textMuted: '#96969e',
-		glow: '0 0 15px rgba(186, 186, 194, 0.2)'
+		secondary: '#52525b',
+		bgTop: '#1f1f23',
+		textMain: '#f4f4f5',
+		textMuted: '#a1a1aa'
 	},
-	'El Salvaje Oeste': {
-		id: 'oeste',
+	{
+		id: 'salvaje_oeste',
 		valor: 'El Salvaje Oeste',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Salvaje Oeste',
-		bgBase: '#130c08',
-		bgGradient: 'radial-gradient(circle at top right, #2b1910 0%, #0a0604 100%)',
-		glassBg: 'rgba(29, 19, 13, 0.76)',
-		glassBorder: 'rgba(194, 130, 62, 0.26)',
-		primary: '#c2823e',
-		secondary: '#8f4624',
-		accent: '#c9b382',
-		textMain: '#f0e8df',
-		textMuted: '#b09d8b',
-		glow: '0 0 15px rgba(194, 130, 62, 0.23)'
+		secondary: '#92400e',
+		bgTop: '#2e1f14',
+		textMain: '#f4eadb',
+		textMuted: '#c8b399'
 	},
-	'Terror Cosmico': {
-		id: 'lovecraft',
+	{
+		id: 'terror_cosmico',
 		valor: 'Terror Cosmico',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Terror Cosmico',
-		bgBase: '#060b0e',
-		bgGradient: 'radial-gradient(circle at top right, #122126 0%, #040608 100%)',
-		glassBg: 'rgba(11, 22, 26, 0.76)',
-		glassBorder: 'rgba(62, 148, 128, 0.26)',
-		primary: '#3e9480',
-		secondary: '#7d438a',
-		accent: '#5da3b0',
-		textMain: '#e6f0ee',
-		textMuted: '#8aa6a0',
-		glow: '0 0 16px rgba(62, 148, 128, 0.24)'
+		secondary: '#9333ea',
+		bgTop: '#12262e'
 	},
-	'Guerra Mundia': {
+	{
 		id: 'guerra',
 		valor: 'Guerra Mundia',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Guerra',
-		bgBase: '#0d0f0b',
-		bgGradient: 'radial-gradient(circle at top right, #1d2218 0%, #070906 100%)',
-		glassBg: 'rgba(20, 24, 18, 0.76)',
-		glassBorder: 'rgba(143, 156, 120, 0.25)',
-		primary: '#8f9c78',
-		secondary: '#a67c3d',
-		accent: '#a84a4a',
-		textMain: '#ebede8',
-		textMuted: '#9ea396',
-		glow: '0 0 15px rgba(143, 156, 120, 0.22)'
+		secondary: '#4d7c0f',
+		bgTop: '#24301a',
+		textMain: '#f0ead6',
+		textMuted: '#b8b89c'
 	},
-	'Desastre Natural': {
-		id: 'desastre',
+	{
+		id: 'desastre_natural',
 		valor: 'Desastre Natural',
 		grupo: 'Supervivencia y Acción',
-		etiqueta: 'Desastre Matural',
-		bgBase: '#0c0f12',
-		bgGradient: 'radial-gradient(circle at top right, #241712 0%, #07090b 100%)',
-		glassBg: 'rgba(24, 19, 17, 0.76)',
-		glassBorder: 'rgba(196, 106, 56, 0.26)',
-		primary: '#c46a38',
-		secondary: '#4a7d99',
-		accent: '#c29b48',
-		textMain: '#f0ebe8',
-		textMuted: '#ad9b92',
-		glow: '0 0 16px rgba(196, 106, 56, 0.24)'
+		secondary: '#e0f2fe',
+		bgTop: '#2b1d13',
+		textMain: '#f8fafc',
+		textMuted: '#cbd5e1'
 	},
 	// --- HUMOR Y VIDA COTIDIANA ---
-	'Comedia Romántica y Torpeza Adorable': {
-		id: 'romantica',
+	{
+		id: 'comedia_romantica',
 		valor: 'Comedia Romántica y Torpeza Adorable',
 		grupo: 'Humor y Vida Cotidiana',
-		etiqueta: 'Comedia Romántica',
-		bgBase: '#130b14',
-		bgGradient: 'radial-gradient(circle at top right, #2b162e 0%, #0a060b 100%)',
-		glassBg: 'rgba(29, 16, 31, 0.74)',
-		glassBorder: 'rgba(196, 110, 148, 0.26)',
-		primary: '#c46e94',
-		secondary: '#b88c46',
-		accent: '#bd6878',
-		textMain: '#f2eaf0',
-		textMuted: '#b59aa9',
-		glow: '0 0 16px rgba(196, 110, 148, 0.24)'
+		secondary: '#ec4899',
+		bgTop: '#331826'
 	},
-	'Comedia Absurda y Caos Cotidiano': {
-		id: 'caos',
+	{
+		id: 'caos_comedia',
 		valor: 'Comedia Absurda y Caos Cotidiano',
 		grupo: 'Humor y Vida Cotidiana',
-		etiqueta: 'Caos y Comedia',
-		bgBase: '#110e18',
-		bgGradient: 'radial-gradient(circle at top right, #241c38 0%, #09070e 100%)',
-		glassBg: 'rgba(25, 20, 36, 0.74)',
-		glassBorder: 'rgba(199, 162, 68, 0.26)',
-		primary: '#c7a244',
-		secondary: '#b56275',
-		accent: '#529aa6',
-		textMain: '#f0edf5',
-		textMuted: '#a8a0b8',
-		glow: '0 0 16px rgba(199, 162, 68, 0.23)'
+		secondary: '#f97316',
+		bgTop: '#302212'
 	}
-};
+];
+
+export const THEME_SKINS: Record<string, SkinTokens> = Object.fromEntries(
+	THEME_SKIN_DEFS.map((def) => [def.valor, buildSkinTokens(def)])
+);

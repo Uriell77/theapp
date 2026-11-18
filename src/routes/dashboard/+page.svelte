@@ -272,7 +272,7 @@
 						if (result.type === 'success') {
 							isPanelOpen = false;
 							newTaskTitle = '';
-							newTaskTema = 'Guerra Espacial';
+							newTaskTema = 'Espacio';
 							newTaskNiveles = 3;
 							endDate = '';
 							milestones = [];

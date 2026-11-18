@@ -457,7 +457,7 @@
 				<strong>Modo Automático (Dinámico)</strong>
 				<small>
 					Usa el skin de tu temática más frecuente:
-					{autoSkin.id === 'default' ? 'aún sin proyectos (Estándar)' : autoSkin.etiqueta}
+					{autoSkin.id === 'estandar' ? 'aún sin proyectos (Estándar)' : autoSkin.etiqueta}
 				</small>
 			</span>
 			<span class="skin-check">{skinMode === 'auto' ? '✔' : ''}</span>
@@ -474,7 +474,7 @@
 						onclick={() => selectSkin(skin.valor)}
 						aria-label="Skin {skin.etiqueta}"
 					>
-						<div class="skin-swatch" style="background: linear-gradient(135deg, {skin.primary}, {skin.secondary}); box-shadow: {skin.glow};"></div>
+						<div class="skin-swatch" style="background: {skin.gradient}; box-shadow: 0 0 12px {skin.glow};"></div>
 						<strong class="skin-name">{skin.etiqueta}</strong>
 					</button>
 				{/each}

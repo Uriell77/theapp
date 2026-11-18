@@ -178,13 +178,13 @@
 		transition={{ duration: 0.2 }}
 		let:motion
 	>
-		<div use:motion class="glass-panel bento-card">
+		<div use:motion class="glass-panel bento-card stat-card">
 			<div class="card-header-bar">
 				<div class="card-title-group">
-					<svg width="15" height="15" viewBox="0 0 24 24" fill="var(--accent-primary)" style="flex-shrink: 0;">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="var(--stat-accent, var(--accent-primary))" style="flex-shrink: 0;">
 						<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
 					</svg>
-					<span class="card-title-text">Proyectos</span>
+					<span class="card-title-text stat-title">Proyectos</span>
 				</div>
 			</div>
 
@@ -228,13 +228,13 @@
 		transition={{ duration: 0.2, delay: 0.05 }}
 		let:motion
 	>
-		<div use:motion class="glass-panel bento-card">
+		<div use:motion class="glass-panel bento-card stat-card">
 			<div class="card-header-bar">
 				<div class="card-title-group">
-					<svg width="15" height="15" viewBox="0 0 24 24" fill="var(--accent-primary)" style="flex-shrink: 0;">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="var(--stat-accent, var(--accent-primary))" style="flex-shrink: 0;">
 						<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
 					</svg>
-					<span class="card-title-text">Estado de Tareas</span>
+					<span class="card-title-text stat-title">Estado de Tareas</span>
 				</div>
 			</div>
 
@@ -297,9 +297,10 @@
 	}
 
 	.card-title-text {
-		color: var(--text-muted);
+		color: var(--stat-muted, var(--text-muted));
 		font-size: 0.76rem;
 		font-weight: 600;
+		display: block;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -362,7 +363,7 @@
 	.ring-chart-inner {
 		width: 24px;
 		height: 24px;
-		background: #151f24;
+		background: var(--stat-ring-bg, #151f24);
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -372,7 +373,7 @@
 	.ring-chart-number {
 		font-size: 0.64rem;
 		font-weight: 700;
-		color: white;
+		color: var(--stat-text, white);
 		line-height: 1;
 	}
 
@@ -414,10 +415,11 @@
 		display: inline-block;
 		margin-right: 5px;
 		flex-shrink: 0;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22);
 	}
 
 	.stat-label {
-		color: var(--text-muted);
+		color: var(--stat-muted, var(--text-muted));
 		font-size: 0.69rem;
 		white-space: nowrap;
 		overflow: hidden;
@@ -433,27 +435,27 @@
 	}
 
 	.stat-count {
-		color: white;
+		color: var(--stat-text, white);
 		font-size: 0.72rem;
 		font-weight: 700;
 		margin-left: 6px;
 		flex-shrink: 0;
 	}
 
-	:global(.bento-card) {
+	:global(.bento-grid .bento-card) {
 		padding: 0.9rem !important;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
 		height: 100%;
-		border-radius: 18px !important;
+		border-radius: 18px;
 	}
 
 	@media (max-width: 480px) {
-		:global(.bento-card) {
+		:global(.bento-grid .bento-card) {
 			padding: 0.9rem !important;
-			border-radius: 16px !important;
+			border-radius: 16px;
 		}
 	}
 </style>

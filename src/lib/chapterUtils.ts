@@ -149,7 +149,7 @@ export function getGenreTypography(tema?: string | null): GenreTypographyConfig 
 	}
 
 	const skin = getSkinByValue(tema);
-	if (skin.id !== 'default') {
+	if (skin.id !== 'estandar') {
 		return {
 			...base,
 			accentColor: skin.primary,

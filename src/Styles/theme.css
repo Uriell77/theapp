@@ -1,21 +1,21 @@
-/* Tema UI Oscuro (Glassmorphism) + Bento Grid + Jerarquía Tipográfica de 4 Niveles */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Fredoka:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Orbitron:wght@600;700;800&family=Outfit:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700;800&display=swap');
+/* Tema UI Oscuro (Glassmorphism) + Bento Grid + Jerarquía Tipográfica Dinámica */
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:wght@600;700&family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Cormorant+Unicase:wght@700&family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=MedievalSharp&family=Orbitron:wght@600;700;800&family=Outfit:wght@500;600;700;800&family=Pacifico&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Reggae+One&family=Rye&family=Share+Tech+Mono&family=Space+Grotesk:wght@500;600;700&family=Special+Elite&family=Syne:wght@600;700;800&display=swap');
 
 :root {
-  --skin-bg-base: #0f1716;
-  --skin-bg-gradient: radial-gradient(circle at top right, #162b28 0%, #0b1110 100%);
-  --skin-glass-bg: rgba(22, 34, 32, 0.65);
-  --skin-glass-border: rgba(29, 209, 161, 0.25);
-  --skin-primary: #1dd1a1;
-  --skin-secondary: #10ac84;
-  --skin-accent: #48dbfb;
+  --skin-bg-base: #0f171a;
+  --skin-bg-gradient: radial-gradient(circle at top right, #132a27 0%, #0f171a 100%);
+  --skin-glass-bg: rgba(26, 46, 53, 0.65);
+  --skin-glass-border: rgba(52, 211, 153, 0.28);
+  --skin-primary: #34d399;
+  --skin-secondary: #059669;
+  --skin-accent: #34d399;
   --skin-text-main: #f1f5f9;
   --skin-text-muted: #94a3b8;
-  --skin-glow: 0 0 15px rgba(29, 209, 161, 0.25);
+  --skin-glow: 0 0 16px rgba(52, 211, 153, 0.35);
 
   --bg-main: var(--skin-bg-base);
   --bg-card: var(--skin-glass-bg);
-  --accent-glow: rgba(29, 209, 161, 0.35);
+  --accent-glow: rgba(52, 211, 153, 0.35);
 
   --bg-color: var(--bg-main);
   --card-bg: var(--bg-card);
@@ -26,15 +26,15 @@
   --text-muted: var(--skin-text-muted);
   --bg-gradient: var(--skin-bg-gradient);
 
+  /* === TIPOGRAFÍA DINÁMICA POR SKIN === */
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
   /* === JERARQUÍA TIPOGRÁFICA GLOBAL DE LA APP (4 NIVELES) === */
-  /* Nivel 1: Display / Encabezados Principales (H1, H2, Títulos de sección y marca) */
-  --font-hierarchy-display: 'Syne', 'Outfit', sans-serif;
-  /* Nivel 2: Subtítulos / Títulos de Tarjetas y Módulos (H3, H4, Card Titles) */
-  --font-hierarchy-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  /* Nivel 3: Cuerpo de Interfaz / Párrafos, Formularios y Descripciones */
-  --font-hierarchy-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  /* Nivel 4: Etiquetas Técnicas, Métricas, Badges, Botones y Contadores Numéricos */
-  --font-hierarchy-ui: 'Space Grotesk', 'Outfit', monospace, sans-serif;
+  --font-hierarchy-display: var(--font-heading, 'Inter', sans-serif);
+  --font-hierarchy-heading: var(--font-heading, 'Inter', sans-serif);
+  --font-hierarchy-body: var(--font-body, 'Inter', sans-serif);
+  --font-hierarchy-ui: var(--font-heading, 'Inter', sans-serif);
 
   /* === FUENTES LITERARIAS Y DE GÉNERO (SLIDING PANEL / MODO LIBRO) === */
   --font-genre-fantasy: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
@@ -51,16 +51,52 @@
 }
 
 body {
-  background-color: var(--bg-color);
+  background-color: var(--bg-main);
   background-image: var(--bg-gradient);
   color: var(--text-main);
-  font-family: var(--font-hierarchy-body);
+  font-family: var(--font-body, 'Inter', sans-serif);
   min-height: 100vh;
   margin: 0;
   padding-bottom: 90px; /* Espacio para el Bottom Nav */
 }
 
-/* Reglas globales de jerarquía tipográfica en toda la aplicación */
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body, 'Inter', sans-serif);
+}
+
+/* Reglas globales de jerarquía tipográfica y alineación vertical en toda la aplicación */
+h1,
+h2,
+h3,
+h4,
+.title,
+.subtitle {
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.stat-title,
+.card-header-title,
+.button,
+.pill-nav-item,
+.nav-pill,
+.btn-primary,
+.btn-outline,
+.profile-btn,
+.badge-pill {
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
 h1,
 h2,
 .title.is-1,
@@ -90,7 +126,6 @@ textarea,
   font-family: var(--font-hierarchy-body);
 }
 
-button,
 .tag,
 .badge-pill,
 .nav-item,
@@ -293,7 +328,12 @@ button,
   text-decoration: none;
   transition: all 0.2s;
   font-weight: 500;
-  display: block;
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .nav-pill.active {
@@ -312,8 +352,12 @@ button,
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  display: flex;
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  vertical-align: middle;
   gap: 6px;
   cursor: pointer;
   text-decoration: none;
@@ -332,6 +376,12 @@ button,
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 700;
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .app-container {
@@ -352,9 +402,12 @@ button,
   letter-spacing: 0.02em;
   box-shadow: 0 2px 8px var(--accent-glow);
   font-weight: 600;
-  display: flex;
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
+  vertical-align: middle;
   gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -375,6 +428,12 @@ button,
   font-size: 0.85rem;
   letter-spacing: 0.02em;
   font-weight: 600;
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
   text-align: center;
   cursor: pointer;
   text-decoration: none;
@@ -505,5 +564,550 @@ button,
     animation: none;
   }
 }
+
+/* ============================================================================
+   PASO 4: APARIENCIA TEMÁTICA EXCLUSIVA PARA TARJETAS DE ESTADÍSTICAS (.stat-card)
+   ============================================================================ */
+
+/* Garantizar que el contenido interno quede sobre la marca de agua y texturas */
+.stat-card > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* Marca de agua traslúcida por defecto para todas las tarjetas de estadísticas */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  width: 68px;
+  height: 68px;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 1;
+  background-repeat: no-repeat;
+  background-position: bottom right;
+  background-size: contain;
+}
+
+/* Suprimir reflejo diagonal genérico en tarjetas temáticas texturizadas/papel */
+[data-theme="samurai"] .stat-card::before,
+[data-theme="espionaje"] .stat-card::before,
+[data-theme="salvaje_oeste"] .stat-card::before,
+[data-theme="noir"] .stat-card::before,
+[data-theme="golpe_maestro"] .stat-card::before,
+[data-theme="comedia_romantica"] .stat-card::before,
+[data-theme="caos_comedia"] .stat-card::before,
+[data-theme="superheroes"] .stat-card::before,
+[data-theme="postapocaliptico"] .stat-card::before,
+[data-theme="medieval"] .stat-card::before,
+[data-theme="olimpo"] .stat-card::before,
+[data-theme="guerra"] .stat-card::before,
+[data-theme="desastre_natural"] .stat-card::before {
+  display: none;
+}
+
+/* 0. Estándar - Brújula de Precisión */
+[data-theme="estandar"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%2334d399' stroke-width='2.5'%3E%3Ccircle cx='32' cy='32' r='24'/%3E%3Cpolygon points='32,12 38,32 32,52 26,32' fill='%2334d399'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%230f171a'/%3E%3C/svg%3E");
+}
+
+/* 1. Samurái - Papiro Antiguo de Bambú con Bordes Quemados y Sol Rojo */
+[data-theme="samurai"] .stat-card,
+html[data-theme="samurai"] .bento-card.stat-card {
+  background:
+    radial-gradient(circle at 82% 22%, rgba(220, 38, 38, 0.24) 0%, transparent 45%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(101, 163, 13, 0.05) 0px,
+      rgba(101, 163, 13, 0.05) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    radial-gradient(circle at center, #e6d8ad 0%, #c8b27a 68%, #8c663b 100%);
+  color: #261107;
+  border-top: 5px solid #3f4f22;
+  border-bottom: 5px solid #261107;
+  border-left: 2px solid #261107;
+  border-right: 2px solid #261107;
+  border-radius: 6px 3px 7px 4px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 0 18px rgba(28, 12, 4, 0.85),
+    inset 0 0 32px rgba(92, 34, 10, 0.55),
+    0 8px 20px rgba(0, 0, 0, 0.5);
+  --stat-text: #261107;
+  --stat-muted: #4b2d16;
+  --stat-accent: #b91c1c;
+  --stat-ring-bg: #dfd0a0;
+}
+
+[data-theme="samurai"] .stat-card::after {
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23991b1b' stroke-width='3'%3E%3Ccircle cx='32' cy='22' r='11' fill='%23dc2626' stroke='none'/%3E%3Cpath d='M12 22h40M16 30h32M22 22v30M42 22v30' stroke='%23261107' stroke-linecap='round'/%3E%3Cpath d='M54 10v44M54 22l6-4M54 36l6-4' stroke='%233f6212' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* 2. Espionaje - Monitor de Consola CRT */
+[data-theme="espionaje"] .stat-card,
+html[data-theme="espionaje"] .bento-card.stat-card {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(34, 197, 94, 0.07) 0px,
+      rgba(34, 197, 94, 0.07) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(circle, #0d2b1a 0%, #041109 100%);
+  border: 2px solid #22c55e;
+  border-radius: 6px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 18px rgba(34, 197, 94, 0.35), 0 8px 20px rgba(0, 0, 0, 0.45);
+  --stat-text: #dcfce7;
+  --stat-muted: #86efac;
+  --stat-accent: #4ade80;
+  --stat-ring-bg: #041109;
+}
+
+[data-theme="espionaje"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%234ade80' stroke-width='2.5'%3E%3Ccircle cx='32' cy='32' r='22'/%3E%3Ccircle cx='32' cy='32' r='12'/%3E%3Cpath d='M32 6v12M32 46v12M6 32h12M46 32h12'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%234ade80'/%3E%3C/svg%3E");
+}
+
+/* 3. Espacio - Puente de Nave Espacial */
+[data-theme="espacio"] .stat-card,
+html[data-theme="espacio"] .bento-card.stat-card {
+  clip-path: polygon(
+    0 10px,
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+  background: linear-gradient(180deg, rgba(30, 58, 138, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid #60a5fa;
+  border-radius: 0;
+  box-shadow: inset 0 0 15px rgba(96, 165, 250, 0.3);
+  --stat-ring-bg: #091128;
+}
+
+[data-theme="espacio"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23818cf8' stroke-width='2.5'%3E%3Ccircle cx='32' cy='32' r='14' fill='%23818cf8' fill-opacity='0.25'/%3E%3Cellipse cx='32' cy='32' rx='28' ry='9' transform='rotate(-22 32 32)'/%3E%3Ccircle cx='14' cy='14' r='2' fill='%23818cf8'/%3E%3Ccircle cx='50' cy='50' r='2' fill='%23818cf8'/%3E%3C/svg%3E");
+}
+
+/* 4. Mechas - HUD Cabina Táctica */
+[data-theme="mechas"] .stat-card,
+html[data-theme="mechas"] .bento-card.stat-card {
+  clip-path: polygon(
+    0 12px,
+    12px 0,
+    100% 0,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    0 100%
+  );
+  background: rgba(11, 25, 44, 0.85);
+  border-top: 1px solid rgba(56, 189, 248, 0.4);
+  border-bottom: 1px solid rgba(249, 115, 22, 0.4);
+  border-left: 4px solid #f97316;
+  border-right: 4px solid #0ea5e9;
+  border-radius: 0;
+  box-shadow: inset 0 0 14px rgba(14, 165, 233, 0.22);
+  --stat-ring-bg: #091526;
+}
+
+[data-theme="mechas"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%2338bdf8' stroke-width='2.5'%3E%3Cpolygon points='32,8 54,20 54,44 32,56 10,44 10,20'/%3E%3Cpath d='M18 28h28l-6 10H24z' fill='%23f97316' fill-opacity='0.45' stroke='%23f97316'/%3E%3Cpath d='M32 8v10M10 20l10 6M54 20l-10 6'/%3E%3C/svg%3E");
+}
+
+/* 5. Fantasía - Grimorio Arcano */
+[data-theme="fantasia"] .stat-card,
+html[data-theme="fantasia"] .bento-card.stat-card {
+  background: linear-gradient(145deg, rgba(46, 22, 82, 0.85) 0%, rgba(19, 13, 33, 0.92) 100%);
+  border: 2px double #c084fc;
+  border-radius: 14px;
+  box-shadow: inset 0 0 14px rgba(168, 85, 247, 0.3), 0 8px 22px rgba(0, 0, 0, 0.4);
+  --stat-ring-bg: #160e29;
+}
+
+[data-theme="fantasia"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23c084fc' stroke-width='2.5'%3E%3Cpolygon points='32,6 44,24 38,54 26,54 20,24' fill='%23c084fc' fill-opacity='0.2'/%3E%3Cpath d='M32 6v48M20 24h24M10 14l4 4M54 14l-4 4'/%3E%3C/svg%3E");
+}
+
+/* 6. Olimpo - Nubes Celestiales del Monte Olimpo */
+[data-theme="olimpo"] .stat-card,
+html[data-theme="olimpo"] .bento-card.stat-card {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.96) 0%, rgba(241, 245, 249, 0.88) 38%, transparent 68%),
+    radial-gradient(circle at 82% 28%, rgba(254, 243, 199, 0.92) 0%, rgba(224, 242, 254, 0.84) 45%, transparent 72%),
+    radial-gradient(circle at 50% 92%, rgba(255, 255, 255, 0.92) 0%, transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #e0f2fe 58%, #fef3c7 100%);
+  color: #0f172a;
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.95),
+    inset 0 -4px 12px rgba(186, 230, 253, 0.65),
+    0 8px 22px rgba(14, 116, 144, 0.22);
+  --stat-text: #0f172a;
+  --stat-muted: #334155;
+  --stat-accent: #b45309;
+  --stat-ring-bg: #f8fafc;
+}
+
+[data-theme="olimpo"] .stat-card::after {
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23b45309' stroke-width='2.5'%3E%3Cpath d='M16 46a10 10 0 0 1-2-19.8A13 13 0 0 1 39 22a11 11 0 0 1 9 19H16z' fill='%23fde68a' fill-opacity='0.45'/%3E%3Cpath d='M35 10l-7 14h8l-6 14' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* 7. Medieval - Acero Forjado Metalizado (Espadas y Armaduras) */
+[data-theme="medieval"] .stat-card,
+html[data-theme="medieval"] .bento-card.stat-card {
+  background:
+    linear-gradient(
+      135deg,
+      #2b3038 0%,
+      #525b69 24%,
+      #1f242b 50%,
+      #6b7685 76%,
+      #1b1f26 100%
+    );
+  color: #f1f5f9;
+  border: 2px solid #9ca3af;
+  border-radius: 8px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.45),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.75),
+    0 8px 20px rgba(0, 0, 0, 0.45);
+  --stat-text: #f8fafc;
+  --stat-muted: #cbd5e1;
+  --stat-accent: #e2e8f0;
+  --stat-ring-bg: #1f242b;
+}
+
+[data-theme="medieval"] .stat-card::after {
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23e2e8f0' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M14 50L50 14M42 12l10 2-2 10M12 42l10 10'/%3E%3Cpath d='M50 50L14 14M22 12l-10 2 2 10M52 42L42 52'/%3E%3C/svg%3E");
+}
+
+/* 8. Steampunk - Placa de Bronce Remachada */
+[data-theme="steampunk"] .stat-card,
+html[data-theme="steampunk"] .bento-card.stat-card {
+  background: radial-gradient(circle, #3b2313 0%, #1c1108 100%);
+  border: 2px ridge #d97706;
+  border-radius: 10px;
+  box-shadow: inset 0 0 14px rgba(217, 119, 6, 0.28), 0 8px 20px rgba(0, 0, 0, 0.45);
+  --stat-ring-bg: #1c1108;
+}
+
+[data-theme="steampunk"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23fbbf24' stroke-width='2.5'%3E%3Ccircle cx='32' cy='32' r='12'/%3E%3Ccircle cx='32' cy='32' r='5'/%3E%3Cpath d='M32 10v6M32 48v6M10 32h6M48 32h6M16 16l4 4M44 44l4 4M48 16l-4 4M20 44l-4 4' stroke-width='4'/%3E%3C/svg%3E");
+}
+
+/* 9. Salvaje Oeste - Polvo del Desierto y Tipografía Vaquera */
+[data-theme="salvaje_oeste"] .stat-card,
+html[data-theme="salvaje_oeste"] .bento-card.stat-card {
+  background:
+    radial-gradient(rgba(92, 44, 12, 0.16) 1px, transparent 1px),
+    radial-gradient(rgba(255, 245, 224, 0.24) 1px, transparent 1px),
+    repeating-linear-gradient(
+      -8deg,
+      rgba(255, 248, 231, 0.08) 0px,
+      rgba(255, 248, 231, 0.08) 4px,
+      transparent 4px,
+      transparent 12px
+    ),
+    linear-gradient(135deg, #d8b788 0%, #c1945c 52%, #a87c4f 100%);
+  background-size: 16px 16px, 22px 22px, 100% 100%, 100% 100%;
+  background-position: 0 0, 8px 8px, 0 0, 0 0;
+  color: #2c1606;
+  border: 3px dashed #5c2c0c;
+  border-radius: 6px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 0 20px rgba(92, 44, 12, 0.32),
+    0 8px 20px rgba(0, 0, 0, 0.45);
+  --stat-text: #2c1606;
+  --stat-muted: #4d260b;
+  --stat-accent: #7c2d12;
+  --stat-ring-bg: #d8b788;
+}
+
+[data-theme="salvaje_oeste"] .stat-card .stat-title,
+[data-theme="salvaje_oeste"] .stat-card .stat-count,
+[data-theme="salvaje_oeste"] .stat-card .ring-chart-number {
+  font-family: 'Rye', serif;
+}
+
+[data-theme="salvaje_oeste"] .stat-card::after {
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23451a03' stroke-width='2.5'%3E%3Cpolygon points='32,8 38,22 54,22 41,31 46,46 32,37 18,46 23,31 10,22 26,22' fill='%237c2d12' fill-opacity='0.22'/%3E%3Ccircle cx='32' cy='29' r='5'/%3E%3C/svg%3E");
+}
+
+/* 10. Alquimia - Manuscrito Arcano Esmeralda y Oro */
+[data-theme="alquimia"] .stat-card,
+html[data-theme="alquimia"] .bento-card.stat-card {
+  background: radial-gradient(circle at top, #123327 0%, #091813 100%);
+  border: 1.5px solid #facc15;
+  border-radius: 12px;
+  box-shadow: inset 0 0 16px rgba(16, 185, 129, 0.28), 0 8px 20px rgba(0, 0, 0, 0.4);
+  --stat-ring-bg: #0b1914;
+}
+
+[data-theme="alquimia"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23facc15' stroke-width='2.5'%3E%3Cpath d='M26 10h12M28 10v14L14 48a4 4 0 0 0 3.5 6h29a4 4 0 0 0 3.5-6L36 24V10'/%3E%3Cpath d='M18 42h28' stroke='%2310b981'/%3E%3Ccircle cx='30' cy='34' r='2' fill='%23facc15'/%3E%3C/svg%3E");
+}
+
+/* 11. Ciberespacio - Borde Neón Asimétrico */
+[data-theme="ciberespacio"] .stat-card,
+html[data-theme="ciberespacio"] .bento-card.stat-card {
+  background: linear-gradient(160deg, rgba(17, 25, 54, 0.88) 0%, rgba(9, 13, 26, 0.94) 100%);
+  border-left: 1px solid rgba(34, 211, 238, 0.3);
+  border-right: 1px solid rgba(236, 72, 153, 0.3);
+  border-top: 2px solid #22d3ee;
+  border-bottom: 2px solid #ec4899;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
+  --stat-ring-bg: #090d1a;
+}
+
+[data-theme="ciberespacio"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%2322d3ee' stroke-width='2.5'%3E%3Crect x='20' y='20' width='24' height='24' rx='3'/%3E%3Crect x='27' y='27' width='10' height='10' fill='%23ec4899' stroke='%23ec4899'/%3E%3Cpath d='M26 10v10M38 10v10M26 44v10M38 44v10M10 26h10M10 38h10M44 26h10M44 38h10'/%3E%3C/svg%3E");
+}
+
+/* 12. Superhéroes - Viñeta Cómic Halftone */
+[data-theme="superheroes"] .stat-card,
+html[data-theme="superheroes"] .bento-card.stat-card {
+  background: #131c36;
+  background-image: radial-gradient(rgba(96, 165, 250, 0.14) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+  border: 2px solid #000;
+  border-radius: 10px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 4px 4px 0px #ef4444;
+  --stat-ring-bg: #0d1324;
+}
+
+[data-theme="superheroes"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='%23facc15' stroke='%2360a5fa' stroke-width='2.5'%3E%3Cpolygon points='36,6 14,36 30,36 26,58 50,26 34,26'/%3E%3C/svg%3E");
+}
+
+/* 13. Post-Apocalipsis - Chapa Oxidada Industrial */
+[data-theme="postapocaliptico"] .stat-card,
+html[data-theme="postapocaliptico"] .bento-card.stat-card {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(234, 88, 12, 0.08) 0px,
+      rgba(234, 88, 12, 0.08) 8px,
+      transparent 8px,
+      transparent 16px
+    ),
+    linear-gradient(180deg, #2b1a10 0%, #140c07 100%);
+  border: 2px solid #ea580c;
+  border-radius: 6px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 14px rgba(234, 88, 12, 0.25);
+  --stat-ring-bg: #1a110a;
+}
+
+[data-theme="postapocaliptico"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23fb923c' stroke-width='2.5'%3E%3Ccircle cx='32' cy='32' r='22'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23fb923c'/%3E%3Cpath d='M32 25L22 12M32 25L42 12M26 36l-14 4M38 36l14 4M32 39v15' stroke-width='4'/%3E%3C/svg%3E");
+}
+
+/* 14. Zombie - Alerta Biológica Oxidada */
+[data-theme="zombie"] .stat-card,
+html[data-theme="zombie"] .bento-card.stat-card {
+  background: radial-gradient(circle, #1f2912 0%, #0f1409 100%);
+  border: 2px dashed #84cc16;
+  border-radius: 10px;
+  box-shadow: inset 0 0 14px rgba(132, 204, 22, 0.22);
+  --stat-ring-bg: #10170d;
+}
+
+[data-theme="zombie"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23a3e635' stroke-width='2.5'%3E%3Ccircle cx='32' cy='22' r='11'/%3E%3Ccircle cx='21' cy='40' r='11'/%3E%3Ccircle cx='43' cy='40' r='11'/%3E%3Ccircle cx='32' cy='34' r='5' fill='%23a3e635'/%3E%3C/svg%3E");
+}
+
+/* 15. Golpe Maestro - Plano con Cuadrícula Láser Roja */
+[data-theme="golpe_maestro"] .stat-card,
+html[data-theme="golpe_maestro"] .bento-card.stat-card {
+  background: #16110b;
+  background-image:
+    linear-gradient(rgba(220, 38, 38, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220, 38, 38, 0.12) 1px, transparent 1px);
+  background-size: 14px 14px;
+  border: 1px solid #facc15;
+  border-radius: 10px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 14px rgba(250, 204, 21, 0.2);
+  --stat-ring-bg: #16110b;
+}
+
+[data-theme="golpe_maestro"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23fde047' stroke-width='2.5'%3E%3Cpolygon points='18,14 46,14 56,28 32,54 8,28' fill='%23fde047' fill-opacity='0.18'/%3E%3Cpath d='M8 28h48M18 14l8 14 6 26 6-26 8-14'/%3E%3C/svg%3E");
+}
+
+/* 16. Noir - Monocromático Negros y Grises con Persiana Nocturna */
+[data-theme="noir"] .stat-card,
+html[data-theme="noir"] .bento-card.stat-card {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 2px,
+      rgba(0, 0, 0, 0.35) 2px,
+      rgba(0, 0, 0, 0.35) 8px
+    ),
+    linear-gradient(135deg, #27272a 0%, #09090b 100%);
+  color: #f4f4f5;
+  border: 1px solid #52525b;
+  border-left: 5px solid #d4d4d8;
+  border-radius: 4px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.65), inset 0 0 18px rgba(0, 0, 0, 0.7);
+  --stat-text: #f4f4f5;
+  --stat-muted: #a1a1aa;
+  --stat-accent: #e4e4e7;
+  --stat-ring-bg: #111113;
+}
+
+[data-theme="noir"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23d4d4d8' stroke-width='2.5'%3E%3Cpath d='M12 34c10 4 30 4 40 0M18 34l4-16c4-3 16-3 20 0l4 16' fill='%23d4d4d8' fill-opacity='0.2'/%3E%3Ccircle cx='39' cy='46' r='8'/%3E%3Cpath d='M45 52l7 7' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* 17. Terror Cósmico - Losa Abisal Bioluminiscente */
+[data-theme="terror_cosmico"] .stat-card,
+html[data-theme="terror_cosmico"] .bento-card.stat-card {
+  background: linear-gradient(155deg, rgba(13, 34, 42, 0.9) 0%, rgba(7, 14, 22, 0.95) 100%);
+  border: 1px solid #2dd4bf;
+  border-radius: 14px;
+  box-shadow: inset 0 0 20px rgba(147, 51, 234, 0.4);
+  --stat-ring-bg: #091318;
+}
+
+[data-theme="terror_cosmico"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%232dd4bf' stroke-width='2.5'%3E%3Cpath d='M8 32c6-12 16-18 24-18s18 6 24 18c-6 12-16 18-24 18S14 44 8 32z'/%3E%3Ccircle cx='32' cy='32' r='8'/%3E%3Cellipse cx='32' cy='32' rx='2.5' ry='6' fill='%239333ea' stroke='none'/%3E%3C/svg%3E");
+}
+
+/* 18. Guerra - Camuflaje Militar (Verdes y Beige) */
+[data-theme="guerra"] .stat-card,
+html[data-theme="guerra"] .bento-card.stat-card {
+  background:
+    radial-gradient(ellipse 38% 30% at 22% 28%, rgba(214, 197, 154, 0.24) 0%, rgba(214, 197, 154, 0.24) 70%, transparent 72%),
+    radial-gradient(ellipse 42% 34% at 78% 68%, rgba(75, 96, 50, 0.65) 0%, rgba(75, 96, 50, 0.65) 68%, transparent 70%),
+    radial-gradient(ellipse 34% 28% at 68% 20%, rgba(214, 197, 154, 0.18) 0%, rgba(214, 197, 154, 0.18) 65%, transparent 67%),
+    radial-gradient(ellipse 45% 36% at 30% 78%, rgba(47, 66, 34, 0.85) 0%, rgba(47, 66, 34, 0.85) 70%, transparent 72%),
+    linear-gradient(155deg, #24331a 0%, #1e2b16 55%, #162010 100%);
+  color: #f0ead6;
+  border: 1.5px solid #6b7f46;
+  border-left: 4px solid #d6c59a;
+  border-radius: 6px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.45);
+  --stat-text: #f0ead6;
+  --stat-muted: #c8bfa8;
+  --stat-accent: #d6c59a;
+  --stat-ring-bg: #162010;
+}
+
+[data-theme="guerra"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23d6c59a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 22l18-10 18 10M14 34l18-10 18 10M14 46l18-10 18 10'/%3E%3C/svg%3E");
+}
+
+/* 19. Desastre Natural - Mochila de Exploración (Tierra, Lava y Aire/Hielo) */
+[data-theme="desastre_natural"] .stat-card,
+html[data-theme="desastre_natural"] .bento-card.stat-card {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.14) 0px,
+      rgba(0, 0, 0, 0.14) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, #36281e 0%, #281d15 100%);
+  color: #f8fafc;
+  border: 2px dashed #d6c5a3;
+  border-top: 6px solid #5c4028;
+  border-radius: 10px 10px 14px 14px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 2px 0 #f97316,
+    inset 0 0 16px rgba(0, 0, 0, 0.55),
+    0 8px 20px rgba(0, 0, 0, 0.45);
+  --stat-text: #f8fafc;
+  --stat-muted: #d6c7b2;
+  --stat-accent: #f97316;
+  --stat-ring-bg: #221811;
+}
+
+[data-theme="desastre_natural"] .stat-card::after {
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23e0f2fe' stroke-width='2.5'%3E%3Crect x='16' y='18' width='32' height='36' rx='6'/%3E%3Cpath d='M24 18v-4a8 8 0 0 1 16 0v4M16 32h32'/%3E%3Crect x='27' y='28' width='10' height='8' rx='2' fill='%23f97316' stroke='%23f97316'/%3E%3C/svg%3E");
+}
+
+/* 20. Comedia Romántica - Postal Suave Pastel */
+[data-theme="comedia_romantica"] .stat-card,
+html[data-theme="comedia_romantica"] .bento-card.stat-card {
+  background: rgba(255, 228, 236, 0.92);
+  color: #831843;
+  border: 2px dashed #f472b6;
+  border-radius: 16px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 6px 18px rgba(244, 63, 94, 0.2);
+  --stat-text: #831843;
+  --stat-muted: #9d174d;
+  --stat-accent: #be185d;
+  --stat-ring-bg: #ffe4ec;
+}
+
+[data-theme="comedia_romantica"] .stat-card::after {
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='%23be185d'%3E%3Cpath d='M32 52S10 38 10 22a11 11 0 0 1 22-3 11 11 0 0 1 22 3c0 16-22 30-22 30z'/%3E%3C/svg%3E");
+}
+
+/* 21. Caos y Comedia - Viñeta Pop-Art con Puntos Halftone */
+[data-theme="caos_comedia"] .stat-card,
+html[data-theme="caos_comedia"] .bento-card.stat-card {
+  background: #1f170d;
+  background-image: radial-gradient(rgba(250, 204, 21, 0.15) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+  border: 3px solid #000;
+  border-radius: 10px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 4px 4px 0px #facc15;
+  --stat-ring-bg: #1a140c;
+}
+
+[data-theme="caos_comedia"] .stat-card::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='%23facc15' stroke='%23ec4899' stroke-width='2'%3E%3Cpolygon points='32,6 38,20 54,14 45,28 58,36 43,40 48,54 34,46 22,56 23,41 8,40 19,30 12,16 26,21'/%3E%3C/svg%3E");
+}
+
 
 
