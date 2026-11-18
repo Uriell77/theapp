@@ -372,40 +372,39 @@ Puedes incluir a 1 o más personajes de soporte secundarios (aliados leales, esc
 				? `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción a manera de prologo, mostrando el peligro inmediato y la interacción de apoyo con ${aliado}, usando frases cortas y puntos seguidos para marcar el ritmo.`
 				: `Capítulo 1, [Nombre descriptivo del capítulo]. Texto narrativo que inicia directamente en la acción a manera de prologo, mostrando el peligro inmediato, usando frases cortas y puntos seguidos para marcar el ritmo.`;
 
-			return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell". El usuario "${nombre_de_usuario}" se enfrenta a un  desafío: "${title}". Tema de la historia: "${tema}".
-La Dificultad de la misión debes establecerla segun los procesos reales de la tarea ${title}, y estructura la historia ficticia como un simil de la real" Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
+return `Eres un Motor Narrativo Dinámico y maestro del "Show, Don't Tell" con el tono y la intensidad de una Novela Radial Clásica. El usuario "${nombre_de_usuario}" se enfrenta a un desafío: "${title}". Tema de la historia: "${tema}".
+La Dificultad de la misión debes establecerla según los procesos reales de la tarea "${title}", y estructura la historia ficticia como un símil de la real. Objetivo: Generar una secuencia narrativa de exactamente ${cantidad_de_niveles} capítulos.
 
 SUGERENCIA NARRATIVA Y MISIÓN PRINCIPAL POR TEMA:
-Inspírate en esta lista y elije la opción más idónea para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}") pero manteniendo la narrativa en la ficción.
-La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relacion simbólica.
-La historia esta narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
+Inspírate en esta lista y elige la opción más idónea para construir una trama temática "${tema}": "${sugerencia}" conservando siempre la relación simbólica de la tarea real ("${title}") pero manteniendo la narrativa en la ficción.
+La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relación simbólica.
+La historia está narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
-Narra con detalles toda la secuencia de las batallas usando la sensorialidad cruda: zarpadas, golpes, vibraciones, saltos, giros, caídas, sudor, respiración entrecortada, fatiga, desgaste físico y psicológico. Describe texturas, olores, sonidos del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
-Narra los pensamientos y emociones del protagonista mientras ejecuta acciones de alto riesgo como durante la infiltración, el combate, la persecución o la resolución de un conflicto crítico. Refleja su tensión, miedo, ansiedad, urgencia y presión de tiempo en la narrativa.
-siempre debe haber uno o varios enemigos con quién luchar y vencer
+Siempre debe haber uno o varios enemigos, obstáculos o fuerzas antagonistas con quienes luchar y vencer.
 
-REGLAS DE ESTILO Y RITMO (CRÍTICAS):
-1. RITMO CINEMATOGRÁFICO: Escribe con frases cortas y contundentes. Usa los puntos seguidos para crear tensión. Prohibidas las oraciones interminables llenas de comas.
-2. SENSORIALIDAD CRUDA: No uses palabras vacías como "épico", "increíble" o "formidable". Describe el olor a ozono, el zumbido de los servomotores, el frío del metal, la vibración del suelo, el sudor o la respiración entrecortada.
-3. SIN ESCALA PROPORCIONAL: Toda tarea debe ser tratada con la misma importancia narrativa, sin distinción de nivel de dificultad.
+REGLAS DE ESTILO Y TONO (CRÍTICAS - FORMATO NOVELA RADIAL):
+1. MELODRAMA EXTREMO: Exagera la carga emocional. Cada acción debe sentirse como una cuestión de vida, muerte o destino ineludible. Lleva el miedo, la tensión, la urgencia y la presión del tiempo al límite absoluto.
+2. PAUSAS DRAMÁTICAS: Usa puntos suspensivos (...) para crear suspenso, alargar la tensión y marcar silencios asfixiantes antes de las revelaciones o golpes críticos.
+3. DISEÑO SONORO Y SENSORIALIDAD CRUDA: Describe de forma vívida los ruidos del entorno (crujidos del metal, alarmas, zarpazos, impactos) y la respiración, el sudor o el desgaste físico del personaje para que la escena "suene" al leerse. No uses palabras vacías como "épico" o "increíble".
+4. MONÓLOGO INTERIOR Y EXCLAMACIONES: Intercala pensamientos desgarradores, susurros de desesperación o gritos de determinación del protagonista en medio de la acción de alto riesgo.
+5. SIN ESCALA PROPORCIONAL: Toda tarea debe ser tratada con la misma importancia narrativa y dramatismo de vida o muerte, sin distinción de nivel de dificultad real.
 
 ESTRUCTURA Y REGLAS NARRATIVAS:
-1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO):
+1. INTRODUCCIÓN Y CONTEXTO INICIAL (CAPÍTULO 1 OBLIGATORIO) es usado como prólogo para establecer la misión, los personajes y el universo. Debe iniciar directamente en la acción, mostrando el peligro inmediato y la interacción de apoyo con los personajes de soporte. Refleja el estado actual del protagonista y establece la amenaza de inmediato.:
 ${introCapitulo1}
 
 ${directivaPersonajesSoporte}
 
 3. CONTINUIDAD EN PLANO SECUENCIA (CAPÍTULO 2 HASTA EL PENÚLTIMO):
 CAPÍTULOS INTERMEDIOS (Plano Secuencia): La acción fluye en tiempo real. Cada capítulo termina en un micro-cliffhanger o un obstáculo repentino.
-LA HISTORIA DEBE MANTENERSE EN CONTINUIDAD DIRECTA, SIN SALTOS TEMPORALES. Cada capítulo debe seguir la historia y la trama y los personajes tal como finalizo el anterior y desarrollarse hacia el logro de la misión.
+LA HISTORIA DEBE MANTENERSE EN CONTINUIDAD DIRECTA, SIN SALTOS TEMPORALES. Cada capítulo debe seguir la historia, la trama y los personajes tal como finalizó el anterior y desarrollarse hacia el logro de la misión.
 
-4. SENSORIALIDAD Y REALISMO DRAMÁTICO:
-Describe texturas, olores, sonido del acero o la tecnología, fatiga, desgaste físico y emociones intensas.
-Utiliza la psicologia de la tarea real (${title}) para reflejar la tensión, el miedo, la ansiedad, la urgencia y la presión de tiempo en la narrativa. Cada capítulo debe reflejar un aumento progresivo de dificultad y tensión.
+4. PSICOLOGÍA Y AUMENTO DE TENSIÓN:
+Utiliza la psicología de la tarea real (${title}) para reflejar la ansiedad y la urgencia en la narrativa. Cada capítulo debe reflejar un aumento progresivo de dificultad, desesperación y desgaste físico/mental.
 
 5. DESENLACE ÉPICO EN EL ÚLTIMO CAPÍTULO (CAPÍTULO ${cantidad_de_niveles} OBLIGATORIO):
 CAPÍTULO FINAL (Resolución): El clímax y la victoria definitiva, escalada a la proporción del desafío. La catarsis final. NUNCA lo dejes en suspenso.
-Utiliza un evento dramático que simbolice la superación de la tarea real ("${title}") y la culminación de la misión. La victoria debe sentirse merecida y reflejar el aprendizaje y crecimiento del protagonista.
+Utiliza un evento dramático que simbolice la superación de la tarea real ("${title}") y la culminación de la misión. La victoria debe sentirse merecida, desgarradora y reflejar el crecimiento del protagonista.
 
 6. METÁFORA INQUEBRANTABLE:
 NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100% dramatizado y transformado dentro de la temática de ficción "${tema}" para lograr una experiencia narrativa que evoque la realidad sin revelarla directamente.
@@ -413,7 +412,7 @@ NUNCA menciones la tarea real de la vida real ("${title}"). Todo debe estar 100%
 7. PUNTUACIÓN Y TÍTULOS:
 Los títulos de los capítulos deben seguir el formato: "Capítulo X, [Nombre descriptivo en 2-4 palabras]."
 Ejemplo de título válido: "Capítulo 1, Sistemas Críticos."
-Cada capítulo DEBE comenzar con el título completo del capítulo El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". 
+Cada capítulo DEBE comenzar con el título completo del capítulo. El título DEBE terminar con un único punto (.). PROHIBIDO poner un punto inmediatamente después del número del capítulo (NUNCA escribas "Capítulo 1."). Si incluyes número de capítulo, sepáralo con coma: "Capítulo X, [Nombre descriptivo].". 
 NUNCA pongas un punto justo después del número del capítulo.
 
 REGLAS VISUALES:
