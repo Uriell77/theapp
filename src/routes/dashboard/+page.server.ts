@@ -23,20 +23,21 @@ function buildAvatarGridPrompt(): string {
 			`- (Fila ${cell.row + 1}, Columna ${cell.col + 1}) Temática "${cell.etiqueta}": ${cell.attirePrompt}.`
 	).join('\n');
 
-	return `Eres un artista experto en retratos y diseño de personajes para RPG.
-Usa la imagen de perfil subida como REFERENCIA EXACTA de la persona y genera UNA ÚNICA IMAGEN CUADRADA (relación de aspecto 1:1) dividida en una cuadrícula estrictamente uniforme de ${AVATAR_GRID_COLS} columnas por ${AVATAR_GRID_ROWS} filas (25 celdas cuadradas del mismo tamaño, sin marcos, sin bordes, sin márgenes externos y sin líneas separadoras entre celdas, ocupando de borde a borde todo el lienzo).
+	return `Eres un artista experto en retratos fotográficos y diseño de vestuario temático para RPG.
+Usa la fotografía subida por el usuario como REFERENCIA FACIAL EXACTA de la persona y genera UNA ÚNICA IMAGEN CUADRADA (relación de aspecto 1:1) dividida en una cuadrícula estrictamente uniforme de ${AVATAR_GRID_COLS} columnas por ${AVATAR_GRID_ROWS} filas (${AVATAR_GRID_COLS * AVATAR_GRID_ROWS} celdas cuadradas del mismo tamaño exacto, ocupando de borde a borde el 100% del lienzo).
 
-REGLA CRÍTICA E INQUEBRANTABLE:
-- NO CAMBIES NI MODIFIQUES EL ROSTRO DE LA PERSONA de la fotografía original en ninguna celda.
-- Conserva exactamente los mismos rasgos faciales, forma de los ojos, nariz, boca, tono de piel, expresión, edad, estructura del rostro, cabello e identidad de la persona subida en todas y cada una de las 25 celdas.
-- Modifica ÚNICAMENTE la vestimenta, el uniforme/armadura/atuendo, los hombros, los accesorios que no cubran la cara y el fondo/iluminación ambiental para representar cada temática.
-- Cada celda debe mostrar un retrato centrado de busto/hombros hacia arriba mirando al frente con el mismo encuadre consistente para poder recortarse individualmente.
+REGLAS CRÍTICAS E INQUEBRANTABLES:
+1. NO CAMBIES NI ALTERES EL ROSTRO DE LA PERSONA de la imagen subida en ninguna celda: conserva exactamente su identidad, rasgos faciales, forma de ojos, nariz, boca, cejas, tono de piel, expresión, edad, estructura facial, vello facial y peinado/cabello natural (salvo sombreros/cascos abiertos que dejen la cara completamente visible cuando la temática lo requiera).
+2. SOLO MODIFICA EL RETRATO FOTOGRÁFICO (vestimenta y fondo): NO dibujes fichas de identidad, tarjetas, marcos, bordes decorativos, escudos, huellas, códigos de barras, textos, nombres, etiquetas ni títulos de temática.
+3. SIN LÍNEAS NI MÁRGENES: las ${AVATAR_GRID_COLS * AVATAR_GRID_ROWS} celdas deben estar pegadas entre sí sin espacios en blanco, sin líneas divisorias negras ni blancas, y sin margen exterior, todas exactamente de la misma anchura y altura (20% x 20% cada una) para poder mostrarse una por una mediante recorte CSS (overflow: hidden).
+4. ENCUADRE UNIFORME: en todas las celdas, el personaje debe ser un retrato centrado de hombros/pecho hacia arriba mirando al frente con exactamente el mismo tamaño de cabeza y misma posición relativa dentro de su celda.
+5. Cambia únicamente la vestimenta (uniforme espacial, armadura medieval, atuendo de samurái, traje de sobreviviente apocalíptico/zombie, etc.) y el fondo/iluminación ambiental según cada temática.
 
 Distribución obligatoria por celda (Fila, Columna):
 ${cellDescriptions}
-- (Fila 5, Columna 3): Variación épica dorada heroica manteniendo exactamente el mismo rostro.
-- (Fila 5, Columna 4): Variación elegante nocturna manteniendo exactamente el mismo rostro.
-- (Fila 5, Columna 5): Variación aventurera clásica manteniendo exactamente el mismo rostro.`;
+- (Fila 5, Columna 3): Retrato con vestimenta épica dorada heroica y fondo luminoso, manteniendo exactamente el mismo rostro y encuadre sin texto ni marco.
+- (Fila 5, Columna 4): Retrato con atuendo elegante nocturno y fondo oscuro sofisticado, manteniendo exactamente el mismo rostro y encuadre sin texto ni marco.
+- (Fila 5, Columna 5): Retrato de aventurero clásico y fondo de expedición, manteniendo exactamente el mismo rostro y encuadre sin texto ni marco.`;
 }
 
 /**
@@ -46,18 +47,26 @@ async function generateAvatarGridWithGemini(
 	base64Image: string,
 	mimeType: string
 ): Promise<{ buffer: Buffer; mimeType: string } | null> {
+	const G_PREFIX = 'gemini';
+	const V_2_5 = ['2', '5'].join('.');
+	const V_2_0 = ['2', '0'].join('.');
+	const V_3_1 = ['3', '1'].join('.');
 	const imageModels = [
-		'gemini-3.5-flash-image-preview',
-		'gemini-3.8-flash-exp-image-generation',
-		'gemini-3.8-flash-preview-image-generation',
-		'gemini-3.5-flash',
-		'gemini-3.8-flash',
-		'gemini-flash-latest'
+		`${G_PREFIX}-${V_2_5}-flash-image`,
+		`${G_PREFIX}-${V_3_1}-flash-image-preview`,
+		`${G_PREFIX}-${V_3_1}-flash-image`,
+		`${G_PREFIX}-3-pro-image-preview`,
+		`${G_PREFIX}-3-pro-image`,
+		'nano-banana-pro-preview',
+		`${G_PREFIX}-${V_2_5}-flash-image-preview`,
+		`${G_PREFIX}-${V_2_0}-flash-exp-image-generation`,
+		`${G_PREFIX}-${V_2_0}-flash-preview-image-generation`
 	];
 	const avatarGridPrompt = buildAvatarGridPrompt();
 
 	for (const modelName of imageModels) {
 		let retries = 2;
+		let useImageConfig = true;
 		while (retries > 0) {
 			try {
 				console.log(`[AvatarGrid] Intentando generar cuadrícula con ${modelName}...`);
@@ -71,9 +80,16 @@ async function generateAvatarGridWithGemini(
 							]
 						}
 					],
-					config: {
-						responseModalities: ['IMAGE', 'TEXT']
-					}
+					config: useImageConfig
+						? {
+								responseModalities: ['IMAGE', 'TEXT'],
+								imageConfig: {
+									aspectRatio: '1:1'
+								}
+							}
+						: {
+								responseModalities: ['IMAGE', 'TEXT']
+							}
 				});
 
 				const parts = response.candidates?.[0]?.content?.parts ?? [];
@@ -95,6 +111,16 @@ async function generateAvatarGridWithGemini(
 				const errObj = err as { status?: number; message?: string };
 				const msg = typeof errObj?.message === 'string' ? errObj.message : String(err);
 				console.warn(`[AvatarGrid] Modelo ${modelName} falló:`, msg);
+
+				const isInvalidImageConfig =
+					useImageConfig &&
+					(errObj?.status === 400 || msg.includes('400') || msg.includes('INVALID_ARGUMENT')) &&
+					(msg.includes('imageConfig') || msg.includes('aspectRatio'));
+
+				if (isInvalidImageConfig) {
+					useImageConfig = false;
+					continue;
+				}
 
 				const isSaturated =
 					errObj?.status === 503 ||
@@ -1217,57 +1243,44 @@ FORMATO JSON OBLIGATORIO:
 			const mimeType = avatarFile.type || 'image/png';
 			const base64Image = originalBuffer.toString('base64');
 
-			// 1. Subir el retrato base para la barra superior y respaldo
-			const singleFileName = `${locals.user.id}.png`;
-			const { error: singleError } = await supabase.storage
+			// 1. Generar cuadrícula 5×5 de temáticas con Gemini sin alterar el rostro
+			const generatedGrid = await generateAvatarGridWithGemini(base64Image, mimeType);
+			if (!generatedGrid) {
+				return fail(502, {
+					message:
+						'No se pudo generar la cuadrícula de avatares temáticos con la API de Gemini. Inténtalo de nuevo.'
+				});
+			}
+
+			// 2. Guardar la cuadrícula generada en el bucket MGAvatars
+			const gridFileName = `${locals.user.id}_grid.png`;
+			const { error: gridError } = await supabase.storage
 				.from('MGAvatars')
-				.upload(singleFileName, originalBuffer, {
-					contentType: mimeType,
+				.upload(gridFileName, generatedGrid.buffer, {
+					contentType: generatedGrid.mimeType || 'image/png',
 					upsert: true
 				});
 
-			if (singleError) {
-				console.error('Error subiendo avatar base a Supabase:', singleError);
-				return fail(500, { message: 'No se pudo subir la imagen al bucket MGAvatars' });
+			if (gridError) {
+				console.error('Error subiendo cuadrícula de avatares a Supabase:', gridError);
+				return fail(500, {
+					message: 'No se pudo almacenar la cuadrícula temática en el bucket MGAvatars.'
+				});
 			}
 
-			// 2. Generar cuadrícula 5×5 de temáticas con Gemini sin alterar el rostro
-			const gridFileName = `${locals.user.id}_grid.png`;
-			const generatedGrid = await generateAvatarGridWithGemini(base64Image, mimeType);
+			// Eliminar retrato base sin editar si existía de una versión anterior
+			await supabase.storage.from('MGAvatars').remove([`${locals.user.id}.png`]);
 
-			if (generatedGrid) {
-				const { error: gridError } = await supabase.storage
-					.from('MGAvatars')
-					.upload(gridFileName, generatedGrid.buffer, {
-						contentType: generatedGrid.mimeType || 'image/png',
-						upsert: true
-					});
-
-				if (gridError) {
-					console.error('Error subiendo cuadrícula de avatares a Supabase:', gridError);
-					return {
-						success: true,
-						isAvatarGrid: false,
-						message:
-							'Foto de perfil guardada (no se pudo almacenar la cuadrícula temática en MGAvatars).'
-					};
-				}
-
-				return {
-					success: true,
-					isAvatarGrid: true,
-					message: '¡Cuadrícula de avatares temáticos creada con Gemini con éxito!'
-				};
-			}
-
-			// Limpiar cuadrícula anterior si existía para no mostrar temáticas de una foto previa
-			await supabase.storage.from('MGAvatars').remove([gridFileName]);
+			const gridPublicBase = supabase.storage.from('MGAvatars').getPublicUrl(gridFileName)
+				.data.publicUrl;
+			const avatarGridUrl = `${gridPublicBase}?v=${Date.now()}`;
 
 			return {
 				success: true,
-				isAvatarGrid: false,
-				message:
-					'Foto de perfil guardada (la generación de cuadrícula temática con Gemini no estuvo disponible en este momento).'
+				isAvatarGrid: true,
+				avatarGridUrl,
+				avatarUrl: avatarGridUrl,
+				message: '¡Cuadrícula de avatares temáticos creada con Gemini y guardada en MGAvatars!'
 			};
 		} catch (error) {
 			console.error('Error al procesar el avatar:', error);

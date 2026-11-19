@@ -96,8 +96,9 @@
 	let effectiveSkin = $derived(skinMode === 'auto' ? autoSkin : getSkinByValue(manualSkinValue));
 
 	let gridPos = $derived(getAvatarGridPosition(effectiveSkin.id));
+	let uploadedGridUrl = $state<string | null>(null);
 	let activeGridUrl = $derived(
-		user?.avatarGridUrl || (user?.isAvatarGrid ? user?.avatarUrl : null)
+		uploadedGridUrl || user?.avatarGridUrl || (user?.isAvatarGrid ? user?.avatarUrl : null)
 	);
 	let avatarLoadFailed = $state(false);
 	let showGridCell = $derived(!previewAvatarUrl && !avatarLoadFailed && Boolean(activeGridUrl));
@@ -196,7 +197,7 @@
 						class="avatar-circle-img"
 						class:is-grid-sprite={showGridCell}
 						style={showGridCell
-							? `width: ${gridPos.cols * 100}%; height: ${gridPos.rows * 100}%; max-width: none; position: absolute; left: -${gridPos.col * 100}%; top: -${gridPos.row * 100}%; object-fit: cover;`
+							? `width: ${gridPos.cols * 100}%; height: ${gridPos.rows * 100}%; max-width: none !important; max-height: none !important; position: absolute; left: -${gridPos.col * 100}%; top: -${gridPos.row * 100}%; object-fit: cover;`
 							: ''}
 						onerror={(e) => {
 							avatarLoadFailed = true;
@@ -245,6 +246,7 @@
 									}
 									previewAvatarUrl = null;
 									avatarLoadFailed = false;
+									uploadedGridUrl = (result.data as any)?.avatarGridUrl || null;
 									successMessage = (result.data as any)?.message || '¡Avatar actualizado!';
 									await invalidateAll();
 								} else if (result.type === 'failure') {
@@ -288,7 +290,7 @@
 						</Motion>
 					</form>
 
-					{#if user?.avatarUrl}
+					{#if user?.avatarUrl || activeGridUrl}
 						<form
 							method="POST"
 							action="?/deleteAvatar"
@@ -296,6 +298,8 @@
 								return async ({ update, result }) => {
 									if (result.type === 'success') {
 										previewAvatarUrl = null;
+										uploadedGridUrl = null;
+										avatarLoadFailed = false;
 										successMessage = 'Avatar eliminado correctamente';
 										await invalidateAll();
 									}

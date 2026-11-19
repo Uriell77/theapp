@@ -140,6 +140,9 @@ export function applySkin(skinOrKey: SkinTokens | string) {
 
 	for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
 	root.setAttribute('data-theme', skin.id);
+	if (typeof window !== 'undefined') {
+		window.dispatchEvent(new CustomEvent('mg-skin-change', { detail: skin }));
+	}
 }
 
 /** Recalcula y aplica el skin según preferencia (auto → por proyectos). */

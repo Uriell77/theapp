@@ -1,8 +1,14 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { Motion } from 'svelte-motion';
 	import { page } from '$app/state';
 	import { playClick } from '$lib/audio';
+	import {
+		getAvatarGridPosition,
+		getStoredSkin,
+		type SkinPaletteKey,
+		type SkinTokens
+	} from '$lib/skins';
 
 	let {
 		children,
@@ -19,24 +25,60 @@
 	let isAuth = $derived(pathname.startsWith('/auth'));
 	let isHome = $derived(pathname === '/');
 	let user = $derived(page.data?.user);
+
+	let activeSkinId = $state<SkinPaletteKey>('estandar');
+	let navGridPos = $derived(getAvatarGridPosition(activeSkinId));
+	let navActiveGridUrl = $derived(
+		user?.avatarGridUrl || (user?.isAvatarGrid ? user?.avatarUrl : null)
+	);
+	let navAvatarLoadFailed = $state(false);
+	let navShowGridCell = $derived(!navAvatarLoadFailed && Boolean(navActiveGridUrl));
+	let navAvatarSrc = $derived(
+		(navAvatarLoadFailed ? user?.avatarUrl : navActiveGridUrl) ||
+			user?.avatarUrl ||
+			'/emptyavatar.avif'
+	);
+
+	$effect(() => {
+		void navActiveGridUrl;
+		void user?.avatarUrl;
+		navAvatarLoadFailed = false;
+	});
+
+	onMount(() => {
+		activeSkinId = getStoredSkin().id;
+		const handleSkinChange = (e: Event) => {
+			const detail = (e as CustomEvent<SkinTokens>).detail;
+			if (detail?.id) {
+				activeSkinId = detail.id;
+			}
+		};
+		window.addEventListener('mg-skin-change', handleSkinChange);
+		return () => {
+			window.removeEventListener('mg-skin-change', handleSkinChange);
+		};
+	});
 </script>
 
 <header class="app-container pt-3 pb-0">
 	<!-- Top Profile Bar -->
 	<div class="profile-bar">
 		<div class="is-flex is-align-items-center gap-3">
-			<figure class="image mr-3" style="width: 42px; height: 42px; margin: 0;">
-				<img 
-					class="is-rounded" 
-					src={user?.avatarUrl || '/emptyavatar.avif'} 
-					alt="Avatar" 
+			<figure class="navbar-avatar-wrap mr-3" class:is-grid-avatar={navShowGridCell}>
+				<img
+					class:is-grid-sprite={navShowGridCell}
+					src={navAvatarSrc}
+					alt="Avatar"
 					onerror={(e) => {
+						navAvatarLoadFailed = true;
 						const target = e.currentTarget as HTMLImageElement;
-						if (target.src !== '/emptyavatar.avif') {
+						if (!target.src.endsWith('/emptyavatar.avif')) {
 							target.src = '/emptyavatar.avif';
 						}
 					}}
-					style="border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 50%; width: 42px; height: 42px; object-fit: cover; background: #1a2a30;"
+					style={navShowGridCell
+						? `width: ${navGridPos.cols * 100}%; height: ${navGridPos.rows * 100}%; max-width: none !important; max-height: none !important; position: absolute; left: -${navGridPos.col * 100}%; top: -${navGridPos.row * 100}%; object-fit: cover;`
+						: 'width: 100%; height: 100%; object-fit: cover; display: block;'}
 				/>
 			</figure>
 			<div>
@@ -125,5 +167,27 @@
 
 
 <style>
+	.navbar-avatar-wrap {
+		position: relative;
+		width: 42px;
+		height: 42px;
+		margin: 0;
+		border-radius: 50%;
+		overflow: hidden;
+		flex-shrink: 0;
+		border: 2px solid rgba(255, 255, 255, 0.15);
+		background: #1a2a30;
+		transition: border-color 0.25s ease, box-shadow 0.25s ease;
+	}
 
+	.navbar-avatar-wrap.is-grid-avatar {
+		border-color: var(--accent-primary);
+		box-shadow: 0 0 10px var(--accent-glow);
+	}
+
+	.navbar-avatar-wrap img.is-grid-sprite {
+		transition:
+			left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+			top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	}
 </style>
