@@ -58,7 +58,7 @@ export function getSkinByValue(valor?: string | null): SkinTokens {
 	return prefixMatch ?? DEFAULT_SKIN;
 }
 
-/** Tema más frecuente entre los proyectos (empate: el más reciente, tasks vienen id desc). */
+/** Tema más frecuente entre los proyectos (solo si supera 4; empate: el más reciente, tasks vienen id desc). */
 export function computeAutoSkin(tasks: { tema?: string | null }[] = []): SkinTokens {
 	const counts = new Map<string, number>();
 	for (const t of tasks) {
@@ -74,7 +74,7 @@ export function computeAutoSkin(tasks: { tema?: string | null }[] = []): SkinTok
 			bestN = n;
 		}
 	}
-	return getSkinByValue(best);
+	return bestN > 4 ? getSkinByValue(best) : DEFAULT_SKIN;
 }
 
 export function getSkinMode(): SkinMode {

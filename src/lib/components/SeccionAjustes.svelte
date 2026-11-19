@@ -456,8 +456,10 @@
 			<span class="skin-auto-text">
 				<strong>Modo Automático (Dinámico)</strong>
 				<small>
-					Usa el skin de tu temática más frecuente:
-					{autoSkin.id === 'estandar' ? 'aún sin proyectos (Estándar)' : autoSkin.etiqueta}
+					Usa el skin de tu temática más frecuente (&gt; 4 proyectos):
+					{autoSkin.id === 'estandar'
+						? 'Estándar (requiere > 4 proyectos del mismo tema)'
+						: autoSkin.etiqueta}
 				</small>
 			</span>
 			<span class="skin-check">{skinMode === 'auto' ? '✔' : ''}</span>

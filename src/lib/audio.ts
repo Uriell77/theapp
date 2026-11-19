@@ -265,3 +265,78 @@ export function playSuccess(): void {
 		});
 	} catch {}
 }
+
+/**
+ * Subtle air-slide swoosh for tab switches, view transitions, and carousels
+ */
+export function playSlide(): void {
+	if (!soundEnabled) return;
+	const ctx = getAudioContext();
+	if (!ctx) return;
+
+	try {
+		const now = ctx.currentTime;
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		const filter = ctx.createBiquadFilter();
+
+		filter.type = 'lowpass';
+		filter.frequency.setValueAtTime(320, now);
+		filter.frequency.linearRampToValueAtTime(900, now + 0.09);
+
+		osc.type = 'sine';
+		osc.frequency.setValueAtTime(280, now);
+		osc.frequency.exponentialRampToValueAtTime(520, now + 0.1);
+
+		gain.gain.setValueAtTime(0.001, now);
+		gain.gain.linearRampToValueAtTime(0.028, now + 0.03);
+		gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+
+		osc.connect(filter);
+		filter.connect(gain);
+		gain.connect(ctx.destination);
+
+		osc.start(now);
+		osc.stop(now + 0.12);
+	} catch {}
+}
+
+/**
+ * Ethereal fade-out shimmer synchronized with a card vanishing from the Dashboard
+ */
+export function playVanish(): void {
+	if (!soundEnabled) return;
+	const ctx = getAudioContext();
+	if (!ctx) return;
+
+	try {
+		const now = ctx.currentTime;
+		const freqs = [660, 495];
+
+		freqs.forEach((startFreq, i) => {
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			const filter = ctx.createBiquadFilter();
+			const startTime = now + i * 0.08;
+
+			filter.type = 'lowpass';
+			filter.frequency.setValueAtTime(1200, startTime);
+			filter.frequency.exponentialRampToValueAtTime(220, startTime + 0.75);
+
+			osc.type = 'sine';
+			osc.frequency.setValueAtTime(startFreq, startTime);
+			osc.frequency.exponentialRampToValueAtTime(startFreq * 0.5, startTime + 0.75);
+
+			gain.gain.setValueAtTime(0.001, startTime);
+			gain.gain.linearRampToValueAtTime(0.038, startTime + 0.08);
+			gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.78);
+
+			osc.connect(filter);
+			filter.connect(gain);
+			gain.connect(ctx.destination);
+
+			osc.start(startTime);
+			osc.stop(startTime + 0.8);
+		});
+	} catch {}
+}

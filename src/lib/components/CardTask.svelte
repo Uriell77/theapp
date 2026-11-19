@@ -4,6 +4,7 @@
 	import { isKidsTheme, capitalizeWords } from '$lib/chapterUtils';
 	import { clearTaskTtsCache } from '$lib/ttsCache';
 	import { getSkinByValue } from '$lib/skins';
+	import { playClick, playOpen, playLevelUp, playComplete } from '$lib/audio';
 	import BitacoraModal from './BitacoraModal.svelte';
 
 	interface TaskData {
@@ -21,12 +22,13 @@
 	interface Props {
 		task: TaskData;
 		hasViewed?: boolean;
+		isFadingOut?: boolean;
 		onSelect?: (chapterIndex: number) => void;
 		/** Abre el SlidingPanel directamente en el Salón de la Victoria */
 		onVictory?: () => void;
 	}
 
-	let { task = $bindable(), hasViewed = false, onSelect, onVictory }: Props = $props();
+	let { task = $bindable(), hasViewed = false, isFadingOut = false, onSelect, onVictory }: Props = $props();
 
 	let isModalOpen = $state(false);
 	let currentTime = $state(Date.now());
@@ -136,12 +138,14 @@
 
 	function handleChapterClick(idx: number) {
 		if (!isChapterUnlocked(idx)) return;
+		playClick();
 		if (onSelect) {
 			onSelect(idx);
 		}
 	}
 
 	function handleAdvanceClick(e: MouseEvent) {
+		playClick();
 		if (isAbandoned || !hasViewed) {
 			e.preventDefault();
 			if (onSelect) onSelect(statusNum);
@@ -173,15 +177,16 @@
 	<Motion
 		initial={{ opacity: 0, y: 12 }}
 		animate={{ opacity: 1, y: 0 }}
-		whileHover={{ y: -2 }}
+		whileHover={isFadingOut ? undefined : { y: -2 }}
 		transition={{ duration: 0.25 }}
 		let:motion
 	>
 		<div
 			use:motion
-			class="glass-panel project-card mb-4"
+			class="glass-panel project-card"
 			class:is-kids-theme={isKids}
 			class:is-archived-card={isArchived}
+			class:is-fading-out={isFadingOut}
 			id={`task-${task.id}`}
 		>
 			<!-- Header del Card: Título + Badge de categoría + Botón de eliminar -->
@@ -311,6 +316,7 @@
 								title="Eliminar tarea"
 								aria-label="Eliminar tarea"
 								onclick={(e) => {
+									playClick();
 									if (!confirm(`¿Eliminar definitivamente el proyecto "${displayTitle}"?`)) {
 										e.preventDefault();
 									} else {
@@ -365,7 +371,15 @@
 					{#if isCompleted}
 						<div class="action-form">
 							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-								<button use:motion class="btn-primary btn-archive w-100" type="button" onclick={() => onVictory?.()}>
+								<button
+									use:motion
+									class="btn-primary btn-archive w-100"
+									type="button"
+									onclick={() => {
+										playClick();
+										onVictory?.();
+									}}
+								>
 									<span class="btn-text">🏆 Ver Victoria</span>
 								</button>
 							</Motion>
@@ -374,20 +388,39 @@
 					<form method="POST" action="?/unarchiveTask" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
 						<input type="hidden" name="taskId" value={task.id} />
 						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-							<button use:motion class="btn-primary w-100" type="submit">
+							<button use:motion class="btn-primary w-100" type="submit" onclick={playClick}>
 								<span class="btn-text">Restaurar al Dashboard</span>
 								<span class="btn-icon">↩</span>
 							</button>
 						</Motion>
 					</form>
 				{:else if isCompleted}
-					<div class="action-form">
-						<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-							<button use:motion class="btn-primary btn-archive w-100" type="button" onclick={() => onVictory?.()}>
-								<span class="btn-text">🏆 Ver Victoria</span>
-							</button>
-						</Motion>
-					</div>
+					{#if !hasViewed}
+						<div class="action-form">
+							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+								<button use:motion class="btn-primary w-100" type="button" onclick={handleAdvanceClick}>
+									<span class="btn-text">Visualizar capítulo final</span>
+									<span class="btn-icon">👁️</span>
+								</button>
+							</Motion>
+						</div>
+					{:else}
+						<div class="action-form">
+							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
+								<button
+									use:motion
+									class="btn-primary btn-archive w-100"
+									type="button"
+									onclick={() => {
+										playClick();
+										onVictory?.();
+									}}
+								>
+									<span class="btn-text">🏆 Ver Victoria</span>
+								</button>
+							</Motion>
+						</div>
+					{/if}
 				{:else}
 					
 					<!-- Manejo estricto de Estados según requerimientos -->
@@ -405,7 +438,7 @@
 							<form method="POST" action="?/advanceLevel" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
 								<input type="hidden" name="taskId" value={task.id} />
 								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-									<button use:motion class="btn-primary w-100" type="submit">
+									<button use:motion class="btn-primary w-100" type="submit" onclick={playClick}>
 										<span class="btn-text">Reiniciar</span>
 										<span class="btn-icon">→</span>
 									</button>
@@ -432,7 +465,11 @@
 										use:motion
 										class="button is-warning is-light is-small btn-unlock w-100"
 										type="button"
-										onclick={() => (isModalOpen = true)}
+										onclick={() => {
+											playClick();
+											playOpen();
+											isModalOpen = true;
+										}}
 										title={unlockCountdown ? `Se desbloquea automáticamente en ${unlockCountdown}` : 'Desbloquear capítulo'}
 									>
 										<span class="btn-text">🔓 Desbloquear</span>
@@ -444,10 +481,28 @@
 							</div>
 						{:else}
 							<!-- Estado 3: Desbloqueado luego de bitácora (Formulario de avance de servidor) -->
-							<form method="POST" action="?/advanceLevel" use:enhance={() => { return async ({ update }) => { await update(); }; }} class="action-form">
+							<form
+								method="POST"
+								action="?/advanceLevel"
+								use:enhance={() => {
+									const nextStatus = statusNum + 1;
+									const willComplete = nextStatus >= task.cantidad_de_niveles - 1;
+									return async ({ result, update }) => {
+										if (result.type === 'success') {
+											if (willComplete) {
+												playComplete();
+											} else {
+												playLevelUp();
+											}
+										}
+										await update();
+									};
+								}}
+								class="action-form"
+							>
 								<input type="hidden" name="taskId" value={task.id} />
 								<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-									<button use:motion class="btn-primary w-100" type="submit">
+									<button use:motion class="btn-primary w-100" type="submit" onclick={playClick}>
 										<span class="btn-text">Avanzar de Nivel</span>
 										<span class="btn-icon">→</span>
 									</button>
@@ -460,7 +515,7 @@
 							<input type="hidden" name="taskId" value={task.id} />
 							<input type="hidden" name="status" value="-1" />
 							<Motion whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} let:motion>
-								<button use:motion class="btn-outline w-100" type="submit">
+								<button use:motion class="btn-outline w-100" type="submit" onclick={playClick}>
 									<span class="btn-text">Abandonar</span>
 								</button>
 							</Motion>
@@ -487,13 +542,14 @@
 {/if}
 
 <style>
-	:global(.project-card) {
+	:global(.glass-panel.project-card) {
 		position: relative;
 		overflow: hidden;
 		box-sizing: border-box;
 		width: 100%;
 		max-width: 100%;
-		padding: clamp(14px, 3.5vw, 22px) !important;
+		margin-bottom: 1rem;
+		padding: clamp(14px, 3.5vw, 22px);
 		background: linear-gradient(
 			135deg,
 			color-mix(in srgb, var(--skin-primary, #26b08d) 12%, rgba(255, 255, 255, 0.05)) 0%,
@@ -501,13 +557,52 @@
 			var(--skin-glass-bg, rgba(30, 45, 54, 0.65)) 56%,
 			color-mix(in srgb, var(--skin-bg-base, #10181c) 88%, transparent) 100%
 		) !important;
-		border: 1px solid var(--skin-glass-border, rgba(255, 255, 255, 0.12)) !important;
+		border: 1px solid var(--skin-glass-border, rgba(255, 255, 255, 0.12));
 		border-radius: 18px !important;
 		box-shadow:
 			0 12px 36px rgba(0, 0, 0, 0.38),
 			0 0 22px color-mix(in srgb, var(--skin-primary, #26b08d) 7%, transparent),
 			inset 0 1px 1px color-mix(in srgb, var(--skin-primary, #26b08d) 28%, rgba(255, 255, 255, 0.16)),
 			inset 0 -1px 1px color-mix(in srgb, var(--skin-secondary, #178267) 16%, rgba(255, 255, 255, 0.03)) !important;
+	}
+
+	:global(.glass-panel.project-card.is-fading-out) {
+		pointer-events: none;
+		overflow: hidden;
+		animation: card-vanish-2s 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+
+	@keyframes card-vanish-2s {
+		0% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			filter: blur(0px);
+			max-height: 460px;
+			margin-bottom: 1rem;
+			padding-top: clamp(14px, 3.5vw, 22px);
+			padding-bottom: clamp(14px, 3.5vw, 22px);
+			border-width: 1px;
+		}
+		60% {
+			opacity: 0.25;
+			transform: translateY(-10px) scale(0.96);
+			filter: blur(3px);
+			max-height: 460px;
+			margin-bottom: 1rem;
+			padding-top: clamp(14px, 3.5vw, 22px);
+			padding-bottom: clamp(14px, 3.5vw, 22px);
+			border-width: 1px;
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(-16px) scale(0.93);
+			filter: blur(6px);
+			max-height: 0;
+			margin-bottom: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			border-width: 0;
+		}
 	}
 
 	:global(.project-card::before) {

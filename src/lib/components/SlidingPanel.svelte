@@ -8,6 +8,7 @@
 	import { fly, fade } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { Motion } from 'svelte-motion';
+	import { playClick, playClose, playComplete, playSlide, playSuccess } from '$lib/audio';
 	import {
 		parseChapter,
 		isKidsTheme,
@@ -158,8 +159,22 @@
 
 	let viewDropCap = $derived(splitDropCap(view?.body));
 
+	function closePanel() {
+		playClose();
+		isOpen = false;
+	}
+
+	function selectVictoryTab(tab: 'bitacora' | 'libro') {
+		playClick();
+		if (victoryTab !== tab) {
+			playSlide();
+			victoryTab = tab;
+		}
+	}
+
 	async function enterVictory() {
 		if (!taskData) return;
+		playComplete();
 		isVictoryMode = true;
 		victoryTab = 'bitacora';
 		logIdx = 0;
@@ -182,6 +197,7 @@
 
 	async function saveToHall() {
 		if (!taskData || isSaving) return;
+		playClick();
 		isSaving = true;
 		try {
 			const fd = new FormData();
@@ -192,6 +208,7 @@
 				headers: { 'x-sveltekit-action': 'true' }
 			});
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			playSuccess();
 			await invalidateAll();
 			isOpen = false;
 		} catch (err) {
@@ -201,9 +218,21 @@
 		}
 	}
 
-	function shiftLog(delta: number) {
+	function shiftLog(delta: number, withAudio = false) {
 		if (!projectLogs.length) return;
+		if (withAudio) {
+			playClick();
+			playSlide();
+		}
 		logIdx = (logIdx + delta + projectLogs.length) % projectLogs.length;
+	}
+
+	function selectLogIndex(index: number) {
+		playClick();
+		if (logIdx !== index) {
+			playSlide();
+			logIdx = index;
+		}
 	}
 
 	function formatLogDate(value: string) {
@@ -282,12 +311,12 @@
 		<!-- Fondo oscuro atenuado con fade -->
 		<div
 			class="panel-background"
-			onclick={() => (isOpen = false)}
+			onclick={closePanel}
 			transition:fade={{ duration: 250 }}
 			role="button"
 			tabindex="0"
 			aria-label="Cerrar panel"
-			onkeydown={(e) => e.key === 'Escape' && (isOpen = false)}
+			onkeydown={(e) => e.key === 'Escape' && closePanel()}
 		></div>
 
 		<!-- Panel deslizante con transición fly suave desde el fondo -->
@@ -302,7 +331,7 @@
 				<button
 					use:motion
 					class="close-btn"
-					onclick={() => (isOpen = false)}
+					onclick={closePanel}
 					aria-label="Cerrar"
 				>
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -355,12 +384,12 @@
 								<div class="tabs is-centered is-toggle is-small victory-tabs mb-2">
 									<ul>
 										<li class:is-active={victoryTab === 'bitacora'}>
-											<a role="button" tabindex="0" onclick={() => (victoryTab = 'bitacora')} onkeydown={(e) => e.key === 'Enter' && (victoryTab = 'bitacora')}>
+											<a class="is-size-7-mobile" role="button" tabindex="0" onclick={() => selectVictoryTab('bitacora')} onkeydown={(e) => e.key === 'Enter' && selectVictoryTab('bitacora')}>
 												📸 Tu Viaje Real (Bitácora)
 											</a>
 										</li>
 										<li class:is-active={victoryTab === 'libro'}>
-											<a role="button" tabindex="0" onclick={() => (victoryTab = 'libro')} onkeydown={(e) => e.key === 'Enter' && (victoryTab = 'libro')}>
+											<a class="is-size-7-mobile" role="button" tabindex="0" onclick={() => selectVictoryTab('libro')} onkeydown={(e) => e.key === 'Enter' && selectVictoryTab('libro')}>
 												📖 Crónica Completa (Libro)
 											</a>
 										</li>
@@ -385,6 +414,7 @@
 										<Visualizer effectConfig={view.effectConfig}>
 											<article class="book-folio-sheet levelcontent">
 												{#if view.kind === 'victory' && victoryTab === 'bitacora'}
+													<div class="victory-tab-pane" in:fly={{ x: 18, duration: 280, easing: cubicOut }}>
 													<header class="book-folio-header">
 														<h4 class="book-chapter-title">🏆 {taskData.title}</h4>
 														<div class="book-ornament-divider" aria-hidden="true">{genreConfig.ornament}</div>
@@ -397,7 +427,7 @@
 														{:else}
 															{#key logIdx}
 																{@const log = projectLogs[logIdx]}
-																<div class="log-slide" in:fade={{ duration: 450 }}>
+																<div class="log-slide" in:fly={{ x: 24, duration: 320, easing: cubicOut }}>
 																	<div class="log-media">
 																		{#if log.media_url}
 																			<img class="ken-burns" src={log.media_url} alt="Evidencia del nivel {log.level}" />
@@ -413,16 +443,17 @@
 																</div>
 															{/key}
 															<div class="log-nav is-flex is-align-items-center is-justify-content-center">
-																<button type="button" class="log-nav-btn" aria-label="Registro anterior" onclick={() => shiftLog(-1)}>‹</button>
+																<button type="button" class="log-nav-btn" aria-label="Registro anterior" onclick={() => shiftLog(-1, true)}>‹</button>
 																{#each projectLogs as _, i}
-																	<button type="button" class="log-dot" class:active={i === logIdx} aria-label="Ir al registro {i + 1}" onclick={() => (logIdx = i)}></button>
+																	<button type="button" class="log-dot" class:active={i === logIdx} aria-label="Ir al registro {i + 1}" onclick={() => selectLogIndex(i)}></button>
 																{/each}
-																<button type="button" class="log-nav-btn" aria-label="Registro siguiente" onclick={() => shiftLog(1)}>›</button>
+																<button type="button" class="log-nav-btn" aria-label="Registro siguiente" onclick={() => shiftLog(1, true)}>›</button>
 															</div>
 														{/if}
 													</div>
+													</div>
 												{:else if view.kind === 'victory'}
-													<div class="book-page-scroll">
+													<div class="book-page-scroll" in:fly={{ x: 18, duration: 280, easing: cubicOut }}>
 														{#each bookEntries as entry, i (entry.index)}
 															{#if i > 0}
 																<div class="book-ornament-divider book-chapter-break" aria-hidden="true">{genreConfig.ornament}</div>
@@ -469,7 +500,14 @@
 
 							{#if canClaimVictory}
 								<div class="victory-footer px-2 pb-3">
-									<button type="button" class="button is-medium is-fullwidth victory-claim-btn" onclick={enterVictory}>
+									<button
+										type="button"
+										class="button is-medium is-fullwidth victory-claim-btn"
+										onclick={() => {
+											playClick();
+											enterVictory();
+										}}
+									>
 										🏆 Reclamar Victoria y Ver Epílogo
 									</button>
 								</div>
@@ -715,6 +753,15 @@
 	}
 
 	/* === SALÓN DE LA VICTORIA === */
+	.victory-tab-pane {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		width: 100%;
+		overflow: hidden;
+	}
+
 	.victory-tabs :global(a) {
 		font-size: 0.78rem;
 	}

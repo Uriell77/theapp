@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
+	import { fly, fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
+	import { playClick, playClose, playSuccess } from '$lib/audio';
 
 	interface Props {
 		isOpen: boolean;
@@ -16,6 +19,12 @@
 	let errorMessage = $state<string | null>(null);
 
 	let canSubmit = $derived(logText.trim().length >= 50 && !isSubmitting);
+
+	function closeModal() {
+		if (isSubmitting) return;
+		playClose();
+		isOpen = false;
+	}
 
 	function handleFileChange(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -75,6 +84,7 @@
 			}
 
 			onUnlocked(updatedMilestones);
+			playSuccess();
 			logText = '';
 			selectedFile = null;
 			isOpen = false;
@@ -94,13 +104,14 @@
 			class="modal-background"
 			role="button"
 			tabindex="0"
-			onclick={() => !isSubmitting && (isOpen = false)}
+			transition:fade={{ duration: 220 }}
+			onclick={closeModal}
 			onkeydown={(e) => {
-				if ((e.key === 'Enter' || e.key === ' ') && !isSubmitting) isOpen = false;
+				if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') closeModal();
 			}}
 		></div>
 
-		<div class="modal-card has-background-dark">
+		<div class="modal-card has-background-dark" transition:fly={{ y: 36, duration: 300, easing: cubicOut }}>
 			<header class="modal-card-head has-background-black-bis">
 				<p class="modal-card-title has-text-white has-text-weight-bold">
 					Bitácora de Desbloqueo - Capítulo {level + 1}
@@ -110,7 +121,7 @@
 					type="button"
 					aria-label="close"
 					disabled={isSubmitting}
-					onclick={() => (isOpen = false)}
+					onclick={closeModal}
 				></button>
 			</header>
 
@@ -183,7 +194,7 @@
 					class="button is-ghost has-text-grey-light"
 					type="button"
 					disabled={isSubmitting}
-					onclick={() => (isOpen = false)}
+					onclick={closeModal}
 				>
 					Cancelar
 				</button>
@@ -193,6 +204,7 @@
 					form="bitacoraForm"
 					disabled={!canSubmit}
 					class:is-loading={isSubmitting}
+					onclick={playClick}
 				>
 					Registrar y Desbloquear
 				</button>

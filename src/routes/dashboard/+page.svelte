@@ -2,6 +2,8 @@
 	import { onMount, untrack } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import { fly, fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { Motion } from 'svelte-motion';
 	import CardTask from '$lib/components/CardTask.svelte';
 	import SlidingPanel from '$lib/components/SlidingPanel.svelte';
@@ -10,7 +12,7 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 	import SeccionAjustes from '$lib/components/SeccionAjustes.svelte';
 	import { page } from '$app/state';
-	import { playClick } from '$lib/audio';
+	import { playClick, playClose, playOpen, playSlide, playSuccess, playVanish } from '$lib/audio';
 	import { syncSkin } from '$lib/skins';
 
 	const tematicasAgrupadas = [
@@ -67,15 +69,42 @@
 		allTasks = [...rawTasks].sort((a: any, b: any) => Number(b.id) - Number(a.id));
 	});
 
+	const VIEWED_STORAGE_KEY = 'mg_viewed_tasks';
+	const DISMISSED_STORAGE_KEY = 'mg_dismissed_tasks';
+
 	const isTaskCompleted = (t: any) =>
 		parseInt(t.status, 10) !== -1 && parseInt(t.status, 10) >= t.cantidad_de_niveles - 1;
 
-	// Separar activas / archivadas
-	let tasks = $derived(allTasks.filter((t: any) => !t.isArchived));
+	let isPanelOpen = $state(false);
+	let panelMode = $state<'form' | 'details'>('form');
+	let selectedTaskId = $state<number | null>(null);
+	let selectedChapter = $state<number | null>(null);
+	let startInVictory = $state(false);
+	let viewedTasks = $state<Record<string, string>>({});
+	let dismissedTasks = $state<Record<string, string>>({});
+	let fadingTasks = $state<Record<string, boolean>>({});
+	let justViewedFinalTaskId = $state<number | null>(null);
+
+	function isTaskDismissedFromDashboard(t: any): boolean {
+		if (t.isArchived) return true;
+		const statusNum = parseInt(String(t.status), 10);
+		const isFinalState = isTaskCompleted(t) || statusNum === -1;
+		if (!isFinalState) return false;
+		return dismissedTasks[String(t.id)] === String(t.status);
+	}
+
+	// Separar activas / archivadas / culminadas / retiradas
+	let tasks = $derived(
+		allTasks.filter(
+			(t: any) => !isTaskDismissedFromDashboard(t) || Boolean(fadingTasks[String(t.id)])
+		)
+	);
 	let archivedTasks = $derived(allTasks.filter((t: any) => t.isArchived));
 	// Victoria: completadas al 100%  ·  Archivo (Retiradas Tácticas): abandonadas
 	let victoryTasks = $derived(allTasks.filter((t: any) => isTaskCompleted(t)));
 	let retreatTasks = $derived(allTasks.filter((t: any) => parseInt(t.status, 10) === -1));
+
+	let selectedTask = $derived(allTasks.find((t: any) => t.id === selectedTaskId) || null);
 
 	// Skin automático: tema dominante de los proyectos (si el modo es 'auto')
 	$effect(() => {
@@ -131,14 +160,6 @@
 			: d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
 	}
 
-	let isPanelOpen = $state(false);
-	let panelMode = $state<'form' | 'details'>('form');
-	let selectedTaskId = $state<number | null>(null);
-	let selectedChapter = $state<number | null>(null);
-	let startInVictory = $state(false);
-	let selectedTask = $derived(allTasks.find((t: any) => t.id === selectedTaskId) || null);
-	let viewedTasks = $state<Record<string, string>>({});
-
 	// Estados formulario
 	let newTaskTitle = $state('');
 	let newTaskTema = $state('Guerra Espacial');
@@ -185,7 +206,83 @@
 	let isSubmitting = $state(false);
 	let errorMessage = $state<string | null>(null);
 
+	function loadStorageMap(key: string): Record<string, string> {
+		try {
+			const raw = localStorage.getItem(key);
+			if (!raw) return {};
+			const parsed = JSON.parse(raw);
+			return parsed && typeof parsed === 'object' ? parsed : {};
+		} catch {
+			return {};
+		}
+	}
+
+	function persistStorageMap(key: string, map: Record<string, string>) {
+		try {
+			localStorage.setItem(key, JSON.stringify(map));
+		} catch {}
+	}
+
+	function markTaskViewed(taskId: number, statusStr: string) {
+		const idKey = String(taskId);
+		if (viewedTasks[idKey] !== statusStr) {
+			viewedTasks = { ...viewedTasks, [idKey]: statusStr };
+			persistStorageMap(VIEWED_STORAGE_KEY, viewedTasks);
+		}
+	}
+
+	function markTaskDismissed(taskId: number, statusStr: string) {
+		const idKey = String(taskId);
+		if (dismissedTasks[idKey] !== statusStr) {
+			dismissedTasks = { ...dismissedTasks, [idKey]: statusStr };
+			persistStorageMap(DISMISSED_STORAGE_KEY, dismissedTasks);
+		}
+	}
+
+	const vanishTimers = new Map<string, ReturnType<typeof setTimeout>>();
+	let wasPanelOpen = false;
+
+	$effect(() => {
+		const open = isPanelOpen;
+		if (wasPanelOpen && !open) {
+			const targetId = untrack(() => justViewedFinalTaskId);
+			justViewedFinalTaskId = null;
+			if (targetId !== null) {
+				const key = String(targetId);
+				const task = untrack(() => allTasks.find((t: any) => t.id === targetId));
+				if (task) {
+					const statusStr = String(task.status);
+					const isFinalState = isTaskCompleted(task) || parseInt(statusStr, 10) === -1;
+					const alreadyDismissed = untrack(() => dismissedTasks[key] === statusStr);
+					if (isFinalState && !task.isArchived && !alreadyDismissed) {
+						const inDashboard = untrack(() => activeTab === 'dashboard');
+						if (inDashboard) {
+							fadingTasks = { ...untrack(() => fadingTasks), [key]: true };
+							playVanish();
+							const prevTimer = vanishTimers.get(key);
+							if (prevTimer) clearTimeout(prevTimer);
+							const timer = setTimeout(() => {
+								vanishTimers.delete(key);
+								markTaskDismissed(targetId, statusStr);
+								const nextFading = { ...fadingTasks };
+								delete nextFading[key];
+								fadingTasks = nextFading;
+							}, 2000);
+							vanishTimers.set(key, timer);
+						} else {
+							markTaskDismissed(targetId, statusStr);
+						}
+					}
+				}
+			}
+		}
+		wasPanelOpen = open;
+	});
+
 	onMount(() => {
+		viewedTasks = loadStorageMap(VIEWED_STORAGE_KEY);
+		dismissedTasks = loadStorageMap(DISMISSED_STORAGE_KEY);
+
 		const channel = supabase
 			.channel('tasks_channel')
 			.on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
@@ -195,10 +292,22 @@
 
 		return () => {
 			supabase.removeChannel(channel);
+			for (const timer of vanishTimers.values()) clearTimeout(timer);
+			vanishTimers.clear();
 		};
 	});
 
+	function switchTab(nextTab: ViewId) {
+		playClick();
+		if (activeTab !== nextTab) {
+			playSlide();
+			activeTab = nextTab;
+		}
+	}
+
 	function openCreateForm() {
+		playClick();
+		playOpen();
 		panelMode = 'form';
 		selectedTaskId = null;
 		selectedChapter = null;
@@ -209,24 +318,46 @@
 	function openVictory(taskId: number) {
 		const task = allTasks.find((t: any) => t.id === taskId);
 		if (!task) return;
+		playClick();
+		playOpen();
+		const statusStr = String(task.status);
+		markTaskViewed(taskId, statusStr);
+		if (!task.isArchived && dismissedTasks[String(taskId)] !== statusStr) {
+			justViewedFinalTaskId = taskId;
+		}
 		panelMode = 'details';
 		selectedTaskId = taskId;
 		selectedChapter = Math.max(0, task.cantidad_de_niveles - 1);
-		viewedTasks[String(taskId)] = String(task.status);
 		startInVictory = true;
 		isPanelOpen = true;
 	}
 
 	function openTaskDetails(taskId: number, chapterIndex?: number) {
+		playClick();
+		playOpen();
 		panelMode = 'details';
 		selectedTaskId = taskId;
 		startInVictory = false;
 		const task = allTasks.find((t: any) => t.id === taskId);
 		if (task) {
-			const targetChapter = chapterIndex !== undefined ? chapterIndex : Number(task.status);
+			const statusNum = parseInt(String(task.status), 10);
+			const targetChapter = chapterIndex !== undefined ? chapterIndex : statusNum;
 			selectedChapter = targetChapter;
-			if (String(targetChapter) === String(task.status)) {
-				viewedTasks[String(taskId)] = String(task.status);
+			const statusStr = String(task.status);
+			const isViewingCurrentChapter = String(targetChapter) === statusStr;
+			const isViewingFinalChapter =
+				isTaskCompleted(task) && targetChapter >= Math.max(0, Number(task.cantidad_de_niveles) - 1);
+			const isViewingAbandonedEnding = statusNum === -1;
+
+			if (isViewingCurrentChapter || isViewingFinalChapter || isViewingAbandonedEnding) {
+				markTaskViewed(taskId, statusStr);
+			}
+			if (
+				(isViewingFinalChapter || isViewingAbandonedEnding) &&
+				!task.isArchived &&
+				dismissedTasks[String(taskId)] !== statusStr
+			) {
+				justViewedFinalTaskId = taskId;
 			}
 		}
 		isPanelOpen = true;
@@ -239,10 +370,12 @@
 	);
 
 	function decrementarNiveles() {
+		playClick();
 		if (newTaskNiveles > 1) newTaskNiveles--;
 	}
 
 	function incrementarNiveles() {
+		playClick();
 		if (newTaskNiveles < 12) newTaskNiveles++;
 	}
 </script>
@@ -254,7 +387,7 @@
 <main class="app-container pt-0 pb-6">
 
 
-	<Navbar activeView={activeTab} onViewChange={(v) => (activeTab = v)} />
+	<Navbar activeView={activeTab} onViewChange={(v) => switchTab(v)} />
 
 
 
@@ -270,6 +403,7 @@
 					return async ({ update, result }) => {
 						isSubmitting = false;
 						if (result.type === 'success') {
+							playSuccess();
 							isPanelOpen = false;
 							newTaskTitle = '';
 							newTaskTema = 'Espacio';
@@ -489,6 +623,7 @@
 							style="width: 70%; margin-top: 1.5rem;"
 							type="submit"
 							disabled={isSubmitting}
+							onclick={playClick}
 						>
 							{isSubmitting ? 'Generando Historia...' : 'Guardar y Generar'}
 						</button>
@@ -504,188 +639,223 @@
 		{/if}
 
 		{#if activeTab === 'dashboard'}
-			<!-- ===== SECCIÓN PROYECTOS ACTIVOS ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
-				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.15rem; margin: 0;">
-					Mis Proyectos
-				</h2>
-				<span class="badge-pill">{activeTasksCount} {activeTasksCount === 1 ? 'activa' : 'activas'}</span>
-			</div>
+			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
+				<!-- ===== SECCIÓN PROYECTOS ACTIVOS ===== -->
+				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
+					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.15rem; margin: 0;">
+						Mis Proyectos
+					</h2>
+					<span class="badge-pill">{activeTasksCount} {activeTasksCount === 1 ? 'activa' : 'activas'}</span>
+				</div>
 
-			{#if tasks.length > 0}
-				<div>
-					{#each tasks as Task (Task.id)}
-						<CardTask
-							task={Task}
-							hasViewed={viewedTasks[String(Task.id)] !== undefined &&
-								String(viewedTasks[String(Task.id)]) === String(Task.status)}
-							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
-							onVictory={() => openVictory(Task.id)}
-						/>
-					{/each}
-				</div>
-			{:else}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<p class="has-text-grey-light mb-3">Aún no tienes proyectos activos.</p>
-					<Motion whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} let:motion>
-						<button
-							use:motion
-							class="btn-primary"
-							style="margin: 0 auto;"
-							onclick={openCreateForm}
-						>
-							Crear tu primer proyecto
-						</button>
-					</Motion>
-				</div>
-			{/if}
+				{#if tasks.length > 0}
+					<div>
+						{#each tasks as Task (Task.id)}
+							<CardTask
+								task={Task}
+								hasViewed={viewedTasks[String(Task.id)] !== undefined &&
+									String(viewedTasks[String(Task.id)]) === String(Task.status)}
+								isFadingOut={Boolean(fadingTasks[String(Task.id)])}
+								onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
+								onVictory={() => openVictory(Task.id)}
+							/>
+						{/each}
+					</div>
+				{:else}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<p class="has-text-grey-light mb-3">Aún no tienes proyectos activos.</p>
+						<Motion whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} let:motion>
+							<button
+								use:motion
+								class="btn-primary"
+								style="margin: 0 auto;"
+								onclick={openCreateForm}
+							>
+								Crear tu primer proyecto
+							</button>
+						</Motion>
+					</div>
+				{/if}
+			</div>
 
 		{:else if activeTab === 'victoria'}
-			<!-- ===== SALÓN DE LA VICTORIA ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
-				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
-					🏆 Salón de la Victoria
-				</h2>
-				<span class="badge-pill">{victoryTasks.length} {victoryTasks.length === 1 ? 'victoria' : 'victorias'}</span>
-			</div>
+			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
+				<!-- ===== SALÓN DE LA VICTORIA ===== -->
+				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
+					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+						🏆 Salón de la Victoria
+					</h2>
+					<span class="badge-pill">{victoryTasks.length} {victoryTasks.length === 1 ? 'victoria' : 'victorias'}</span>
+				</div>
 
-			{#if victoryTasks.length > 0}
-				<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
-					Misiones completadas al 100%. Revive la bitácora de tu viaje o relee la crónica completa.
-				</p>
-				<div>
-					{#each victoryTasks as Task (Task.id)}
-						<CardTask
-							task={Task}
-							hasViewed={true}
-							onSelect={() => openVictory(Task.id)}
-							onVictory={() => openVictory(Task.id)}
-						/>
-					{/each}
-				</div>
-			{:else}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<div style="font-size: 2.5rem; margin-bottom: 12px;">🏆</div>
-					<p class="has-text-grey-light mb-2" style="font-weight: 600;">El Salón de la Victoria está vacío</p>
-					<p class="has-text-grey-light" style="font-size: 0.85rem;">
-						Completa un proyecto al 100% para verlo aquí.
+				{#if victoryTasks.length > 0}
+					<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+						Misiones completadas al 100%. Revive la bitácora de tu viaje o relee la crónica completa.
 					</p>
-				</div>
-			{/if}
+					<div>
+						{#each victoryTasks as Task (Task.id)}
+							<CardTask
+								task={Task}
+								hasViewed={true}
+								onSelect={() => openVictory(Task.id)}
+								onVictory={() => openVictory(Task.id)}
+							/>
+						{/each}
+					</div>
+				{:else}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<div style="font-size: 2.5rem; margin-bottom: 12px;">🏆</div>
+						<p class="has-text-grey-light mb-2" style="font-weight: 600;">El Salón de la Victoria está vacío</p>
+						<p class="has-text-grey-light" style="font-size: 0.85rem;">
+							Completa un proyecto al 100% para verlo aquí.
+						</p>
+					</div>
+				{/if}
+			</div>
 
 		{:else if activeTab === 'bitacora'}
-			<!-- ===== BITÁCORA GLOBAL ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
-				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
-					📸 Bitácora
-				</h2>
-				<span class="badge-pill">{globalLogs.length} {globalLogs.length === 1 ? 'registro' : 'registros'}</span>
-			</div>
+			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
+				<!-- ===== BITÁCORA GLOBAL ===== -->
+				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
+					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+						📸 Bitácora
+					</h2>
+					<span class="badge-pill">{globalLogs.length} {globalLogs.length === 1 ? 'registro' : 'registros'}</span>
+				</div>
 
-			{#if logsLoading}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<p class="has-text-grey-light">Cargando tu bitácora…</p>
-				</div>
-			{:else if logsError}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<p class="has-text-danger">{logsError}</p>
-				</div>
-			{:else if globalLogs.length === 0}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<div style="font-size: 2.5rem; margin-bottom: 12px;">📓</div>
-					<p class="has-text-grey-light mb-2" style="font-weight: 600;">Tu bitácora está en blanco</p>
-					<p class="has-text-grey-light" style="font-size: 0.85rem;">
-						Cada vez que desbloquees un nivel registrando tu esfuerzo, aparecerá aquí.
-					</p>
-				</div>
-			{:else}
-				<div class="log-feed">
-					{#each globalLogs as log (log.id)}
-						<article class="glass-panel log-feed-card mb-4">
-							<div class="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
-								<div>
-									<h3 class="has-text-weight-bold has-text-white is-capitalized" style="font-size: 1.05rem;">
-										{log.tasks?.title ?? 'Proyecto'}
-									</h3>
-									<span style="color: var(--text-muted); font-size: 0.78rem;">{log.tasks?.tema ?? ''}</span>
-								</div>
-								<span class="tag is-warning is-light">🔓 Nivel {log.level}</span>
-							</div>
-							<time style="color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;">
-								{formatLogDate(log.created_at)}
-							</time>
-							<p class="log-feed-text mt-2">{log.log_text}</p>
-							{#if log.media_url}
-								<button type="button" class="log-feed-img-btn mt-3" aria-label="Expandir imagen" onclick={() => (expandedImage = log.media_url)}>
-									<img src={log.media_url} alt="Evidencia del nivel {log.level}" loading="lazy" />
-									<span class="log-feed-expand">⤢ Expandir</span>
-								</button>
-							{/if}
-						</article>
-					{/each}
-				</div>
-			{/if}
-
-			{#if expandedImage}
-				<div class="modal is-active" style="z-index: 2000;">
-					<div class="modal-background" role="presentation" onclick={() => (expandedImage = null)}></div>
-					<div class="modal-content">
-						<img src={expandedImage} alt="Evidencia ampliada" style="border-radius: 16px; width: 100%;" />
+				{#if logsLoading}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<p class="has-text-grey-light">Cargando tu bitácora…</p>
 					</div>
-					<button class="modal-close is-large" aria-label="Cerrar" onclick={() => (expandedImage = null)}></button>
-				</div>
-			{/if}
+				{:else if logsError}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<p class="has-text-danger">{logsError}</p>
+					</div>
+				{:else if globalLogs.length === 0}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<div style="font-size: 2.5rem; margin-bottom: 12px;">📓</div>
+						<p class="has-text-grey-light mb-2" style="font-weight: 600;">Tu bitácora está en blanco</p>
+						<p class="has-text-grey-light" style="font-size: 0.85rem;">
+							Cada vez que desbloquees un nivel registrando tu esfuerzo, aparecerá aquí.
+						</p>
+					</div>
+				{:else}
+					<div class="log-feed">
+						{#each globalLogs as log (log.id)}
+							<article class="glass-panel log-feed-card mb-4">
+								<div class="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
+									<div>
+										<h3 class="has-text-weight-bold has-text-white is-capitalized" style="font-size: 1.05rem;">
+											{log.tasks?.title ?? 'Proyecto'}
+										</h3>
+										<span style="color: var(--text-muted); font-size: 0.78rem;">{log.tasks?.tema ?? ''}</span>
+									</div>
+									<span class="tag is-warning is-light">🔓 Nivel {log.level}</span>
+								</div>
+								<time style="color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;">
+									{formatLogDate(log.created_at)}
+								</time>
+								<p class="log-feed-text mt-2">{log.log_text}</p>
+								{#if log.media_url}
+									<button
+										type="button"
+										class="log-feed-img-btn mt-3"
+										aria-label="Expandir imagen"
+										onclick={() => {
+											playClick();
+											playOpen();
+											expandedImage = log.media_url;
+										}}
+									>
+										<img src={log.media_url} alt="Evidencia del nivel {log.level}" loading="lazy" />
+										<span class="log-feed-expand">⤢ Expandir</span>
+									</button>
+								{/if}
+							</article>
+						{/each}
+					</div>
+				{/if}
+
+				{#if expandedImage}
+					<div class="modal is-active" style="z-index: 2000;">
+						<div
+							class="modal-background"
+							role="presentation"
+							transition:fade={{ duration: 200 }}
+							onclick={() => {
+								playClose();
+								expandedImage = null;
+							}}
+						></div>
+						<div class="modal-content" transition:fly={{ y: 24, duration: 280, easing: cubicOut }}>
+							<img src={expandedImage} alt="Evidencia ampliada" style="border-radius: 16px; width: 100%;" />
+						</div>
+						<button
+							class="modal-close is-large"
+							aria-label="Cerrar"
+							onclick={() => {
+								playClose();
+								expandedImage = null;
+							}}
+						></button>
+					</div>
+				{/if}
+			</div>
 
 		{:else if activeTab === 'archivo'}
-			<!-- ===== ARCHIVO: RETIRADAS TÁCTICAS ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
-				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
-					⛺ Retiradas Tácticas
-				</h2>
-				<span class="badge-pill" style="background: rgba(154,166,173,0.35); color: #ccc;">
-					{retreatTasks.length} {retreatTasks.length === 1 ? 'misión' : 'misiones'}
-				</span>
-			</div>
+			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
+				<!-- ===== ARCHIVO: RETIRADAS TÁCTICAS ===== -->
+				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
+					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+						⛺ Retiradas Tácticas
+					</h2>
+					<span class="badge-pill" style="background: rgba(154,166,173,0.35); color: #ccc;">
+						{retreatTasks.length} {retreatTasks.length === 1 ? 'misión' : 'misiones'}
+					</span>
+				</div>
 
-			{#if retreatTasks.length > 0}
-				<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
-					Misiones abandonadas. Lee su capítulo de retirada, reinícialas o elimínalas.
-				</p>
-				<div>
-					{#each retreatTasks as Task (Task.id)}
-						<CardTask
-							task={Task}
-							hasViewed={true}
-							onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
-						/>
-					{/each}
-				</div>
-			{:else}
-				<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-					<div style="font-size: 2.5rem; margin-bottom: 12px;">⛺</div>
-					<p class="has-text-grey-light mb-2" style="font-weight: 600;">No hay retiradas tácticas</p>
-					<p class="has-text-grey-light" style="font-size: 0.85rem;">
-						Las misiones abandonadas aparecerán aquí.
+				{#if retreatTasks.length > 0}
+					<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+						Misiones abandonadas. Lee su capítulo de retirada, reinícialas o elimínalas.
 					</p>
-				</div>
-			{/if}
+					<div>
+						{#each retreatTasks as Task (Task.id)}
+							<CardTask
+								task={Task}
+								hasViewed={true}
+								onSelect={(chapterIdx) => openTaskDetails(Task.id, chapterIdx)}
+							/>
+						{/each}
+					</div>
+				{:else}
+					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+						<div style="font-size: 2.5rem; margin-bottom: 12px;">⛺</div>
+						<p class="has-text-grey-light mb-2" style="font-weight: 600;">No hay retiradas tácticas</p>
+						<p class="has-text-grey-light" style="font-size: 0.85rem;">
+							Las misiones abandonadas aparecerán aquí.
+						</p>
+					</div>
+				{/if}
+			</div>
 
 		{:else if activeTab === 'ajustes'}
-			<!-- ===== SECCIÓN AJUSTES ===== -->
-			<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
-				<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
-					⚙️ Ajustes
-				</h2>
-				<span class="badge-pill" style="background: rgba(25, 212, 168, 0.15); color: var(--accent-primary); border: 1px solid rgba(25, 212, 168, 0.3);">
-					Perfil y Cuenta
-				</span>
+			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
+				<!-- ===== SECCIÓN AJUSTES ===== -->
+				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
+					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
+						⚙️ Ajustes
+					</h2>
+					<span class="badge-pill" style="background: rgba(25, 212, 168, 0.15); color: var(--accent-primary); border: 1px solid rgba(25, 212, 168, 0.3);">
+						Perfil y Cuenta
+					</span>
+				</div>
+
+				<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+					Administra tu avatar, información de cuenta y compañero aliado para las historias narrativas.
+				</p>
+
+				<SeccionAjustes user={data.user} />
 			</div>
-
-			<p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
-				Administra tu avatar, información de cuenta y compañero aliado para las historias narrativas.
-			</p>
-
-			<SeccionAjustes user={data.user} />
 		{/if}
 
 		<!-- ===== BOTTOM NAV ===== -->
@@ -693,10 +863,7 @@
 			<!-- Dashboard -->
 			<button
 				class="nav-item {activeTab === 'dashboard' ? 'active' : ''}"
-				onclick={() => {
-					playClick();
-					activeTab = 'dashboard';
-				}}
+				onclick={() => switchTab('dashboard')}
 				aria-label="Dashboard"
 			>
 				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -708,14 +875,31 @@
 			<!-- Victoria -->
 			<button
 				class="nav-item {activeTab === 'victoria' ? 'active' : ''}"
-				onclick={() => {
-					playClick();
-					activeTab = 'victoria';
-				}}
+				onclick={() => switchTab('victoria')}
 				aria-label="Victoria"
+				style="position: relative;"
 			>
-				<span style="font-size: 19px; line-height: 20px; height: 20px; margin-top: 0;">🏆</span>
+				<svg
+					width="22"
+					height="22"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+					<path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+					<path d="M4 22h16"></path>
+					<path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+					<path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+					<path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+				</svg>
 				<span>Victoria</span>
+				{#if victoryTasks.length > 0}
+					<span class="nav-badge">{victoryTasks.length}</span>
+				{/if}
 			</button>
 
 			<!-- FAB crear -->
@@ -724,10 +908,7 @@
 			<!-- Archivo (reemplaza Calendario) -->
 			<button
 				class="nav-item {activeTab === 'archivo' ? 'active' : ''}"
-				onclick={() => {
-					playClick();
-					activeTab = 'archivo';
-				}}
+				onclick={() => switchTab('archivo')}
 				aria-label="Archivo (Retiradas)"
 				style="position: relative;"
 			>
@@ -754,10 +935,7 @@
 			<!-- Ajustes -->
 			<button
 				class="nav-item {activeTab === 'ajustes' ? 'active' : ''}"
-				onclick={() => {
-					playClick();
-					activeTab = 'ajustes';
-				}}
+				onclick={() => switchTab('ajustes')}
 				aria-label="Ajustes"
 			>
 				<svg
