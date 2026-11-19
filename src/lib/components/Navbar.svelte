@@ -29,7 +29,7 @@
 	let activeSkinId = $state<SkinPaletteKey>('estandar');
 	let navGridPos = $derived(getAvatarGridPosition(activeSkinId));
 	let navActiveGridUrl = $derived(
-		user?.avatarGridUrl || (user?.isAvatarGrid ? user?.avatarUrl : null)
+		user?.isAvatarGrid ? user?.avatarGridUrl || user?.avatarUrl || null : null
 	);
 	let navAvatarLoadFailed = $state(false);
 	let navShowGridCell = $derived(!navAvatarLoadFailed && Boolean(navActiveGridUrl));

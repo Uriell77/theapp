@@ -46,23 +46,23 @@ ${cellDescriptions}
 async function generateAvatarGridWithGemini(
 	base64Image: string,
 	mimeType: string
-): Promise<{ buffer: Buffer; mimeType: string } | null> {
+): Promise<{ buffer?: Buffer; mimeType?: string; quotaZeroFreeTier?: boolean }> {
 	const G_PREFIX = 'gemini';
 	const V_2_5 = ['2', '5'].join('.');
-	const V_2_0 = ['2', '0'].join('.');
 	const V_3_1 = ['3', '1'].join('.');
+	const V_2_1 = ['2', '1'].join('.');
 	const imageModels = [
 		`${G_PREFIX}-${V_2_5}-flash-image`,
 		`${G_PREFIX}-${V_3_1}-flash-image-preview`,
 		`${G_PREFIX}-${V_3_1}-flash-image`,
+		`${G_PREFIX}-${V_3_1}-flash-lite-image`,
 		`${G_PREFIX}-3-pro-image-preview`,
 		`${G_PREFIX}-3-pro-image`,
 		'nano-banana-pro-preview',
-		`${G_PREFIX}-${V_2_5}-flash-image-preview`,
-		`${G_PREFIX}-${V_2_0}-flash-exp-image-generation`,
-		`${G_PREFIX}-${V_2_0}-flash-preview-image-generation`
+		`${G_PREFIX}-nano-banana-${V_2_1}`
 	];
 	const avatarGridPrompt = buildAvatarGridPrompt();
+	let sawQuotaZeroFreeTier = false;
 
 	for (const modelName of imageModels) {
 		let retries = 2;
@@ -122,6 +122,15 @@ async function generateAvatarGridWithGemini(
 					continue;
 				}
 
+				const isQuotaZeroFreeTier =
+					(errObj?.status === 429 || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) &&
+					(msg.includes('limit: 0') || msg.includes('free_tier'));
+
+				if (isQuotaZeroFreeTier) {
+					sawQuotaZeroFreeTier = true;
+					break;
+				}
+
 				const isSaturated =
 					errObj?.status === 503 ||
 					errObj?.status === 429 ||
@@ -140,7 +149,7 @@ async function generateAvatarGridWithGemini(
 		}
 	}
 
-	return null;
+	return { quotaZeroFreeTier: sawQuotaZeroFreeTier };
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -527,7 +536,7 @@ Inspírate en esta lista y elige la opción más idónea para construir una tram
 La historia es una metáfora estricta. NUNCA menciones la tarea real ("${title}"). Todo ocurre dentro de la ficción manteniendo una relación simbólica.
 La historia está narrada en tercera persona por un narrador, no desde la perspectiva del protagonista.
 Introduce cortos diálogos entre el protagonista y los personajes de soporte para enriquecer la narrativa y mostrar la interacción y colaboración en la misión.
-Siempre debe haber uno o varios enemigos, obstáculos o fuerzas antagonistas con quienes luchar y vencer.
+Siempre debe haber uno o varios enemigos, obstáculos o fuerzas antagonistas con quienes luchar y vencer que personifiquen el desafio ("${title}") y le de forma, voz y personalidad. (ejem. dragones, monstruos, villanos, enemigos, fuerzas de la naturaleza) para que el protagonista se vea obligado a enfrentarlos en una pelea cuerpo a cuerpo, evadiendo o engañando segun sea la tarea (ejem. enfermedad,un examen, un reto del gym etc... pueden ser un mounstruo a vencer; una tarea domestica, podria ser un campo minado, o una carrera contra el tiempo) utiliza el analisis de la tarea ("${title}") para identificar el enemigo mas representativo.
 
 REGLAS DE ESTILO Y TONO (CRÍTICAS - FORMATO NOVELA RADIAL):
 1. MELODRAMA EXTREMO: Exagera la carga emocional. Cada acción debe sentirse como una cuestión de vida, muerte o destino ineludible. Lleva el miedo, la tensión, la urgencia y la presión del tiempo al límite absoluto.
@@ -1243,44 +1252,69 @@ FORMATO JSON OBLIGATORIO:
 			const mimeType = avatarFile.type || 'image/png';
 			const base64Image = originalBuffer.toString('base64');
 
-			// 1. Generar cuadrícula 5×5 de temáticas con Gemini sin alterar el rostro
+			// 1. Intentar generar cuadrícula 5×5 de temáticas con Gemini sin alterar el rostro
 			const generatedGrid = await generateAvatarGridWithGemini(base64Image, mimeType);
-			if (!generatedGrid) {
-				return fail(502, {
-					message:
-						'No se pudo generar la cuadrícula de avatares temáticos con la API de Gemini. Inténtalo de nuevo.'
-				});
+			const gridFileName = `${locals.user.id}_grid.png`;
+			const singleFileName = `${locals.user.id}.png`;
+
+			if (generatedGrid.buffer) {
+				// 2A. Guardar la cuadrícula generada en el bucket MGAvatars
+				const { error: gridError } = await supabase.storage
+					.from('MGAvatars')
+					.upload(gridFileName, generatedGrid.buffer, {
+						contentType: generatedGrid.mimeType || 'image/png',
+						upsert: true
+					});
+
+				if (gridError) {
+					console.error('Error subiendo cuadrícula de avatares a Supabase:', gridError);
+					return fail(500, {
+						message: 'No se pudo almacenar la cuadrícula temática en el bucket MGAvatars.'
+					});
+				}
+
+				// Eliminar retrato base sin editar si existía de una versión anterior
+				await supabase.storage.from('MGAvatars').remove([singleFileName]);
+
+				const gridPublicBase = supabase.storage.from('MGAvatars').getPublicUrl(gridFileName)
+					.data.publicUrl;
+				const avatarGridUrl = `${gridPublicBase}?v=${Date.now()}`;
+
+				return {
+					success: true,
+					isAvatarGrid: true,
+					avatarGridUrl,
+					avatarUrl: avatarGridUrl,
+					message: '¡Cuadrícula de avatares temáticos creada con Gemini y guardada en MGAvatars!'
+				};
 			}
 
-			// 2. Guardar la cuadrícula generada en el bucket MGAvatars
-			const gridFileName = `${locals.user.id}_grid.png`;
-			const { error: gridError } = await supabase.storage
+			// 2B. Fallback: subir la imagen original del usuario a MGAvatars y deshabilitar modo cuadrícula
+			const { error: singleError } = await supabase.storage
 				.from('MGAvatars')
-				.upload(gridFileName, generatedGrid.buffer, {
-					contentType: generatedGrid.mimeType || 'image/png',
+				.upload(singleFileName, originalBuffer, {
+					contentType: mimeType,
 					upsert: true
 				});
 
-			if (gridError) {
-				console.error('Error subiendo cuadrícula de avatares a Supabase:', gridError);
-				return fail(500, {
-					message: 'No se pudo almacenar la cuadrícula temática en el bucket MGAvatars.'
-				});
+			if (singleError) {
+				console.error('Error subiendo avatar base a Supabase:', singleError);
+				return fail(500, { message: 'No se pudo subir la imagen al bucket MGAvatars' });
 			}
 
-			// Eliminar retrato base sin editar si existía de una versión anterior
-			await supabase.storage.from('MGAvatars').remove([`${locals.user.id}.png`]);
+			// Eliminar cualquier cuadrícula previa para inhabilitar el cambio de avatar según el skin
+			await supabase.storage.from('MGAvatars').remove([gridFileName]);
 
-			const gridPublicBase = supabase.storage.from('MGAvatars').getPublicUrl(gridFileName)
+			const singlePublicBase = supabase.storage.from('MGAvatars').getPublicUrl(singleFileName)
 				.data.publicUrl;
-			const avatarGridUrl = `${gridPublicBase}?v=${Date.now()}`;
+			const avatarUrl = `${singlePublicBase}?v=${Date.now()}`;
 
 			return {
 				success: true,
-				isAvatarGrid: true,
-				avatarGridUrl,
-				avatarUrl: avatarGridUrl,
-				message: '¡Cuadrícula de avatares temáticos creada con Gemini y guardada en MGAvatars!'
+				isAvatarGrid: false,
+				avatarGridUrl: null,
+				avatarUrl,
+				message: 'Avatar actualizado con tu imagen original.'
 			};
 		} catch (error) {
 			console.error('Error al procesar el avatar:', error);

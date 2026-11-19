@@ -96,22 +96,36 @@
 	let effectiveSkin = $derived(skinMode === 'auto' ? autoSkin : getSkinByValue(manualSkinValue));
 
 	let gridPos = $derived(getAvatarGridPosition(effectiveSkin.id));
-	let uploadedGridUrl = $state<string | null>(null);
-	let activeGridUrl = $derived(
-		uploadedGridUrl || user?.avatarGridUrl || (user?.isAvatarGrid ? user?.avatarUrl : null)
+	let uploadedAvatarOverride = $state<{
+		isAvatarGrid: boolean;
+		avatarGridUrl: string | null;
+		avatarUrl: string | null;
+	} | null>(null);
+	let isGridActive = $derived(
+		uploadedAvatarOverride !== null
+			? uploadedAvatarOverride.isAvatarGrid
+			: Boolean(user?.isAvatarGrid && (user?.avatarGridUrl || user?.avatarUrl))
 	);
+	let activeGridUrl = $derived(
+		!isGridActive
+			? null
+			: uploadedAvatarOverride?.avatarGridUrl || user?.avatarGridUrl || user?.avatarUrl || null
+	);
+	let effectiveAvatarUrl = $derived(uploadedAvatarOverride?.avatarUrl || user?.avatarUrl || null);
 	let avatarLoadFailed = $state(false);
-	let showGridCell = $derived(!previewAvatarUrl && !avatarLoadFailed && Boolean(activeGridUrl));
+	let showGridCell = $derived(
+		!previewAvatarUrl && !avatarLoadFailed && isGridActive && Boolean(activeGridUrl)
+	);
 	let displayedAvatarSrc = $derived(
 		previewAvatarUrl ||
-			(avatarLoadFailed ? user?.avatarUrl : activeGridUrl) ||
-			user?.avatarUrl ||
+			(showGridCell ? activeGridUrl : effectiveAvatarUrl) ||
+			effectiveAvatarUrl ||
 			'/emptyavatar.avif'
 	);
 
 	$effect(() => {
 		void activeGridUrl;
-		void user?.avatarUrl;
+		void effectiveAvatarUrl;
 		void previewAvatarUrl;
 		avatarLoadFailed = false;
 	});
@@ -246,8 +260,13 @@
 									}
 									previewAvatarUrl = null;
 									avatarLoadFailed = false;
-									uploadedGridUrl = (result.data as any)?.avatarGridUrl || null;
-									successMessage = (result.data as any)?.message || '¡Avatar actualizado!';
+									const resData = result.data as any;
+									uploadedAvatarOverride = {
+										isAvatarGrid: Boolean(resData?.isAvatarGrid),
+										avatarGridUrl: resData?.isAvatarGrid ? resData?.avatarGridUrl || null : null,
+										avatarUrl: resData?.avatarUrl || null
+									};
+									successMessage = resData?.message || '¡Avatar actualizado!';
 									await invalidateAll();
 								} else if (result.type === 'failure') {
 									errorMessage = (result.data as any)?.message || 'Error al subir imagen';
@@ -290,7 +309,7 @@
 						</Motion>
 					</form>
 
-					{#if user?.avatarUrl || activeGridUrl}
+					{#if effectiveAvatarUrl || activeGridUrl}
 						<form
 							method="POST"
 							action="?/deleteAvatar"
@@ -298,7 +317,7 @@
 								return async ({ update, result }) => {
 									if (result.type === 'success') {
 										previewAvatarUrl = null;
-										uploadedGridUrl = null;
+										uploadedAvatarOverride = null;
 										avatarLoadFailed = false;
 										successMessage = 'Avatar eliminado correctamente';
 										await invalidateAll();
