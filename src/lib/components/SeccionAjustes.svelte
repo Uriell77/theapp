@@ -6,15 +6,16 @@
 	import { untrack } from 'svelte';
 	import {
 		ALL_SKINS,
+		SKIN_AUTO_CACHE_KEY,
 		SKIN_MODE_KEY,
 		SKIN_STORAGE_KEY,
 		applySkin,
 		computeAutoSkin,
+		getAvatarGridPosition,
 		getSkinByValue,
 		getSkinMode,
 		type SkinMode
 	} from '$lib/skins';
-	import { SKIN_AUTO_CACHE_KEY } from '$lib/skins';
 
 	let { user }: { user: any } = $props();
 
@@ -94,6 +95,26 @@
 	let autoSkin = $derived(computeAutoSkin(user?.tasks ?? []));
 	let effectiveSkin = $derived(skinMode === 'auto' ? autoSkin : getSkinByValue(manualSkinValue));
 
+	let gridPos = $derived(getAvatarGridPosition(effectiveSkin.id));
+	let activeGridUrl = $derived(
+		user?.avatarGridUrl || (user?.isAvatarGrid ? user?.avatarUrl : null)
+	);
+	let avatarLoadFailed = $state(false);
+	let showGridCell = $derived(!previewAvatarUrl && !avatarLoadFailed && Boolean(activeGridUrl));
+	let displayedAvatarSrc = $derived(
+		previewAvatarUrl ||
+			(avatarLoadFailed ? user?.avatarUrl : activeGridUrl) ||
+			user?.avatarUrl ||
+			'/emptyavatar.avif'
+	);
+
+	$effect(() => {
+		void activeGridUrl;
+		void user?.avatarUrl;
+		void previewAvatarUrl;
+		avatarLoadFailed = false;
+	});
+
 	let skinGroups = $derived.by(() => {
 		const groups: Record<string, typeof ALL_SKINS> = {};
 		for (const sk of ALL_SKINS) (groups[sk.grupo] ??= []).push(sk);
@@ -164,14 +185,23 @@
 		<!-- Subsección Avatar -->
 		<div class="avatar-header-row mb-4">
 			<div class="avatar-preview-box">
-				<figure class="image is-60x60">
+				<figure
+					class="avatar-img-wrap"
+					class:is-grid-avatar={showGridCell}
+					title={showGridCell ? `Avatar temático: ${effectiveSkin.etiqueta}` : 'Avatar del usuario'}
+				>
 					<img
-						src={previewAvatarUrl || user?.avatarUrl || '/emptyavatar.avif'}
+						src={displayedAvatarSrc}
 						alt="Avatar del usuario"
 						class="avatar-circle-img"
+						class:is-grid-sprite={showGridCell}
+						style={showGridCell
+							? `width: ${gridPos.cols * 100}%; height: ${gridPos.rows * 100}%; max-width: none; position: absolute; left: -${gridPos.col * 100}%; top: -${gridPos.row * 100}%; object-fit: cover;`
+							: ''}
 						onerror={(e) => {
+							avatarLoadFailed = true;
 							const target = e.currentTarget as HTMLImageElement;
-							if (target.src !== '/emptyavatar.avif') {
+							if (!target.src.endsWith('/emptyavatar.avif')) {
 								target.src = '/emptyavatar.avif';
 							}
 						}}
@@ -210,6 +240,11 @@
 							return async ({ update, result }) => {
 								isUploadingAvatar = false;
 								if (result.type === 'success') {
+									if (previewAvatarUrl && previewAvatarUrl.startsWith('blob:')) {
+										URL.revokeObjectURL(previewAvatarUrl);
+									}
+									previewAvatarUrl = null;
+									avatarLoadFailed = false;
 									successMessage = (result.data as any)?.message || '¡Avatar actualizado!';
 									await invalidateAll();
 								} else if (result.type === 'failure') {
@@ -240,7 +275,7 @@
 								class="btn-avatar-action"
 							>
 								{#if isUploadingAvatar}
-									Subiendo a MGAvatars...
+									Generando cuadrícula temática con IA...
 								{:else}
 									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
 										<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -535,6 +570,7 @@
 	}
 
 	.avatar-img-wrap {
+		position: relative;
 		width: 68px;
 		height: 68px;
 		border-radius: 50%;
@@ -542,18 +578,32 @@
 		margin: 0;
 		border: 2px solid rgba(255, 255, 255, 0.15);
 		background: #142127;
+		transition: border-color 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.avatar-img-wrap.is-grid-avatar {
+		border-color: var(--accent-primary);
+		box-shadow: 0 0 12px var(--accent-glow);
 	}
 
 	.avatar-circle-img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		display: block;
+	}
+
+	.avatar-circle-img.is-grid-sprite {
+		transition:
+			left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+			top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
 	.avatar-pencil-btn {
 		position: absolute;
-		bottom: -35px;
+		bottom: -2px;
 		right: -2px;
+		z-index: 2;
 		width: 26px;
 		height: 26px;
 		border-radius: 50%;

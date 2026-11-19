@@ -12,6 +12,7 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 	import SeccionAjustes from '$lib/components/SeccionAjustes.svelte';
 	import SoundEngine from '$lib/components/SoundEngine.svelte';
+	import Narrador from '$lib/components/Narrador.svelte';
 	import { page } from '$app/state';
 	import { playClick, playClose, playOpen, playSlide, playSuccess, playVanish } from '$lib/audio';
 	import { syncSkin } from '$lib/skins';
@@ -118,166 +119,175 @@
 	const tabParam = page.url.searchParams.get('tab') as ViewId | null;
 	let activeTab = $state<ViewId>(tabParam && VIEWS.includes(tabParam) ? tabParam : 'dashboard');
 
-	// Bitácora de Desbloqueo (project_logs agrupados por tarea)
+	// Bitácora (Créditos de Película con resumen total de actividad + discurso Gemini)
 	let globalLogs = $state<any[]>([]);
 	let logsLoading = $state(false);
 	let logsError = $state<string | null>(null);
 	let expandedImage = $state<string | null>(null);
-	let selectedBitacoraTaskId = $state<number | null>(null);
-	let bitacoraSlideIdx = $state(0);
-	let bitacoraPaused = $state(false);
-	let bitacoraWheelCooldown = 0;
-	let bitacoraTouchStartY = 0;
 
-	let bitacoraTaskGroups = $derived.by(() => {
-		const grouped = new Map<number, { id: number; title: string; tema: string; logs: any[] }>();
+	interface CreditsProjectItem {
+		order: number;
+		id: number;
+		title: string;
+		tema: string;
+		cantidad_de_niveles: number;
+		status: string;
+		isArchived: boolean;
+		createdAt: string | null;
+		outcome: 'victory' | 'retreat' | 'active';
+		statusLabel: string;
+		levelsCount: number;
+		logs: any[];
+	}
 
-		for (const log of globalLogs) {
-			const resolvedId = Number(log.task_id ?? log.project_id);
-			if (isNaN(resolvedId)) continue;
-			const matchedTask = allTasks.find((t: any) => Number(t.id) === resolvedId);
-			const title = log.tasks?.title ?? matchedTask?.title ?? `Proyecto #${resolvedId}`;
-			const tema = log.tasks?.tema ?? matchedTask?.tema ?? '';
+	interface CreditsPayload {
+		userProfile: {
+			nombre_de_usuario: string;
+			aliados: string | null;
+			createdAt: string | null;
+		};
+		creditsProjects: CreditsProjectItem[];
+		stats: {
+			totalProjects: number;
+			victories: number;
+			retreats: number;
+			active: number;
+			totalLogs: number;
+			totalPhotos: number;
+		};
+		motivationalSpeech: string;
+	}
 
-			if (!grouped.has(resolvedId)) {
-				grouped.set(resolvedId, { id: resolvedId, title, tema, logs: [] });
-			}
-			grouped.get(resolvedId)!.logs.push(log);
+	let creditsData = $state<CreditsPayload | null>(null);
+	let creditsPaused = $state(false);
+	let creditsHoverPaused = $state(false);
+	let creditsRollKey = $state(0);
+	let creditsSpeechKey = $state('credits-0');
+	let creditsViewportEl = $state<HTMLDivElement | null>(null);
+	let creditsFloatScroll = 0;
+
+	function hashSpeech(str: string): string {
+		let hash = 5381;
+		for (let i = 0; i < str.length; i++) {
+			hash = (hash * 33) ^ str.charCodeAt(i);
 		}
+		return `credits-${(hash >>> 0).toString(36)}`;
+	}
 
-		for (const group of grouped.values()) {
-			group.logs.sort((a, b) => Number(a.level) - Number(b.level));
-		}
-
-		return Array.from(grouped.values());
-	});
-
-	let activeBitacoraGroup = $derived(
-		bitacoraTaskGroups.find((g) => g.id === selectedBitacoraTaskId) ?? bitacoraTaskGroups[0] ?? null
-	);
-	let currentBitacoraLogs = $derived(activeBitacoraGroup?.logs ?? []);
-	let activeBitacoraSlide = $derived(
-		currentBitacoraLogs.length > 0
-			? currentBitacoraLogs[Math.min(bitacoraSlideIdx, currentBitacoraLogs.length - 1)]
-			: null
-	);
-
-	async function loadGlobalLogs() {
-		const ids = allTasks.map((t: any) => t.id);
-		if (ids.length === 0) {
-			globalLogs = [];
-			return;
-		}
+	async function loadBitacoraCredits(forceRegenerate = false) {
 		logsLoading = true;
 		logsError = null;
 		try {
-			const idList = ids.join(',');
-			const { data: rows, error } = await supabase
-				.from('project_logs')
-				.select('*')
-				.or(`task_id.in.(${idList}),project_id.in.(${idList})`)
-				.order('level', { ascending: true })
-				.order('created_at', { ascending: true });
-
-			let fetchedRows: any[] = [];
-			if (!error && Array.isArray(rows) && rows.length > 0) {
-				fetchedRows = rows;
-			} else {
-				const res = await fetch('/api/project-logs');
-				if (!res.ok) {
-					throw new Error(`HTTP ${res.status}`);
-				}
-				const payload = await res.json();
-				fetchedRows = Array.isArray(payload?.logs) ? payload.logs : [];
+			const query = forceRegenerate
+				? `/api/project-logs?mode=credits&t=${Date.now()}`
+				: '/api/project-logs?mode=credits';
+			const res = await fetch(query);
+			if (!res.ok) {
+				throw new Error(`HTTP ${res.status}`);
 			}
+			const payload = await res.json();
+			const speech = String(payload?.motivationalSpeech || '');
 
-			const taskMap = new Map(allTasks.map((t: any) => [Number(t.id), t]));
-			globalLogs = fetchedRows.map((row: any) => {
-				const resolvedId = Number(row.task_id ?? row.project_id);
-				const t = taskMap.get(resolvedId);
-				return {
-					...row,
-					task_id: isNaN(resolvedId) ? row.task_id : resolvedId,
-					tasks: row.tasks ?? (t ? { title: t.title, tema: t.tema } : null)
-				};
-			});
+			creditsData = {
+				userProfile: payload?.userProfile ?? {
+					nombre_de_usuario: data?.user?.nombre_de_usuario || 'Héroe',
+					aliados: data?.user?.aliados || null,
+					createdAt: null
+				},
+				creditsProjects: Array.isArray(payload?.creditsProjects) ? payload.creditsProjects : [],
+				stats: payload?.stats ?? {
+					totalProjects: 0,
+					victories: 0,
+					retreats: 0,
+					active: 0,
+					totalLogs: 0,
+					totalPhotos: 0
+				},
+				motivationalSpeech: speech
+			};
+			globalLogs = Array.isArray(payload?.logs) ? payload.logs : [];
+			creditsSpeechKey = hashSpeech(speech);
+			creditsPaused = false;
+			creditsRollKey++;
+			creditsFloatScroll = 0;
+			if (creditsViewportEl) {
+				creditsViewportEl.scrollTop = 0;
+			}
 		} catch (err) {
-			console.error('Error al cargar la bitácora global:', err);
-			logsError = 'No se pudo cargar la bitácora de desbloqueo.';
+			console.error('Error al cargar la bitácora de créditos:', err);
+			logsError = 'No se pudo generar la bitácora cinematográfica de tu actividad.';
+			creditsData = null;
 			globalLogs = [];
 		} finally {
 			logsLoading = false;
 		}
 	}
 
-	function selectBitacoraTask(taskId: number) {
+	function toggleCreditsPause() {
 		playClick();
-		if (selectedBitacoraTaskId !== taskId) {
-			playSlide();
-			selectedBitacoraTaskId = taskId;
-			bitacoraSlideIdx = 0;
-		}
+		creditsPaused = !creditsPaused;
 	}
 
-	function shiftBitacoraSlide(delta: number, withAudio = false) {
-		if (currentBitacoraLogs.length < 2) return;
-		if (withAudio) {
-			playClick();
-			playSlide();
-		}
-		bitacoraSlideIdx = (bitacoraSlideIdx + delta + currentBitacoraLogs.length) % currentBitacoraLogs.length;
-	}
-
-	function selectBitacoraSlide(index: number) {
+	function restartCreditsRoll() {
 		playClick();
-		if (bitacoraSlideIdx !== index) {
-			playSlide();
-			bitacoraSlideIdx = index;
+		playSlide();
+		creditsPaused = false;
+		creditsFloatScroll = 0;
+		if (creditsViewportEl) {
+			creditsViewportEl.scrollTop = 0;
 		}
+		creditsRollKey++;
 	}
 
-	function handleBitacoraWheel(e: WheelEvent) {
-		if (currentBitacoraLogs.length < 2 || Math.abs(e.deltaY) < 12) return;
-		const now = Date.now();
-		if (now - bitacoraWheelCooldown < 380) return;
-		e.preventDefault();
-		bitacoraWheelCooldown = now;
-		shiftBitacoraSlide(e.deltaY > 0 ? 1 : -1, true);
-	}
-
-	function handleBitacoraTouchStart(e: TouchEvent) {
-		bitacoraTouchStartY = e.touches[0]?.clientY ?? 0;
-	}
-
-	function handleBitacoraTouchEnd(e: TouchEvent) {
-		if (currentBitacoraLogs.length < 2) return;
-		const endY = e.changedTouches[0]?.clientY ?? bitacoraTouchStartY;
-		const deltaY = endY - bitacoraTouchStartY;
-		if (Math.abs(deltaY) > 36) {
-			shiftBitacoraSlide(deltaY < 0 ? 1 : -1, true);
+	function handleCreditsScroll() {
+		if (!creditsViewportEl) return;
+		if (Math.abs(creditsViewportEl.scrollTop - creditsFloatScroll) > 4) {
+			creditsFloatScroll = creditsViewportEl.scrollTop;
 		}
 	}
 
 	$effect(() => {
 		if (activeTab === 'bitacora') {
 			void allTasks.length;
-			untrack(() => loadGlobalLogs());
+			untrack(() => loadBitacoraCredits());
 		}
 	});
 
+	// Desplazamiento continuo estilo créditos de película
 	$effect(() => {
 		if (
 			activeTab !== 'bitacora' ||
-			currentBitacoraLogs.length < 2 ||
-			bitacoraPaused ||
-			expandedImage !== null
+			!creditsData ||
+			creditsPaused ||
+			creditsHoverPaused ||
+			expandedImage !== null ||
+			!creditsViewportEl
 		) {
 			return;
 		}
-		void bitacoraSlideIdx;
-		void activeBitacoraGroup?.id;
-		const timer = setInterval(() => shiftBitacoraSlide(1), 7000);
-		return () => clearInterval(timer);
+
+		void creditsRollKey;
+		const el = creditsViewportEl;
+		creditsFloatScroll = el.scrollTop;
+		let rafId = 0;
+		let lastTime = performance.now();
+
+		const tick = (now: number) => {
+			const dt = Math.min(0.1, (now - lastTime) / 1000);
+			lastTime = now;
+
+			const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
+			if (maxScroll > 0) {
+				if (el.scrollTop < maxScroll - 1) {
+					creditsFloatScroll = Math.min(maxScroll, creditsFloatScroll + dt * 34);
+					el.scrollTop = creditsFloatScroll;
+				}
+			}
+			rafId = requestAnimationFrame(tick);
+		};
+
+		rafId = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(rafId);
 	});
 
 	function formatLogDate(value: string) {
@@ -842,155 +852,250 @@
 
 		{:else if activeTab === 'bitacora'}
 			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
-				<!-- ===== BITÁCORA DE DESBLOQUEO ===== -->
+				<!-- ===== BITÁCORA CINEMATOGRÁFICA: CRÉDITOS DE ACTIVIDAD ===== -->
 				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
 					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.28rem; margin: 0;">
-						📸 Bitácora de Desbloqueo
+						🎬 Bitácora · Créditos de Tu Viaje
 					</h2>
-					<span class="badge-pill">{globalLogs.length} {globalLogs.length === 1 ? 'registro' : 'registros'}</span>
+					<span class="badge-pill">
+						{creditsData?.stats.totalProjects ?? allTasks.length} {(creditsData?.stats.totalProjects ?? allTasks.length) === 1 ? 'proyecto' : 'proyectos'}
+					</span>
 				</div>
 
 				<SoundEngine effect="victory-gold" mood="victory" active={activeTab === 'bitacora'}>
 					{#snippet controls()}
-						<span class="bitacora-audio-tag">🏆 Música de Victoria</span>
+						<div class="credits-audio-controls">
+							{#if creditsData?.motivationalSpeech}
+								{#key creditsSpeechKey}
+									<Narrador
+										text={creditsData.motivationalSpeech}
+										active={activeTab === 'bitacora' && Boolean(creditsData?.motivationalSpeech)}
+										autoPlay={true}
+										taskId="bitacora-credits"
+										chapterKey={creditsSpeechKey}
+									/>
+								{/key}
+							{/if}
+							<span class="credits-music-pill">🏆 Música de Victoria</span>
+						</div>
 					{/snippet}
 
 					{#if logsLoading}
-						<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-							<p class="has-text-grey-light">Cargando tu bitácora de desbloqueo…</p>
+						<div class="glass-panel movie-credits-loading has-text-centered py-6 px-4 mb-4">
+							<div class="credits-reel-badge mb-3">🎞️</div>
+							<p class="has-text-white mb-1" style="font-weight: 700;">
+								Preparando los créditos de tu historia…
+							</p>
+							<p class="has-text-grey-light" style="font-size: 0.84rem;">
+								Importando tus misiones, bitácoras y componiendo el discurso del narrador con IA.
+							</p>
 						</div>
 					{:else if logsError}
 						<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-							<p class="has-text-danger">{logsError}</p>
-						</div>
-					{:else if bitacoraTaskGroups.length === 0}
-						<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-							<div style="font-size: 2.5rem; margin-bottom: 12px;">📓</div>
-							<p class="has-text-grey-light mb-2" style="font-weight: 600;">Tu bitácora de desbloqueo está en blanco</p>
-							<p class="has-text-grey-light" style="font-size: 0.85rem;">
-								Cada foto y mensaje que dejes al desbloquear un capítulo aparecerá aquí.
-							</p>
-						</div>
-					{:else}
-						{#if bitacoraTaskGroups.length > 1}
-							<div class="bitacora-task-pills mb-3" role="tablist" aria-label="Filtrar bitácora por proyecto">
-								{#each bitacoraTaskGroups as group (group.id)}
-									<button
-										type="button"
-										role="tab"
-										aria-selected={activeBitacoraGroup?.id === group.id}
-										class="bitacora-task-pill"
-										class:active={activeBitacoraGroup?.id === group.id}
-										onclick={() => selectBitacoraTask(group.id)}
-									>
-										<span>{group.title}</span>
-										<small>{group.logs.length}</small>
-									</button>
-								{/each}
-							</div>
-						{/if}
-
-						{#if activeBitacoraGroup && activeBitacoraSlide}
-							<div
-								class="glass-panel log-feed-card bitacora-slider-card mb-4"
-								role="region"
-								aria-label="Slider vertical de Bitácora de Desbloqueo"
-								onmouseenter={() => (bitacoraPaused = true)}
-								onmouseleave={() => (bitacoraPaused = false)}
-								onwheel={handleBitacoraWheel}
-								ontouchstart={handleBitacoraTouchStart}
-								ontouchend={handleBitacoraTouchEnd}
+							<p class="has-text-danger mb-3">{logsError}</p>
+							<button
+								type="button"
+								class="btn-primary"
+								style="margin: 0 auto;"
+								onclick={() => {
+									playClick();
+									loadBitacoraCredits(true);
+								}}
 							>
-								<div class="is-flex is-justify-content-space-between is-align-items-flex-start mb-3">
-									<div>
-										<h3 class="has-text-weight-bold has-text-white is-capitalized" style="font-size: 1.08rem; margin: 0;">
-											{activeBitacoraGroup.title}
-										</h3>
-										{#if activeBitacoraGroup.tema}
-											<span style="color: var(--text-muted); font-size: 0.78rem;">{activeBitacoraGroup.tema}</span>
-										{/if}
-									</div>
-									<span class="tag is-warning is-light">
-										{bitacoraSlideIdx + 1} / {currentBitacoraLogs.length}
-									</span>
-								</div>
+								Reintentar
+							</button>
+						</div>
+					{:else if creditsData}
+						<div class="credits-toolbar mb-3">
+							<button
+								type="button"
+								class="credits-ctrl-btn"
+								onclick={toggleCreditsPause}
+							>
+								{creditsPaused ? '▶ Reanudar créditos' : '⏸ Pausar créditos'}
+							</button>
+							<button
+								type="button"
+								class="credits-ctrl-btn"
+								onclick={restartCreditsRoll}
+							>
+								↺ Reiniciar rollo
+							</button>
+							<button
+								type="button"
+								class="credits-ctrl-btn is-gold"
+								onclick={() => {
+									playClick();
+									loadBitacoraCredits(true);
+								}}
+							>
+								✨ Nuevo discurso IA
+							</button>
+						</div>
 
-								<div class="bitacora-vertical-shell">
-									<div class="bitacora-vertical-viewport">
-										{#key `${activeBitacoraGroup.id}-${activeBitacoraSlide.id ?? bitacoraSlideIdx}`}
-											<article class="bitacora-vertical-slide" in:fade={{ duration: 600 }}>
-												{#if activeBitacoraSlide.media_url}
-													<button
-														type="button"
-														class="log-feed-img-btn mb-3"
-														aria-label="Expandir imagen"
-														onclick={() => {
-															playClick();
-															playOpen();
-															expandedImage = activeBitacoraSlide.media_url;
-														}}
-													>
-														<img
-															class="bitacora-ken-burns"
-															src={activeBitacoraSlide.media_url}
-															alt="Evidencia del capítulo {Number(activeBitacoraSlide.level) + 1}"
-															loading="lazy"
-														/>
-														<span class="log-feed-expand">⤢ Expandir</span>
-													</button>
-												{:else}
-													<div class="bitacora-media-fallback mb-3" aria-hidden="true">🏆</div>
-												{/if}
+						<div
+							class="movie-credits-screen mb-4"
+							role="region"
+							aria-label="Créditos cinematográficos de actividad del usuario"
+							onmouseenter={() => (creditsHoverPaused = true)}
+							onmouseleave={() => (creditsHoverPaused = false)}
+						>
+							<div class="movie-credits-stars" aria-hidden="true"></div>
+							{#key creditsRollKey}
+								<div
+									class="movie-credits-viewport"
+									bind:this={creditsViewportEl}
+									onscroll={handleCreditsScroll}
+								>
+									<div class="movie-credits-reel">
+										<!-- 1. APERTURA CINEMATOGRÁFICA -->
+										<header class="credits-opening">
+											<span class="credits-eyebrow">UNA PRODUCCIÓN DE RESILIENCIA Y CORAJE</span>
+											<h3 class="credits-hero-name">{creditsData.userProfile.nombre_de_usuario}</h3>
+											{#if creditsData.userProfile.aliados}
+												<p class="credits-ally-line">
+													EN COMPAÑÍA DE <strong>{creditsData.userProfile.aliados}</strong>
+												</p>
+											{/if}
+											<div class="credits-divider" aria-hidden="true">─── ✦ ───</div>
 
-												<div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
-													<span class="tag is-warning is-light">
-														🔓 Capítulo {Number(activeBitacoraSlide.level) + 1} desbloqueado
-													</span>
-													<time style="color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;">
-														{formatLogDate(activeBitacoraSlide.created_at)}
-													</time>
+											<blockquote class="credits-speech-card">
+												<span class="credits-speech-label">🎙️ PALABRAS DEL NARRADOR</span>
+												<p class="credits-speech-text">{creditsData.motivationalSpeech}</p>
+											</blockquote>
+										</header>
+
+										<!-- 2. BALANCE DE ACTIVIDAD -->
+										<section class="credits-cast-summary">
+											<span class="credits-section-kicker">REPARTO DE ESFUERZO Y LOGROS</span>
+											<div class="credits-stats-grid">
+												<div class="credits-stat-item">
+													<span class="credits-stat-num">{creditsData.stats.totalProjects}</span>
+													<span class="credits-stat-lbl">Proyectos</span>
 												</div>
-
-												<p class="log-feed-text mt-2">{activeBitacoraSlide.log_text}</p>
-											</article>
-										{/key}
-									</div>
-
-									{#if currentBitacoraLogs.length > 1}
-										<div class="bitacora-vertical-rail">
-											<button
-												type="button"
-												class="bitacora-rail-btn"
-												aria-label="Capítulo anterior"
-												onclick={() => shiftBitacoraSlide(-1, true)}
-											>
-												▲
-											</button>
-											<div class="bitacora-vertical-dots">
-												{#each currentBitacoraLogs as logItem, i}
-													<button
-														type="button"
-														class="bitacora-vertical-dot"
-														class:active={i === bitacoraSlideIdx}
-														title="Capítulo {Number(logItem.level) + 1}"
-														aria-label="Ir al capítulo {Number(logItem.level) + 1}"
-														onclick={() => selectBitacoraSlide(i)}
-													></button>
-												{/each}
+												<div class="credits-stat-item is-victory">
+													<span class="credits-stat-num">{creditsData.stats.victories}</span>
+													<span class="credits-stat-lbl">Victorias 🏆</span>
+												</div>
+												<div class="credits-stat-item">
+													<span class="credits-stat-num">{creditsData.stats.active}</span>
+													<span class="credits-stat-lbl">En Curso ⚔️</span>
+												</div>
+												<div class="credits-stat-item is-retreat">
+													<span class="credits-stat-num">{creditsData.stats.retreats}</span>
+													<span class="credits-stat-lbl">Retiradas ⛺</span>
+												</div>
+												<div class="credits-stat-item">
+													<span class="credits-stat-num">{creditsData.stats.totalLogs}</span>
+													<span class="credits-stat-lbl">Desbloqueos 🔓</span>
+												</div>
+												<div class="credits-stat-item">
+													<span class="credits-stat-num">{creditsData.stats.totalPhotos}</span>
+													<span class="credits-stat-lbl">Memorias 📸</span>
+												</div>
 											</div>
-											<button
-												type="button"
-												class="bitacora-rail-btn"
-												aria-label="Capítulo siguiente"
-												onclick={() => shiftBitacoraSlide(1, true)}
-											>
-												▼
-											</button>
-										</div>
-									{/if}
+										</section>
+
+										<div class="credits-divider" aria-hidden="true">─── ❖ ───</div>
+
+										<!-- 3. CRÓNICA COMPLETA DEL PRIMER PROYECTO AL ÚLTIMO -->
+										<section class="credits-chronicle">
+											<span class="credits-section-kicker">
+												HISTORIAL COMPLETO · DEL PRIMER PASO AL ÚLTIMO
+											</span>
+
+											{#if creditsData.creditsProjects.length === 0}
+												<div class="credits-empty-block">
+													<p>Aún no has iniciado proyectos, pero cada gran película espera su primera escena.</p>
+												</div>
+											{:else}
+												{#each creditsData.creditsProjects as proj (proj.id)}
+													<article class="credits-project-block outcome-{proj.outcome}">
+														<div class="credits-project-meta">
+															<span class="credits-episode">EPISODIO {proj.order}</span>
+															<span class="credits-theme-tag">{proj.tema}</span>
+														</div>
+
+														<h4 class="credits-project-title">{proj.title}</h4>
+
+														<div class="credits-outcome-badge outcome-{proj.outcome}">
+															{#if proj.outcome === 'victory'}
+																🏆 {proj.statusLabel}
+															{:else if proj.outcome === 'retreat'}
+																⛺ {proj.statusLabel} · Valor al Intentar
+															{:else}
+																⚔️ {proj.statusLabel}
+															{/if}
+														</div>
+
+														{#if proj.logs.length > 0}
+															<div class="credits-logs-sequence">
+																{#each proj.logs as logItem (logItem.id)}
+																	<div class="credits-log-entry">
+																		{#if logItem.media_url}
+																			<button
+																				type="button"
+																				class="log-feed-img-btn credits-photo-btn"
+																				aria-label="Ampliar fotografía del capítulo {Number(logItem.level) + 1}"
+																				onclick={() => {
+																					playClick();
+																					playOpen();
+																					expandedImage = logItem.media_url;
+																				}}
+																			>
+																				<img
+																					src={logItem.media_url}
+																					alt="Evidencia de {proj.title} capítulo {Number(logItem.level) + 1}"
+																					loading="lazy"
+																				/>
+																				<span class="log-feed-expand">⤢ Ver foto</span>
+																			</button>
+																		{/if}
+
+																		<div class="credits-log-caption">
+																			<span class="credits-chapter-pill">
+																				🔓 Capítulo {Number(logItem.level) + 1}
+																			</span>
+																			{#if logItem.created_at}
+																				<time class="credits-log-date">
+																					{formatLogDate(logItem.created_at)}
+																				</time>
+																			{/if}
+																		</div>
+
+																		<p class="credits-log-message">“{logItem.log_text}”</p>
+																	</div>
+																{/each}
+															</div>
+														{:else}
+															<p class="credits-no-logs-note">
+																{proj.outcome === 'retreat'
+																	? 'Retirada táctica registrada: detenerse también exige sabiduría y coraje.'
+																	: 'Capítulo en marcha dentro de tu historia personal.'}
+															</p>
+														{/if}
+													</article>
+												{/each}
+											{/if}
+										</section>
+
+										<!-- 4. CIERRE EMOTIVO DE CRÉDITOS -->
+										<footer class="credits-finale">
+											<div class="credits-divider" aria-hidden="true">─── ★ ───</div>
+											<span class="credits-eyebrow">CRÉDITOS FINALES</span>
+											<h4 class="credits-finale-title">
+												TU ESFUERZO SIEMPRE SERÁ RECOMPENSADO
+											</h4>
+											<p class="credits-finale-copy">
+												Gracias por no rendirte ante la dificultad, por levantarte tras cada retirada
+												y por celebrar cada logro. Todo lo que construyes con perseverancia deja huella.
+											</p>
+											<span class="credits-fin-mark">FIN · METAPHORGOALS</span>
+										</footer>
+									</div>
 								</div>
-							</div>
-						{/if}
+							{/key}
+						</div>
 					{/if}
 				</SoundEngine>
 
@@ -1384,8 +1489,16 @@ select:disabled {
 
 
 
-	.bitacora-audio-tag {
-		font-size: 0.76rem;
+	/* === BITÁCORA CINEMATOGRÁFICA: CRÉDITOS DE PELÍCULA === */
+	.credits-audio-controls {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.credits-music-pill {
+		font-size: 0.74rem;
 		font-weight: 700;
 		color: #ffd670;
 		background: rgba(255, 214, 112, 0.12);
@@ -1394,158 +1507,383 @@ select:disabled {
 		border-radius: 999px;
 	}
 
-	.bitacora-task-pills {
+	.credits-reel-badge {
+		font-size: 2.3rem;
+	}
+
+	.credits-toolbar {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 8px;
-		overflow-x: auto;
-		padding-bottom: 4px;
-		scrollbar-width: none;
+		justify-content: center;
 	}
 
-	.bitacora-task-pills::-webkit-scrollbar {
-		display: none;
-	}
-
-	.bitacora-task-pill {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 6px 12px;
-		border-radius: 999px;
-		background: rgba(0, 0, 0, 0.28);
+	.credits-ctrl-btn {
+		background: rgba(0, 0, 0, 0.34);
 		border: 1px solid var(--card-border);
-		color: var(--text-muted);
-		font-size: 0.78rem;
+		color: var(--text-main);
+		border-radius: 999px;
+		padding: 6px 12px;
+		font-size: 0.76rem;
 		font-weight: 600;
-		white-space: nowrap;
 		cursor: pointer;
 		transition: all 0.2s ease;
 	}
 
-	.bitacora-task-pill.active {
-		background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+	.credits-ctrl-btn:hover {
 		border-color: var(--accent-primary);
 		color: #fff;
-		box-shadow: 0 0 12px var(--accent-glow);
 	}
 
-	.bitacora-task-pill small {
-		background: rgba(255, 255, 255, 0.14);
-		border-radius: 999px;
-		padding: 1px 6px;
-		font-size: 0.68rem;
-	}
-
-	.bitacora-slider-card {
-		padding: 16px;
-	}
-
-	.bitacora-vertical-shell {
-		display: flex;
-		align-items: stretch;
-		gap: 10px;
-	}
-
-	.bitacora-vertical-viewport {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.bitacora-vertical-slide {
-		animation: bitacora-vertical-fade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-	}
-
-	@keyframes bitacora-vertical-fade {
-		from {
-			opacity: 0;
-			transform: translateY(16px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.bitacora-ken-burns {
-		animation: bitacora-ken-burns 9s ease-in-out infinite alternate;
-		transform-origin: center;
-	}
-
-	@keyframes bitacora-ken-burns {
-		from {
-			transform: scale(1) translate(0, 0);
-		}
-		to {
-			transform: scale(1.12) translate(-1.5%, -1.5%);
-		}
-	}
-
-	.bitacora-media-fallback {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 200px;
-		border-radius: 16px;
-		border: 1px solid rgba(255, 214, 112, 0.32);
-		font-size: 3.5rem;
-		background: radial-gradient(circle at 50% 40%, rgba(255, 214, 112, 0.25), rgba(15, 23, 26, 0.9));
-	}
-
-	.bitacora-vertical-rail {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		flex-shrink: 0;
-	}
-
-	.bitacora-rail-btn {
-		width: 28px;
-		height: 28px;
-		border-radius: 50%;
-		border: 1px solid rgba(255, 214, 112, 0.4);
-		background: rgba(255, 255, 255, 0.08);
+	.credits-ctrl-btn.is-gold {
+		border-color: rgba(255, 214, 112, 0.48);
 		color: #ffd670;
-		font-size: 0.68rem;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
+		background: rgba(255, 214, 112, 0.1);
 	}
 
-	.bitacora-vertical-dots {
+	.movie-credits-screen {
+		position: relative;
+		overflow: hidden;
+		border-radius: 22px;
+		border: 1px solid rgba(255, 214, 112, 0.28);
+		background:
+			radial-gradient(circle at 50% 20%, rgba(255, 214, 112, 0.08) 0%, transparent 55%),
+			linear-gradient(180deg, rgba(6, 9, 15, 0.96) 0%, rgba(10, 14, 22, 0.98) 100%);
+		box-shadow:
+			0 18px 42px rgba(0, 0, 0, 0.58),
+			inset 0 0 36px rgba(0, 0, 0, 0.75);
+	}
+
+	.movie-credits-stars {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		opacity: 0.35;
+		background-image:
+			radial-gradient(1px 1px at 14% 22%, #fff 100%, transparent),
+			radial-gradient(1.5px 1.5px at 78% 16%, #ffd670 100%, transparent),
+			radial-gradient(1px 1px at 36% 64%, #fff 100%, transparent),
+			radial-gradient(1.5px 1.5px at 86% 72%, #ffd670 100%, transparent),
+			radial-gradient(1px 1px at 22% 88%, #fff 100%, transparent);
+	}
+
+	.movie-credits-viewport {
+		position: relative;
+		z-index: 2;
+		height: clamp(440px, 64vh, 640px);
+		overflow-y: auto;
+		padding: 0 18px;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 214, 112, 0.35) transparent;
+		mask-image: linear-gradient(to bottom, transparent 0%, black 9%, black 91%, transparent 100%);
+		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 9%, black 91%, transparent 100%);
+	}
+
+	.movie-credits-reel {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 6px;
+		text-align: center;
+		gap: 2.2rem;
+		padding: 64px 4px 180px;
 	}
 
-	.bitacora-vertical-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 999px;
-		border: none;
-		padding: 0;
-		background: rgba(255, 255, 255, 0.28);
-		cursor: pointer;
-		transition: all 0.25s ease;
+	.credits-opening {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.55rem;
+		max-width: 100%;
 	}
 
-	.bitacora-vertical-dot.active {
-		height: 20px;
-		background: #ffd670;
-		box-shadow: 0 0 8px rgba(255, 214, 112, 0.8);
+	.credits-eyebrow,
+	.credits-section-kicker {
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: rgba(255, 214, 112, 0.85);
 	}
 
-	:global(.log-feed-card) {
-		padding: 16px;
+	.credits-hero-name {
+		font-family: var(--font-heading, 'Inter', sans-serif);
+		font-size: clamp(1.65rem, 5vw, 2.25rem);
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0.15rem 0 0;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		text-shadow: 0 0 22px rgba(255, 214, 112, 0.35);
 	}
-	.log-feed-text {
-		color: var(--text-main);
-		font-size: 0.92rem;
-		line-height: 1.6;
+
+	.credits-ally-line {
+		font-size: 0.78rem;
+		letter-spacing: 0.14em;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		margin: 0;
+	}
+
+	.credits-ally-line strong {
+		color: #ffd670;
+	}
+
+	.credits-divider {
+		color: rgba(255, 214, 112, 0.65);
+		font-size: 0.8rem;
+		letter-spacing: 0.25em;
+		margin: 0.4rem 0;
+		user-select: none;
+	}
+
+	.credits-speech-card {
+		margin: 0.5rem 0 0;
+		padding: 1rem 1.1rem;
+		border-radius: 16px;
+		background: rgba(255, 214, 112, 0.06);
+		border: 1px solid rgba(255, 214, 112, 0.28);
+		text-align: center;
+		width: 100%;
+	}
+
+	.credits-speech-label {
+		display: block;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		color: #ffd670;
+		margin-bottom: 0.55rem;
+	}
+
+	.credits-speech-text {
+		color: #f8f3e6;
+		font-size: 0.94rem;
+		line-height: 1.72;
+		margin: 0;
 		white-space: pre-wrap;
+	}
+
+	.credits-cast-summary {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.credits-stats-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 8px;
+	}
+
+	.credits-stat-item {
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 12px;
+		padding: 10px 6px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+	}
+
+	.credits-stat-item.is-victory {
+		border-color: rgba(255, 214, 112, 0.4);
+		background: rgba(255, 214, 112, 0.08);
+	}
+
+	.credits-stat-item.is-retreat {
+		border-color: rgba(251, 146, 60, 0.35);
+		background: rgba(251, 146, 60, 0.07);
+	}
+
+	.credits-stat-num {
+		font-family: var(--font-heading, 'Inter', sans-serif);
+		font-size: 1.2rem;
+		font-weight: 800;
+		color: #ffffff;
+	}
+
+	.credits-stat-lbl {
+		font-size: 0.68rem;
+		color: var(--text-muted);
+	}
+
+	.credits-chronicle {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	.credits-empty-block {
+		padding: 1.25rem;
+		color: var(--text-muted);
+		font-size: 0.9rem;
+	}
+
+	.credits-project-block {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.65rem;
+		padding: 1.25rem 0.9rem;
+		border-radius: 18px;
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.credits-project-block.outcome-victory {
+		border-color: rgba(255, 214, 112, 0.35);
+		background: linear-gradient(180deg, rgba(255, 214, 112, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+	}
+
+	.credits-project-block.outcome-retreat {
+		border-color: rgba(251, 146, 60, 0.3);
+		background: linear-gradient(180deg, rgba(251, 146, 60, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+	}
+
+	.credits-project-meta {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.credits-episode {
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		color: #ffd670;
+	}
+
+	.credits-theme-tag {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.07);
+	}
+
+	.credits-project-title {
+		font-family: var(--font-heading, 'Inter', sans-serif);
+		font-size: 1.22rem;
+		font-weight: 800;
+		color: #ffffff;
+		margin: 0;
+		text-transform: capitalize;
+	}
+
+	.credits-outcome-badge {
+		font-size: 0.74rem;
+		font-weight: 700;
+		padding: 3px 12px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.08);
+		color: var(--accent-primary);
+	}
+
+	.credits-outcome-badge.outcome-victory {
+		background: rgba(255, 214, 112, 0.16);
+		color: #ffd670;
+	}
+
+	.credits-outcome-badge.outcome-retreat {
+		background: rgba(251, 146, 60, 0.16);
+		color: #fdba74;
+	}
+
+	.credits-logs-sequence {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-top: 0.45rem;
+	}
+
+	.credits-log-entry {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0.85rem;
+		border-radius: 14px;
+		background: rgba(0, 0, 0, 0.34);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		text-align: left;
+	}
+
+	.credits-photo-btn img {
+		max-height: 220px;
+	}
+
+	.credits-log-caption {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.credits-chapter-pill {
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #ffd670;
+	}
+
+	.credits-log-date {
+		font-size: 0.72rem;
+		color: var(--accent-primary);
+		font-weight: 600;
+	}
+
+	.credits-log-message {
+		margin: 0;
+		color: #f1f5f9;
+		font-size: 0.88rem;
+		line-height: 1.55;
+		font-style: italic;
+		white-space: pre-wrap;
+	}
+
+	.credits-no-logs-note {
+		margin: 0.25rem 0 0;
+		font-size: 0.82rem;
+		color: var(--text-muted);
+		font-style: italic;
+	}
+
+	.credits-finale {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 1rem 0.5rem 2rem;
+	}
+
+	.credits-finale-title {
+		font-family: var(--font-heading, 'Inter', sans-serif);
+		font-size: 1.15rem;
+		font-weight: 800;
+		color: #ffd670;
+		letter-spacing: 0.08em;
+		margin: 0;
+	}
+
+	.credits-finale-copy {
+		color: #e2e8f0;
+		font-size: 0.9rem;
+		line-height: 1.65;
+		max-width: 38ch;
+		margin: 0;
+	}
+
+	.credits-fin-mark {
+		margin-top: 0.6rem;
+		font-size: 0.7rem;
+		letter-spacing: 0.28em;
+		color: rgba(255, 255, 255, 0.55);
+		font-weight: 700;
 	}
 	.log-feed-img-btn {
 		position: relative;

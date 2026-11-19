@@ -475,3 +475,156 @@ const THEME_SKIN_DEFS: SkinMeta[] = [
 export const THEME_SKINS: Record<string, SkinTokens> = Object.fromEntries(
 	THEME_SKIN_DEFS.map((def) => [def.valor, buildSkinTokens(def)])
 );
+
+export const AVATAR_GRID_COLS = 5;
+export const AVATAR_GRID_ROWS = 5;
+
+export interface AvatarGridCellConfig {
+	id: SkinPaletteKey;
+	row: number;
+	col: number;
+	etiqueta: string;
+	attirePrompt: string;
+}
+
+const AVATAR_GRID_PROMPT_SPECS: ReadonlyArray<{
+	id: SkinPaletteKey;
+	etiqueta: string;
+	attirePrompt: string;
+}> = [
+	{
+		id: 'estandar',
+		etiqueta: SKIN_PALETTES.estandar.label,
+		attirePrompt: 'Retrato natural original con iluminación limpia esmeralda oscuro'
+	},
+	{
+		id: 'fantasia',
+		etiqueta: SKIN_PALETTES.fantasia.label,
+		attirePrompt: 'Túnica y manto de hechicero de alta fantasía con runas mágicas luminosas'
+	},
+	{
+		id: 'medieval',
+		etiqueta: SKIN_PALETTES.medieval.label,
+		attirePrompt: 'Armadura de placas de caballero medieval de acero bruñido'
+	},
+	{
+		id: 'olimpo',
+		etiqueta: SKIN_PALETTES.olimpo.label,
+		attirePrompt: 'Túnica helénica blanca con bordes dorados y corona de laurel del Monte Olimpo'
+	},
+	{
+		id: 'samurai',
+		etiqueta: SKIN_PALETTES.samurai.label,
+		attirePrompt: 'Armadura tradicional japonesa de samurái (yoroi) con fondo de bambú y sol rojo'
+	},
+	{
+		id: 'alquimia',
+		etiqueta: SKIN_PALETTES.alquimia.label,
+		attirePrompt: 'Atuendo de maestro alquimista arcano con símbolos alquímicos dorados'
+	},
+	{
+		id: 'ciberespacio',
+		etiqueta: SKIN_PALETTES.ciberespacio.label,
+		attirePrompt: 'Chaqueta tecnológica cyberpunk con cuello de luces neón magenta y cian'
+	},
+	{
+		id: 'steampunk',
+		etiqueta: SKIN_PALETTES.steampunk.label,
+		attirePrompt: 'Traje victoriano steampunk de cuero y latón con gafas de bronce sobre la frente'
+	},
+	{
+		id: 'espacio',
+		etiqueta: SKIN_PALETTES.espacio.label,
+		attirePrompt: 'Uniforme táctico de oficial de milicia espacial en puente de nave estelar'
+	},
+	{
+		id: 'mechas',
+		etiqueta: SKIN_PALETTES.mechas.label,
+		attirePrompt: 'Traje de piloto de combate de mecha gigante con cabina holográfica'
+	},
+	{
+		id: 'superheroes',
+		etiqueta: SKIN_PALETTES.superheroes.label,
+		attirePrompt: 'Traje heroico de superhéroe de cómic con capa y emblema en el pecho'
+	},
+	{
+		id: 'postapocaliptico',
+		etiqueta: SKIN_PALETTES.postapocaliptico.label,
+		attirePrompt: 'Atuendo desgastado de sobreviviente post-apocalíptico con bufanda y cuero en el páramo'
+	},
+	{
+		id: 'zombie',
+		etiqueta: SKIN_PALETTES.zombie.label,
+		attirePrompt: 'Equipo táctico improvisado de sobreviviente en apocalipsis zombie'
+	},
+	{
+		id: 'espionaje',
+		etiqueta: SKIN_PALETTES.espionaje.label,
+		attirePrompt: 'Traje táctico negro de agente secreto de espionaje moderno con auricular'
+	},
+	{
+		id: 'golpe_maestro',
+		etiqueta: SKIN_PALETTES.golpe_maestro.label,
+		attirePrompt: 'Esmoquin de gala impecable de ladrón de guante blanco en bóveda dorada'
+	},
+	{
+		id: 'noir',
+		etiqueta: SKIN_PALETTES.noir.label,
+		attirePrompt: 'Gabardina y sombrero fedora de detective noir clásico en tonos blanco, negro y gris'
+	},
+	{
+		id: 'salvaje_oeste',
+		etiqueta: SKIN_PALETTES.salvaje_oeste.label,
+		attirePrompt: 'Sombrero vaquero, pañuelo y chaleco de cuero del salvaje oeste polvoriento'
+	},
+	{
+		id: 'terror_cosmico',
+		etiqueta: SKIN_PALETTES.terror_cosmico.label,
+		attirePrompt: 'Abrigo de investigador ocultista de los años 20 entre niebla abisal verdosa'
+	},
+	{
+		id: 'guerra',
+		etiqueta: SKIN_PALETTES.guerra.label,
+		attirePrompt: 'Uniforme militar de combate con camuflaje táctico verde oliva y beige'
+	},
+	{
+		id: 'desastre_natural',
+		etiqueta: SKIN_PALETTES.desastre_natural.label,
+		attirePrompt: 'Chaqueta impermeable de explorador rescatista con correas de mochila de expedición'
+	},
+	{
+		id: 'comedia_romantica',
+		etiqueta: SKIN_PALETTES.comedia_romantica.label,
+		attirePrompt: 'Atuendo casual elegante y cálido bajo luces bokeh doradas y rosadas'
+	},
+	{
+		id: 'caos_comedia',
+		etiqueta: SKIN_PALETTES.caos_comedia.label,
+		attirePrompt: 'Atuendo colorido y vibrante estilo pop-art cómico'
+	}
+];
+
+export const AVATAR_GRID_CELLS: AvatarGridCellConfig[] = AVATAR_GRID_PROMPT_SPECS.map(
+	(spec, idx) => ({
+		...spec,
+		row: Math.floor(idx / AVATAR_GRID_COLS),
+		col: idx % AVATAR_GRID_COLS
+	})
+);
+
+export function getAvatarGridPosition(skinId?: string | null): {
+	row: number;
+	col: number;
+	cols: number;
+	rows: number;
+	cell: AvatarGridCellConfig;
+} {
+	const found = AVATAR_GRID_CELLS.find((c) => c.id === skinId) ?? AVATAR_GRID_CELLS[0];
+	return {
+		row: found.row,
+		col: found.col,
+		cols: AVATAR_GRID_COLS,
+		rows: AVATAR_GRID_ROWS,
+		cell: found
+	};
+}

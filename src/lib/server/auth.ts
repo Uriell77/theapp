@@ -26,6 +26,8 @@ export interface SafeUser {
 	createdAt: Date;
 	aliados?: string | null;
 	avatarUrl?: string | null;
+	avatarGridUrl?: string | null;
+	isAvatarGrid?: boolean;
 }
 
 /**

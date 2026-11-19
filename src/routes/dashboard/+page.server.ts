@@ -7,10 +7,115 @@ import { GEMINI_API_KEY } from '$env/static/private';
 import { formatChapterForStorage } from '$lib/chapterUtils';
 import { supabase } from '$lib/supabaseClient';
 import { clearSessionCookie } from '$lib/server/auth';
+import { AVATAR_GRID_CELLS, AVATAR_GRID_COLS, AVATAR_GRID_ROWS } from '$lib/config/themeSkins';
 import bcrypt from 'bcryptjs';
 import type { PageServerLoad, Actions } from './$types';
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+/**
+ * Construye el prompt para generar la cuadrícula 5×5 de avatares temáticos
+ * preservando estrictamente el rostro del usuario.
+ */
+function buildAvatarGridPrompt(): string {
+	const cellDescriptions = AVATAR_GRID_CELLS.map(
+		(cell) =>
+			`- (Fila ${cell.row + 1}, Columna ${cell.col + 1}) Temática "${cell.etiqueta}": ${cell.attirePrompt}.`
+	).join('\n');
+
+	return `Eres un artista experto en retratos y diseño de personajes para RPG.
+Usa la imagen de perfil subida como REFERENCIA EXACTA de la persona y genera UNA ÚNICA IMAGEN CUADRADA (relación de aspecto 1:1) dividida en una cuadrícula estrictamente uniforme de ${AVATAR_GRID_COLS} columnas por ${AVATAR_GRID_ROWS} filas (25 celdas cuadradas del mismo tamaño, sin marcos, sin bordes, sin márgenes externos y sin líneas separadoras entre celdas, ocupando de borde a borde todo el lienzo).
+
+REGLA CRÍTICA E INQUEBRANTABLE:
+- NO CAMBIES NI MODIFIQUES EL ROSTRO DE LA PERSONA de la fotografía original en ninguna celda.
+- Conserva exactamente los mismos rasgos faciales, forma de los ojos, nariz, boca, tono de piel, expresión, edad, estructura del rostro, cabello e identidad de la persona subida en todas y cada una de las 25 celdas.
+- Modifica ÚNICAMENTE la vestimenta, el uniforme/armadura/atuendo, los hombros, los accesorios que no cubran la cara y el fondo/iluminación ambiental para representar cada temática.
+- Cada celda debe mostrar un retrato centrado de busto/hombros hacia arriba mirando al frente con el mismo encuadre consistente para poder recortarse individualmente.
+
+Distribución obligatoria por celda (Fila, Columna):
+${cellDescriptions}
+- (Fila 5, Columna 3): Variación épica dorada heroica manteniendo exactamente el mismo rostro.
+- (Fila 5, Columna 4): Variación elegante nocturna manteniendo exactamente el mismo rostro.
+- (Fila 5, Columna 5): Variación aventurera clásica manteniendo exactamente el mismo rostro.`;
+}
+
+/**
+ * Solicita a Gemini la generación de la cuadrícula de avatares temáticos a partir de la imagen subida.
+ */
+async function generateAvatarGridWithGemini(
+	base64Image: string,
+	mimeType: string
+): Promise<{ buffer: Buffer; mimeType: string } | null> {
+	const imageModels = [
+		'gemini-3.5-flash-image-preview',
+		'gemini-3.8-flash-exp-image-generation',
+		'gemini-3.8-flash-preview-image-generation',
+		'gemini-3.5-flash',
+		'gemini-3.8-flash',
+		'gemini-flash-latest'
+	];
+	const avatarGridPrompt = buildAvatarGridPrompt();
+
+	for (const modelName of imageModels) {
+		let retries = 2;
+		while (retries > 0) {
+			try {
+				console.log(`[AvatarGrid] Intentando generar cuadrícula con ${modelName}...`);
+				const response = await ai.models.generateContent({
+					model: modelName,
+					contents: [
+						{
+							parts: [
+								{ inlineData: { data: base64Image, mimeType } },
+								{ text: avatarGridPrompt }
+							]
+						}
+					],
+					config: {
+						responseModalities: ['IMAGE', 'TEXT']
+					}
+				});
+
+				const parts = response.candidates?.[0]?.content?.parts ?? [];
+				const imagePart = parts.find(
+					(p) => Boolean(p?.inlineData?.data) && (p.inlineData?.mimeType?.startsWith('image/') ?? true)
+				);
+
+				if (imagePart?.inlineData?.data) {
+					console.log(`[AvatarGrid] Cuadrícula generada con éxito usando ${modelName}.`);
+					return {
+						buffer: Buffer.from(imagePart.inlineData.data, 'base64'),
+						mimeType: imagePart.inlineData.mimeType || 'image/png'
+					};
+				}
+
+				console.warn(`[AvatarGrid] ${modelName} respondió sin datos de imagen.`);
+				break;
+			} catch (err: unknown) {
+				const errObj = err as { status?: number; message?: string };
+				const msg = typeof errObj?.message === 'string' ? errObj.message : String(err);
+				console.warn(`[AvatarGrid] Modelo ${modelName} falló:`, msg);
+
+				const isSaturated =
+					errObj?.status === 503 ||
+					errObj?.status === 429 ||
+					msg.includes('503') ||
+					msg.includes('429') ||
+					msg.includes('UNAVAILABLE') ||
+					msg.includes('RESOURCE_EXHAUSTED');
+
+				if (isSaturated && retries > 1) {
+					retries--;
+					await new Promise((resolve) => setTimeout(resolve, 1500));
+					continue;
+				}
+				break;
+			}
+		}
+	}
+
+	return null;
+}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
@@ -43,15 +148,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	let avatarUrl: string | null = null;
+	let avatarGridUrl: string | null = null;
 	try {
 		const { data: avatarFiles } = await supabase.storage
 			.from('MGAvatars')
 			.list('', { search: user.id });
-		const matched = avatarFiles?.find((f) => f.name.startsWith(user.id));
-		if (matched) {
-			const base = supabase.storage.from('MGAvatars').getPublicUrl(matched.name)
+		const matchedSingle = avatarFiles?.find(
+			(f) => f.name.startsWith(user.id) && !f.name.includes('_grid')
+		);
+		const matchedGrid = avatarFiles?.find(
+			(f) => f.name === `${user.id}_grid.png` || (f.name.startsWith(user.id) && f.name.includes('_grid'))
+		);
+
+		if (matchedGrid) {
+			const gridBase = supabase.storage.from('MGAvatars').getPublicUrl(matchedGrid.name)
 				.data.publicUrl;
-			avatarUrl = `${base}?v=${encodeURIComponent(matched.updated_at || '1')}`;
+			avatarGridUrl = `${gridBase}?v=${encodeURIComponent(matchedGrid.updated_at || '1')}`;
+		}
+		if (matchedSingle) {
+			const singleBase = supabase.storage.from('MGAvatars').getPublicUrl(matchedSingle.name)
+				.data.publicUrl;
+			avatarUrl = `${singleBase}?v=${encodeURIComponent(matchedSingle.updated_at || '1')}`;
+		} else if (avatarGridUrl) {
+			avatarUrl = avatarGridUrl;
 		}
 	} catch (err) {
 		console.error('Error al obtener avatar en dashboard:', err);
@@ -60,7 +179,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		user: {
 			...userRecord,
-			avatarUrl
+			avatarUrl,
+			avatarGridUrl,
+			isAvatarGrid: Boolean(avatarGridUrl)
 		}
 	};
 };
@@ -1092,19 +1213,62 @@ FORMATO JSON OBLIGATORIO:
 		}
 
 		try {
-			const buffer = Buffer.from(await avatarFile.arrayBuffer());
-			const fileName = `${locals.user.id}.png`;
-			const { error } = await supabase.storage.from('MGAvatars').upload(fileName, buffer, {
-				contentType: avatarFile.type || 'image/png',
-				upsert: true
-			});
+			const originalBuffer = Buffer.from(await avatarFile.arrayBuffer());
+			const mimeType = avatarFile.type || 'image/png';
+			const base64Image = originalBuffer.toString('base64');
 
-			if (error) {
-				console.error('Error subiendo avatar a Supabase:', error);
+			// 1. Subir el retrato base para la barra superior y respaldo
+			const singleFileName = `${locals.user.id}.png`;
+			const { error: singleError } = await supabase.storage
+				.from('MGAvatars')
+				.upload(singleFileName, originalBuffer, {
+					contentType: mimeType,
+					upsert: true
+				});
+
+			if (singleError) {
+				console.error('Error subiendo avatar base a Supabase:', singleError);
 				return fail(500, { message: 'No se pudo subir la imagen al bucket MGAvatars' });
 			}
 
-			return { success: true, message: 'Avatar actualizado con éxito' };
+			// 2. Generar cuadrícula 5×5 de temáticas con Gemini sin alterar el rostro
+			const gridFileName = `${locals.user.id}_grid.png`;
+			const generatedGrid = await generateAvatarGridWithGemini(base64Image, mimeType);
+
+			if (generatedGrid) {
+				const { error: gridError } = await supabase.storage
+					.from('MGAvatars')
+					.upload(gridFileName, generatedGrid.buffer, {
+						contentType: generatedGrid.mimeType || 'image/png',
+						upsert: true
+					});
+
+				if (gridError) {
+					console.error('Error subiendo cuadrícula de avatares a Supabase:', gridError);
+					return {
+						success: true,
+						isAvatarGrid: false,
+						message:
+							'Foto de perfil guardada (no se pudo almacenar la cuadrícula temática en MGAvatars).'
+					};
+				}
+
+				return {
+					success: true,
+					isAvatarGrid: true,
+					message: '¡Cuadrícula de avatares temáticos creada con Gemini con éxito!'
+				};
+			}
+
+			// Limpiar cuadrícula anterior si existía para no mostrar temáticas de una foto previa
+			await supabase.storage.from('MGAvatars').remove([gridFileName]);
+
+			return {
+				success: true,
+				isAvatarGrid: false,
+				message:
+					'Foto de perfil guardada (la generación de cuadrícula temática con Gemini no estuvo disponible en este momento).'
+			};
 		} catch (error) {
 			console.error('Error al procesar el avatar:', error);
 			return fail(500, { message: 'Error al procesar la imagen' });
@@ -1116,7 +1280,9 @@ FORMATO JSON OBLIGATORIO:
 			return fail(401, { message: 'No autenticado' });
 		}
 		try {
-			await supabase.storage.from('MGAvatars').remove([`${locals.user.id}.png`]);
+			await supabase.storage
+				.from('MGAvatars')
+				.remove([`${locals.user.id}.png`, `${locals.user.id}_grid.png`]);
 			return { success: true, message: 'Avatar eliminado de MGAvatars' };
 		} catch (error) {
 			console.error('Error al eliminar avatar:', error);
@@ -1148,9 +1314,11 @@ FORMATO JSON OBLIGATORIO:
 			// 2. Eliminar de la tabla 'tasks' en segundo lugar
 			await db.delete(tasks).where(eq(tasks.userId, userId));
 
-			// 2.1 Intentar eliminar el avatar del bucket MGAvatars si existe
+			// 2.1 Intentar eliminar los avatares del bucket MGAvatars si existen
 			try {
-				await supabase.storage.from('MGAvatars').remove([`${userId}.png`]);
+				await supabase.storage
+					.from('MGAvatars')
+					.remove([`${userId}.png`, `${userId}_grid.png`]);
 			} catch (err) {
 				console.error('Error al eliminar archivo del bucket MGAvatars:', err);
 			}

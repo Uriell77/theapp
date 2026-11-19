@@ -1,12 +1,26 @@
 import {
+	AVATAR_GRID_CELLS,
+	AVATAR_GRID_COLS,
+	AVATAR_GRID_ROWS,
 	DEFAULT_SKIN,
 	SKIN_PALETTES,
 	THEME_SKINS,
+	getAvatarGridPosition,
+	type AvatarGridCellConfig,
 	type SkinPaletteKey,
 	type SkinTokens
 } from '$lib/config/themeSkins';
 
-export { SKIN_PALETTES, type SkinPaletteKey, type SkinTokens };
+export {
+	AVATAR_GRID_CELLS,
+	AVATAR_GRID_COLS,
+	AVATAR_GRID_ROWS,
+	SKIN_PALETTES,
+	getAvatarGridPosition,
+	type AvatarGridCellConfig,
+	type SkinPaletteKey,
+	type SkinTokens
+};
 
 export type SkinMode = 'auto' | 'manual';
 
