@@ -502,7 +502,7 @@
 								<div class="victory-footer px-2 pb-3">
 									<button
 										type="button"
-										class="button is-medium is-fullwidth victory-claim-btn"
+										class="button is-small is-fullwidth victory-claim-btn"
 										onclick={() => {
 											playClick();
 											enterVictory();
@@ -515,7 +515,7 @@
 								<div class="victory-footer px-2 pb-3">
 									<button
 										type="button"
-										class="button is-medium is-fullwidth victory-save-btn"
+										class="button is-small is-fullwidth victory-save-btn"
 										class:is-loading={isSaving}
 										disabled={isSaving}
 										onclick={saveToHall}
