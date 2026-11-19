@@ -11,6 +11,7 @@
 	import Estadistic from '$lib/components/Estadistic.svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import SeccionAjustes from '$lib/components/SeccionAjustes.svelte';
+	import SoundEngine from '$lib/components/SoundEngine.svelte';
 	import { page } from '$app/state';
 	import { playClick, playClose, playOpen, playSlide, playSuccess, playVanish } from '$lib/audio';
 	import { syncSkin } from '$lib/skins';
@@ -117,11 +118,49 @@
 	const tabParam = page.url.searchParams.get('tab') as ViewId | null;
 	let activeTab = $state<ViewId>(tabParam && VIEWS.includes(tabParam) ? tabParam : 'dashboard');
 
-	// Bitácora global (project_logs + join con tasks)
+	// Bitácora de Desbloqueo (project_logs agrupados por tarea)
 	let globalLogs = $state<any[]>([]);
 	let logsLoading = $state(false);
 	let logsError = $state<string | null>(null);
 	let expandedImage = $state<string | null>(null);
+	let selectedBitacoraTaskId = $state<number | null>(null);
+	let bitacoraSlideIdx = $state(0);
+	let bitacoraPaused = $state(false);
+	let bitacoraWheelCooldown = 0;
+	let bitacoraTouchStartY = 0;
+
+	let bitacoraTaskGroups = $derived.by(() => {
+		const grouped = new Map<number, { id: number; title: string; tema: string; logs: any[] }>();
+
+		for (const log of globalLogs) {
+			const resolvedId = Number(log.task_id ?? log.project_id);
+			if (isNaN(resolvedId)) continue;
+			const matchedTask = allTasks.find((t: any) => Number(t.id) === resolvedId);
+			const title = log.tasks?.title ?? matchedTask?.title ?? `Proyecto #${resolvedId}`;
+			const tema = log.tasks?.tema ?? matchedTask?.tema ?? '';
+
+			if (!grouped.has(resolvedId)) {
+				grouped.set(resolvedId, { id: resolvedId, title, tema, logs: [] });
+			}
+			grouped.get(resolvedId)!.logs.push(log);
+		}
+
+		for (const group of grouped.values()) {
+			group.logs.sort((a, b) => Number(a.level) - Number(b.level));
+		}
+
+		return Array.from(grouped.values());
+	});
+
+	let activeBitacoraGroup = $derived(
+		bitacoraTaskGroups.find((g) => g.id === selectedBitacoraTaskId) ?? bitacoraTaskGroups[0] ?? null
+	);
+	let currentBitacoraLogs = $derived(activeBitacoraGroup?.logs ?? []);
+	let activeBitacoraSlide = $derived(
+		currentBitacoraLogs.length > 0
+			? currentBitacoraLogs[Math.min(bitacoraSlideIdx, currentBitacoraLogs.length - 1)]
+			: null
+	);
 
 	async function loadGlobalLogs() {
 		const ids = allTasks.map((t: any) => t.id);
@@ -131,19 +170,92 @@
 		}
 		logsLoading = true;
 		logsError = null;
-		const { data: rows, error } = await supabase
-			.from('project_logs')
-			.select('*, tasks(title, tema)')
-			.in('task_id', ids)
-			.order('created_at', { ascending: false });
-		if (error) {
-			console.error('Error al cargar la bitácora global:', error);
-			logsError = 'No se pudo cargar la bitácora.';
+		try {
+			const idList = ids.join(',');
+			const { data: rows, error } = await supabase
+				.from('project_logs')
+				.select('*')
+				.or(`task_id.in.(${idList}),project_id.in.(${idList})`)
+				.order('level', { ascending: true })
+				.order('created_at', { ascending: true });
+
+			let fetchedRows: any[] = [];
+			if (!error && Array.isArray(rows) && rows.length > 0) {
+				fetchedRows = rows;
+			} else {
+				const res = await fetch('/api/project-logs');
+				if (!res.ok) {
+					throw new Error(`HTTP ${res.status}`);
+				}
+				const payload = await res.json();
+				fetchedRows = Array.isArray(payload?.logs) ? payload.logs : [];
+			}
+
+			const taskMap = new Map(allTasks.map((t: any) => [Number(t.id), t]));
+			globalLogs = fetchedRows.map((row: any) => {
+				const resolvedId = Number(row.task_id ?? row.project_id);
+				const t = taskMap.get(resolvedId);
+				return {
+					...row,
+					task_id: isNaN(resolvedId) ? row.task_id : resolvedId,
+					tasks: row.tasks ?? (t ? { title: t.title, tema: t.tema } : null)
+				};
+			});
+		} catch (err) {
+			console.error('Error al cargar la bitácora global:', err);
+			logsError = 'No se pudo cargar la bitácora de desbloqueo.';
 			globalLogs = [];
-		} else {
-			globalLogs = rows ?? [];
+		} finally {
+			logsLoading = false;
 		}
-		logsLoading = false;
+	}
+
+	function selectBitacoraTask(taskId: number) {
+		playClick();
+		if (selectedBitacoraTaskId !== taskId) {
+			playSlide();
+			selectedBitacoraTaskId = taskId;
+			bitacoraSlideIdx = 0;
+		}
+	}
+
+	function shiftBitacoraSlide(delta: number, withAudio = false) {
+		if (currentBitacoraLogs.length < 2) return;
+		if (withAudio) {
+			playClick();
+			playSlide();
+		}
+		bitacoraSlideIdx = (bitacoraSlideIdx + delta + currentBitacoraLogs.length) % currentBitacoraLogs.length;
+	}
+
+	function selectBitacoraSlide(index: number) {
+		playClick();
+		if (bitacoraSlideIdx !== index) {
+			playSlide();
+			bitacoraSlideIdx = index;
+		}
+	}
+
+	function handleBitacoraWheel(e: WheelEvent) {
+		if (currentBitacoraLogs.length < 2 || Math.abs(e.deltaY) < 12) return;
+		const now = Date.now();
+		if (now - bitacoraWheelCooldown < 380) return;
+		e.preventDefault();
+		bitacoraWheelCooldown = now;
+		shiftBitacoraSlide(e.deltaY > 0 ? 1 : -1, true);
+	}
+
+	function handleBitacoraTouchStart(e: TouchEvent) {
+		bitacoraTouchStartY = e.touches[0]?.clientY ?? 0;
+	}
+
+	function handleBitacoraTouchEnd(e: TouchEvent) {
+		if (currentBitacoraLogs.length < 2) return;
+		const endY = e.changedTouches[0]?.clientY ?? bitacoraTouchStartY;
+		const deltaY = endY - bitacoraTouchStartY;
+		if (Math.abs(deltaY) > 36) {
+			shiftBitacoraSlide(deltaY < 0 ? 1 : -1, true);
+		}
 	}
 
 	$effect(() => {
@@ -151,6 +263,21 @@
 			void allTasks.length;
 			untrack(() => loadGlobalLogs());
 		}
+	});
+
+	$effect(() => {
+		if (
+			activeTab !== 'bitacora' ||
+			currentBitacoraLogs.length < 2 ||
+			bitacoraPaused ||
+			expandedImage !== null
+		) {
+			return;
+		}
+		void bitacoraSlideIdx;
+		void activeBitacoraGroup?.id;
+		const timer = setInterval(() => shiftBitacoraSlide(1), 7000);
+		return () => clearInterval(timer);
 	});
 
 	function formatLogDate(value: string) {
@@ -715,66 +842,157 @@
 
 		{:else if activeTab === 'bitacora'}
 			<div class="tab-view-stage" in:fly={{ y: 18, duration: 320, easing: cubicOut }}>
-				<!-- ===== BITÁCORA GLOBAL ===== -->
+				<!-- ===== BITÁCORA DE DESBLOQUEO ===== -->
 				<div class="is-flex is-justify-content-space-between is-align-items-center mb-3 section-head">
-					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.35rem; margin: 0;">
-						📸 Bitácora
+					<h2 class="has-text-weight-bold has-text-white" style="font-size: 1.28rem; margin: 0;">
+						📸 Bitácora de Desbloqueo
 					</h2>
 					<span class="badge-pill">{globalLogs.length} {globalLogs.length === 1 ? 'registro' : 'registros'}</span>
 				</div>
 
-				{#if logsLoading}
-					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-						<p class="has-text-grey-light">Cargando tu bitácora…</p>
-					</div>
-				{:else if logsError}
-					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-						<p class="has-text-danger">{logsError}</p>
-					</div>
-				{:else if globalLogs.length === 0}
-					<div class="glass-panel has-text-centered py-6 px-4 mb-4">
-						<div style="font-size: 2.5rem; margin-bottom: 12px;">📓</div>
-						<p class="has-text-grey-light mb-2" style="font-weight: 600;">Tu bitácora está en blanco</p>
-						<p class="has-text-grey-light" style="font-size: 0.85rem;">
-							Cada vez que desbloquees un nivel registrando tu esfuerzo, aparecerá aquí.
-						</p>
-					</div>
-				{:else}
-					<div class="log-feed">
-						{#each globalLogs as log (log.id)}
-							<article class="glass-panel log-feed-card mb-4">
-								<div class="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
-									<div>
-										<h3 class="has-text-weight-bold has-text-white is-capitalized" style="font-size: 1.05rem;">
-											{log.tasks?.title ?? 'Proyecto'}
-										</h3>
-										<span style="color: var(--text-muted); font-size: 0.78rem;">{log.tasks?.tema ?? ''}</span>
-									</div>
-									<span class="tag is-warning is-light">🔓 Nivel {log.level}</span>
-								</div>
-								<time style="color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;">
-									{formatLogDate(log.created_at)}
-								</time>
-								<p class="log-feed-text mt-2">{log.log_text}</p>
-								{#if log.media_url}
+				<SoundEngine effect="victory-gold" mood="victory" active={activeTab === 'bitacora'}>
+					{#snippet controls()}
+						<span class="bitacora-audio-tag">🏆 Música de Victoria</span>
+					{/snippet}
+
+					{#if logsLoading}
+						<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+							<p class="has-text-grey-light">Cargando tu bitácora de desbloqueo…</p>
+						</div>
+					{:else if logsError}
+						<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+							<p class="has-text-danger">{logsError}</p>
+						</div>
+					{:else if bitacoraTaskGroups.length === 0}
+						<div class="glass-panel has-text-centered py-6 px-4 mb-4">
+							<div style="font-size: 2.5rem; margin-bottom: 12px;">📓</div>
+							<p class="has-text-grey-light mb-2" style="font-weight: 600;">Tu bitácora de desbloqueo está en blanco</p>
+							<p class="has-text-grey-light" style="font-size: 0.85rem;">
+								Cada foto y mensaje que dejes al desbloquear un capítulo aparecerá aquí.
+							</p>
+						</div>
+					{:else}
+						{#if bitacoraTaskGroups.length > 1}
+							<div class="bitacora-task-pills mb-3" role="tablist" aria-label="Filtrar bitácora por proyecto">
+								{#each bitacoraTaskGroups as group (group.id)}
 									<button
 										type="button"
-										class="log-feed-img-btn mt-3"
-										aria-label="Expandir imagen"
-										onclick={() => {
-											playClick();
-											playOpen();
-											expandedImage = log.media_url;
-										}}
+										role="tab"
+										aria-selected={activeBitacoraGroup?.id === group.id}
+										class="bitacora-task-pill"
+										class:active={activeBitacoraGroup?.id === group.id}
+										onclick={() => selectBitacoraTask(group.id)}
 									>
-										<img src={log.media_url} alt="Evidencia del nivel {log.level}" loading="lazy" />
-										<span class="log-feed-expand">⤢ Expandir</span>
+										<span>{group.title}</span>
+										<small>{group.logs.length}</small>
 									</button>
-								{/if}
-							</article>
-						{/each}
-					</div>
-				{/if}
+								{/each}
+							</div>
+						{/if}
+
+						{#if activeBitacoraGroup && activeBitacoraSlide}
+							<div
+								class="glass-panel log-feed-card bitacora-slider-card mb-4"
+								role="region"
+								aria-label="Slider vertical de Bitácora de Desbloqueo"
+								onmouseenter={() => (bitacoraPaused = true)}
+								onmouseleave={() => (bitacoraPaused = false)}
+								onwheel={handleBitacoraWheel}
+								ontouchstart={handleBitacoraTouchStart}
+								ontouchend={handleBitacoraTouchEnd}
+							>
+								<div class="is-flex is-justify-content-space-between is-align-items-flex-start mb-3">
+									<div>
+										<h3 class="has-text-weight-bold has-text-white is-capitalized" style="font-size: 1.08rem; margin: 0;">
+											{activeBitacoraGroup.title}
+										</h3>
+										{#if activeBitacoraGroup.tema}
+											<span style="color: var(--text-muted); font-size: 0.78rem;">{activeBitacoraGroup.tema}</span>
+										{/if}
+									</div>
+									<span class="tag is-warning is-light">
+										{bitacoraSlideIdx + 1} / {currentBitacoraLogs.length}
+									</span>
+								</div>
+
+								<div class="bitacora-vertical-shell">
+									<div class="bitacora-vertical-viewport">
+										{#key `${activeBitacoraGroup.id}-${activeBitacoraSlide.id ?? bitacoraSlideIdx}`}
+											<article class="bitacora-vertical-slide" in:fade={{ duration: 600 }}>
+												{#if activeBitacoraSlide.media_url}
+													<button
+														type="button"
+														class="log-feed-img-btn mb-3"
+														aria-label="Expandir imagen"
+														onclick={() => {
+															playClick();
+															playOpen();
+															expandedImage = activeBitacoraSlide.media_url;
+														}}
+													>
+														<img
+															class="bitacora-ken-burns"
+															src={activeBitacoraSlide.media_url}
+															alt="Evidencia del capítulo {Number(activeBitacoraSlide.level) + 1}"
+															loading="lazy"
+														/>
+														<span class="log-feed-expand">⤢ Expandir</span>
+													</button>
+												{:else}
+													<div class="bitacora-media-fallback mb-3" aria-hidden="true">🏆</div>
+												{/if}
+
+												<div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
+													<span class="tag is-warning is-light">
+														🔓 Capítulo {Number(activeBitacoraSlide.level) + 1} desbloqueado
+													</span>
+													<time style="color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;">
+														{formatLogDate(activeBitacoraSlide.created_at)}
+													</time>
+												</div>
+
+												<p class="log-feed-text mt-2">{activeBitacoraSlide.log_text}</p>
+											</article>
+										{/key}
+									</div>
+
+									{#if currentBitacoraLogs.length > 1}
+										<div class="bitacora-vertical-rail">
+											<button
+												type="button"
+												class="bitacora-rail-btn"
+												aria-label="Capítulo anterior"
+												onclick={() => shiftBitacoraSlide(-1, true)}
+											>
+												▲
+											</button>
+											<div class="bitacora-vertical-dots">
+												{#each currentBitacoraLogs as logItem, i}
+													<button
+														type="button"
+														class="bitacora-vertical-dot"
+														class:active={i === bitacoraSlideIdx}
+														title="Capítulo {Number(logItem.level) + 1}"
+														aria-label="Ir al capítulo {Number(logItem.level) + 1}"
+														onclick={() => selectBitacoraSlide(i)}
+													></button>
+												{/each}
+											</div>
+											<button
+												type="button"
+												class="bitacora-rail-btn"
+												aria-label="Capítulo siguiente"
+												onclick={() => shiftBitacoraSlide(1, true)}
+											>
+												▼
+											</button>
+										</div>
+									{/if}
+								</div>
+							</div>
+						{/if}
+					{/if}
+				</SoundEngine>
 
 				{#if expandedImage}
 					<div class="modal is-active" style="z-index: 2000;">
@@ -1165,6 +1383,160 @@ select:disabled {
 
 
 
+
+	.bitacora-audio-tag {
+		font-size: 0.76rem;
+		font-weight: 700;
+		color: #ffd670;
+		background: rgba(255, 214, 112, 0.12);
+		border: 1px solid rgba(255, 214, 112, 0.35);
+		padding: 4px 10px;
+		border-radius: 999px;
+	}
+
+	.bitacora-task-pills {
+		display: flex;
+		gap: 8px;
+		overflow-x: auto;
+		padding-bottom: 4px;
+		scrollbar-width: none;
+	}
+
+	.bitacora-task-pills::-webkit-scrollbar {
+		display: none;
+	}
+
+	.bitacora-task-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 12px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.28);
+		border: 1px solid var(--card-border);
+		color: var(--text-muted);
+		font-size: 0.78rem;
+		font-weight: 600;
+		white-space: nowrap;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.bitacora-task-pill.active {
+		background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+		border-color: var(--accent-primary);
+		color: #fff;
+		box-shadow: 0 0 12px var(--accent-glow);
+	}
+
+	.bitacora-task-pill small {
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 999px;
+		padding: 1px 6px;
+		font-size: 0.68rem;
+	}
+
+	.bitacora-slider-card {
+		padding: 16px;
+	}
+
+	.bitacora-vertical-shell {
+		display: flex;
+		align-items: stretch;
+		gap: 10px;
+	}
+
+	.bitacora-vertical-viewport {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.bitacora-vertical-slide {
+		animation: bitacora-vertical-fade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	@keyframes bitacora-vertical-fade {
+		from {
+			opacity: 0;
+			transform: translateY(16px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.bitacora-ken-burns {
+		animation: bitacora-ken-burns 9s ease-in-out infinite alternate;
+		transform-origin: center;
+	}
+
+	@keyframes bitacora-ken-burns {
+		from {
+			transform: scale(1) translate(0, 0);
+		}
+		to {
+			transform: scale(1.12) translate(-1.5%, -1.5%);
+		}
+	}
+
+	.bitacora-media-fallback {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 200px;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 214, 112, 0.32);
+		font-size: 3.5rem;
+		background: radial-gradient(circle at 50% 40%, rgba(255, 214, 112, 0.25), rgba(15, 23, 26, 0.9));
+	}
+
+	.bitacora-vertical-rail {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		flex-shrink: 0;
+	}
+
+	.bitacora-rail-btn {
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		border: 1px solid rgba(255, 214, 112, 0.4);
+		background: rgba(255, 255, 255, 0.08);
+		color: #ffd670;
+		font-size: 0.68rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+	}
+
+	.bitacora-vertical-dots {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.bitacora-vertical-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		border: none;
+		padding: 0;
+		background: rgba(255, 255, 255, 0.28);
+		cursor: pointer;
+		transition: all 0.25s ease;
+	}
+
+	.bitacora-vertical-dot.active {
+		height: 20px;
+		background: #ffd670;
+		box-shadow: 0 0 8px rgba(255, 214, 112, 0.8);
+	}
 
 	:global(.log-feed-card) {
 		padding: 16px;

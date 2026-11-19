@@ -51,8 +51,11 @@
 	let victoryTab = $state<'bitacora' | 'libro'>('bitacora');
 	let projectLogs = $state<any[]>([]);
 	let logIdx = $state(0);
+	let isSliderPaused = $state(false);
 	let victoryLoading = $state(false);
 	let isSaving = $state(false);
+	let wheelCooldown = 0;
+	let touchStartY = 0;
 
 	let levelData = $derived(taskData?.levels?.[0]);
 	let totalLevels = $derived(Number(taskData?.cantidad_de_niveles ?? 0));
@@ -178,15 +181,32 @@
 		isVictoryMode = true;
 		victoryTab = 'bitacora';
 		logIdx = 0;
+		isSliderPaused = false;
 		victoryLoading = true;
 		try {
+			const taskIdNum = Number(taskData.id);
+			let rows: any[] = [];
+
 			const { data, error } = await supabase
 				.from('project_logs')
 				.select('*')
-				.eq('project_id', String(taskData.id))
-				.order('level', { ascending: true });
-			if (error) throw error;
-			projectLogs = data ?? [];
+				.or(`task_id.eq.${taskIdNum},project_id.eq.${taskIdNum}`)
+				.order('level', { ascending: true })
+				.order('created_at', { ascending: true });
+
+			if (!error && Array.isArray(data) && data.length > 0) {
+				rows = data;
+			} else {
+				const res = await fetch(`/api/project-logs?taskId=${encodeURIComponent(String(taskData.id))}`);
+				if (res.ok) {
+					const payload = await res.json();
+					if (Array.isArray(payload?.logs)) {
+						rows = payload.logs;
+					}
+				}
+			}
+
+			projectLogs = rows;
 		} catch (err) {
 			console.error('Error al cargar project_logs:', err);
 			projectLogs = [];
@@ -235,6 +255,29 @@
 		}
 	}
 
+	function handleSliderWheel(e: WheelEvent) {
+		if (projectLogs.length < 2) return;
+		if (Math.abs(e.deltaY) < 12) return;
+		const now = Date.now();
+		if (now - wheelCooldown < 380) return;
+		e.preventDefault();
+		wheelCooldown = now;
+		shiftLog(e.deltaY > 0 ? 1 : -1, true);
+	}
+
+	function handleTouchStart(e: TouchEvent) {
+		touchStartY = e.touches[0]?.clientY ?? 0;
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		if (projectLogs.length < 2) return;
+		const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+		const deltaY = endY - touchStartY;
+		if (Math.abs(deltaY) > 36) {
+			shiftLog(deltaY < 0 ? 1 : -1, true);
+		}
+	}
+
 	function formatLogDate(value: string) {
 		const d = new Date(value);
 		return isNaN(d.getTime())
@@ -249,6 +292,7 @@
 			victoryTab = 'bitacora';
 			projectLogs = [];
 			logIdx = 0;
+			isSliderPaused = false;
 			return;
 		}
 		if (mode === 'details' && startInVictory && taskData && isCompleted) {
@@ -258,9 +302,9 @@
 		}
 	});
 
-	// Carrusel automático de la bitácora
+	// Carrusel vertical automático de la bitácora
 	$effect(() => {
-		if (!isVictoryMode || victoryTab !== 'bitacora' || projectLogs.length < 2) return;
+		if (!isVictoryMode || victoryTab !== 'bitacora' || projectLogs.length < 2 || isSliderPaused) return;
 		void logIdx;
 		const timer = setInterval(() => shiftLog(1), 7000);
 		return () => clearInterval(timer);
@@ -384,13 +428,15 @@
 								<div class="tabs is-centered is-toggle is-small victory-tabs mb-2">
 									<ul>
 										<li class:is-active={victoryTab === 'bitacora'}>
+											<!-- svelte-ignore a11y_missing_attribute -->
 											<a class="is-size-7-mobile" role="button" tabindex="0" onclick={() => selectVictoryTab('bitacora')} onkeydown={(e) => e.key === 'Enter' && selectVictoryTab('bitacora')}>
-												📸 Tu Viaje Real (Bitácora)
+												📸 Bitácora de Desbloqueo
 											</a>
 										</li>
 										<li class:is-active={victoryTab === 'libro'}>
+											<!-- svelte-ignore a11y_missing_attribute -->
 											<a class="is-size-7-mobile" role="button" tabindex="0" onclick={() => selectVictoryTab('libro')} onkeydown={(e) => e.key === 'Enter' && selectVictoryTab('libro')}>
-												📖 Crónica Completa (Libro)
+												📖 Crónica Completa
 											</a>
 										</li>
 									</ul>
@@ -425,29 +471,55 @@
 														{:else if projectLogs.length === 0}
 															<p class="book-story-paragraph">Aún no hay registros de bitácora para esta misión.</p>
 														{:else}
-															{#key logIdx}
-																{@const log = projectLogs[logIdx]}
-																<div class="log-slide" in:fly={{ x: 24, duration: 320, easing: cubicOut }}>
-																	<div class="log-media">
-																		{#if log.media_url}
-																			<img class="ken-burns" src={log.media_url} alt="Evidencia del nivel {log.level}" />
-																		{:else}
-																			<div class="ken-burns log-media-fallback" aria-hidden="true">🏆</div>
-																		{/if}
-																	</div>
-																	<div class="log-meta is-flex is-align-items-center is-justify-content-space-between">
-																		<span class="tag is-warning is-light">🔓 Nivel {log.level} desbloqueado</span>
-																		<time class="log-date">{formatLogDate(log.created_at)}</time>
-																	</div>
-																	<p class="book-story-paragraph log-text">{log.log_text}</p>
+															<div
+																class="vertical-slider-shell"
+																role="region"
+																aria-label="Slider vertical de Bitácora de Desbloqueo"
+																onmouseenter={() => (isSliderPaused = true)}
+																onmouseleave={() => (isSliderPaused = false)}
+																onwheel={handleSliderWheel}
+																ontouchstart={handleTouchStart}
+																ontouchend={handleTouchEnd}
+															>
+																<div class="vertical-slider-viewport">
+																	{#key logIdx}
+																		{@const log = projectLogs[logIdx]}
+																		<div class="log-slide vertical-fade-slide" in:fade={{ duration: 600 }}>
+																			<div class="log-media">
+																				{#if log.media_url}
+																					<img class="ken-burns" src={log.media_url} alt="Evidencia del capítulo {Number(log.level) + 1}" />
+																				{:else}
+																					<div class="ken-burns log-media-fallback" aria-hidden="true">🏆</div>
+																				{/if}
+																			</div>
+																			<div class="log-meta is-flex is-align-items-center is-justify-content-space-between">
+																				<span class="tag is-warning is-light">🔓 Capítulo {Number(log.level) + 1} desbloqueado</span>
+																				<time class="log-date">{formatLogDate(log.created_at)}</time>
+																			</div>
+																			<p class="book-story-paragraph log-text">{log.log_text}</p>
+																		</div>
+																	{/key}
 																</div>
-															{/key}
-															<div class="log-nav is-flex is-align-items-center is-justify-content-center">
-																<button type="button" class="log-nav-btn" aria-label="Registro anterior" onclick={() => shiftLog(-1, true)}>‹</button>
-																{#each projectLogs as _, i}
-																	<button type="button" class="log-dot" class:active={i === logIdx} aria-label="Ir al registro {i + 1}" onclick={() => selectLogIndex(i)}></button>
-																{/each}
-																<button type="button" class="log-nav-btn" aria-label="Registro siguiente" onclick={() => shiftLog(1, true)}>›</button>
+
+																{#if projectLogs.length > 1}
+																	<div class="vertical-slider-rail">
+																		<button type="button" class="log-nav-btn" aria-label="Capítulo anterior" onclick={() => shiftLog(-1, true)}>▲</button>
+																		<div class="vertical-dots">
+																			{#each projectLogs as logItem, i}
+																				<button
+																					type="button"
+																					class="log-dot-vertical"
+																					class:active={i === logIdx}
+																					title="Capítulo {Number(logItem.level) + 1}"
+																					aria-label="Ir al capítulo {Number(logItem.level) + 1}"
+																					onclick={() => selectLogIndex(i)}
+																				></button>
+																			{/each}
+																		</div>
+																		<span class="vertical-counter">{logIdx + 1}/{projectLogs.length}</span>
+																		<button type="button" class="log-nav-btn" aria-label="Capítulo siguiente" onclick={() => shiftLog(1, true)}>▼</button>
+																	</div>
+																{/if}
 															</div>
 														{/if}
 													</div>
@@ -799,6 +871,74 @@
 		50% { box-shadow: 0 0 30px rgba(255, 214, 112, 0.75); }
 	}
 
+	.vertical-slider-shell {
+		display: flex;
+		align-items: stretch;
+		gap: 0.75rem;
+		min-height: 0;
+	}
+
+	.vertical-slider-viewport {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.vertical-fade-slide {
+		animation: vertical-fade-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	@keyframes vertical-fade-rise {
+		from {
+			opacity: 0;
+			transform: translateY(16px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.vertical-slider-rail {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		flex-shrink: 0;
+		padding: 0.35rem 0.2rem;
+	}
+
+	.vertical-dots {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.log-dot-vertical {
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		border: none;
+		padding: 0;
+		background: rgba(255, 255, 255, 0.3);
+		cursor: pointer;
+		transition: all 0.25s ease;
+	}
+
+	.log-dot-vertical.active {
+		height: 20px;
+		background: #ffd670;
+		box-shadow: 0 0 8px rgba(255, 214, 112, 0.8);
+	}
+
+	.vertical-counter {
+		font-size: 0.66rem;
+		font-weight: 700;
+		color: #ffd670;
+		letter-spacing: 0.04em;
+	}
+
 	.log-slide {
 		display: flex;
 		flex-direction: column;
@@ -846,11 +986,6 @@
 		margin-bottom: 0.75rem;
 	}
 
-	.log-nav {
-		gap: 8px;
-		padding: 0.3rem 0 1rem;
-	}
-
 	.log-nav-btn {
 		background: rgba(255, 255, 255, 0.08);
 		border: 1px solid rgba(255, 214, 112, 0.4);
@@ -858,22 +993,11 @@
 		border-radius: 50%;
 		width: 28px;
 		height: 28px;
+		font-size: 0.7rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		cursor: pointer;
-	}
-
-	.log-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		border: none;
-		padding: 0;
-		background: rgba(255, 255, 255, 0.3);
-		cursor: pointer;
-	}
-
-	.log-dot.active {
-		background: #ffd670;
-		box-shadow: 0 0 8px rgba(255, 214, 112, 0.8);
 	}
 
 	.book-story-paragraph {
